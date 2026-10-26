@@ -62,7 +62,7 @@ class ApiSecurityTests {
 
     @Test
     void scanFindsAllApiEndpoints() {
-        assertThat(apiEndpoints()).hasSizeGreaterThanOrEqualTo(16);
+        assertThat(apiEndpoints()).hasSizeGreaterThanOrEqualTo(18);
     }
 
     @Test

@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /** {@code initialValue} is in millions; {@code shirtNumber} is optional. The domain checks the remaining rules. */
-record RegisterPlayerRequest(@NotBlank @Size(max = Player.MAX_NAME_LENGTH) String name,
-                             Integer shirtNumber,
-                             @NotNull Position position,
-                             @NotNull BigDecimal initialValue) {
+record PlayerRequest(@NotBlank @Size(max = Player.MAX_NAME_LENGTH) String name,
+                     Integer shirtNumber,
+                     @NotNull Position position,
+                     @NotNull BigDecimal initialValue) {
 }

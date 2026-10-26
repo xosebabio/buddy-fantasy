@@ -17,6 +17,7 @@ import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
+import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +40,10 @@ import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -108,7 +111,15 @@ class PlayersEndpointsTests {
     }
 
     private void retire(UUID playerId) {
-        jdbc.update("update squad_player set retired_at = ? where id = ?", Timestamp.from(NOW), playerId);
+        bus.dispatch(new RetirePlayerCommand(admin, league, playerId));
+    }
+
+    private Timestamp retiredAt(UUID playerId) {
+        return jdbc.queryForObject("select retired_at from squad_player where id = ?", Timestamp.class, playerId);
+    }
+
+    private String nameOf(UUID playerId) {
+        return jdbc.queryForObject("select name from squad_player where id = ?", String.class, playerId);
     }
 
     private int playersIn(UUID leagueId) {
@@ -291,6 +302,147 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    void adminUpdatesEveryEditableField() throws Exception {
+        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(" Iago Aspas ", null, "MIDFIELDER", "20.25")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(player.toString()))
+                .andExpect(jsonPath("$.name").value("Iago Aspas"))
+                .andExpect(jsonPath("$.shirtNumber").doesNotExist())
+                .andExpect(jsonPath("$.position").value("MIDFIELDER"))
+                .andExpect(jsonPath("$.initialValue").value(20.25));
+
+        mvc.perform(get("/api/leagues/{id}/players/{p}", league, player).with(as(ana)))
+                .andExpect(jsonPath("$.name").value("Iago Aspas"))
+                .andExpect(jsonPath("$.currentValue").value(20.25));
+    }
+
+    @Test
+    void updateKeepsOrChangesTheShirtNumberWithoutClashing() throws Exception {
+        UUID iago = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        addPlayer(league, admin, "Hugo", 9, Position.FORWARD);
+        retire(addPlayer(league, admin, "Retirado", 7, Position.DEFENDER));
+
+        // keeping their own number is fine
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, iago).with(as(admin)).with(csrf())
+                .contentType(APPLICATION_JSON).content(body("Iago", 10, "FORWARD", "11")))
+                .andExpect(status().isOk());
+        // another active player's number is not
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, iago).with(as(admin)).with(csrf())
+                .contentType(APPLICATION_JSON).content(body("Iago", 9, "FORWARD", "11")))
+                .andExpect(status().isConflict());
+        // a retired player's number is free
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, iago).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body("Iago", 7, "FORWARD", "11")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shirtNumber").value(7));
+    }
+
+    @Test
+    void onlyTheLeagueAdminCanUpdate() throws Exception {
+        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        String request = body("Cambiado", 10, "FORWARD", "10");
+
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(ana)).with(csrf())
+                .contentType(APPLICATION_JSON).content(request)).andExpect(status().isForbidden());
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(outsider)).with(csrf())
+                .contentType(APPLICATION_JSON).content(request)).andExpect(status().isForbidden());
+        assertThat(nameOf(player)).isEqualTo("Iago");
+    }
+
+    @Test
+    void invalidUpdateIs400AndChangesNothing() throws Exception {
+        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+
+        for (String request : List.of(
+                body("Iago", 10, "COACH", "10"),
+                body("Iago", 10, "FORWARD", "0"),
+                body("Iago", 100, "FORWARD", "10"),
+                body(" ", 10, "FORWARD", "10"))) {
+            mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf())
+                    .contentType(APPLICATION_JSON).content(request)).andExpect(status().isBadRequest());
+        }
+        assertThat(nameOf(player)).isEqualTo("Iago");
+    }
+
+    @Test
+    void retiredPlayerCannotBeUpdated() throws Exception {
+        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        retire(player);
+
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body("Cambiado", 10, "FORWARD", "10")))
+                .andExpect(status().isConflict());
+        assertThat(nameOf(player)).isEqualTo("Iago");
+    }
+
+    @Test
+    void adminRetiresAPlayerWhoLeavesTheActiveSquadButKeepsTheCard() throws Exception {
+        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf()))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/leagues/{id}/players", league).with(as(ana)))
+                .andExpect(jsonPath("$.length()").value(0));
+        mvc.perform(get("/api/leagues/{id}/players", league).param("includeRetired", "true").with(as(admin)))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].retiredAt").exists());
+        mvc.perform(get("/api/leagues/{id}/players/{p}", league, player).with(as(ana)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.retiredAt").exists());
+        assertThat(playersIn(league)).isEqualTo(1);
+    }
+
+    @Test
+    void retireIsIdempotentAndPublishesPlayerRetiredOnce() throws Exception {
+        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf()))
+                .andExpect(status().isNoContent());
+        Timestamp firstRetiredAt = retiredAt(player);
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf()))
+                .andExpect(status().isNoContent());
+
+        assertThat(retiredAt(player)).isEqualTo(firstRetiredAt);
+        assertThat(events.stream(PlayerRetired.class)).singleElement().satisfies(e -> {
+            assertThat(e.leagueId()).isEqualTo(league);
+            assertThat(e.playerId()).isEqualTo(player);
+        });
+    }
+
+    @Test
+    void onlyTheLeagueAdminCanRetire() throws Exception {
+        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(ana)).with(csrf()))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(outsider)).with(csrf()))
+                .andExpect(status().isForbidden());
+        assertThat(retiredAt(player)).isNull();
+        assertThat(events.stream(PlayerRetired.class)).isEmpty();
+    }
+
+    @Test
+    void anotherLeaguesPlayerCannotBeUpdatedOrRetired() throws Exception {
+        UUID foreign = addPlayer(otherLeague, outsider, "De otra liga", 5, Position.DEFENDER);
+
+        // admin of "Peña" targeting another league's player through "Peña"'s route
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, foreign).with(as(admin)).with(csrf())
+                .contentType(APPLICATION_JSON).content(body("Robado", 5, "DEFENDER", "10")))
+                .andExpect(status().isNotFound());
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, foreign).with(as(admin)).with(csrf()))
+                .andExpect(status().isNotFound());
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, UUID.randomUUID()).with(as(admin)).with(csrf()))
+                .andExpect(status().isNotFound());
+
+        assertThat(nameOf(foreign)).isEqualTo("De otra liga");
+        assertThat(retiredAt(foreign)).isNull();
+    }
+
+    @Test
     void securityWithoutSessionOrCsrf() throws Exception {
         UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
         String request = body("Otro", 11, "FORWARD", "10");
@@ -299,8 +451,19 @@ class PlayersEndpointsTests {
         mvc.perform(get("/api/leagues/{id}/players/{p}", league, player)).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/leagues/{id}/players", league).with(csrf())
                 .contentType(APPLICATION_JSON).content(request)).andExpect(status().isUnauthorized());
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(csrf())
+                .contentType(APPLICATION_JSON).content(request)).andExpect(status().isUnauthorized());
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(csrf()))
+                .andExpect(status().isUnauthorized());
+
         mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin))
                 .contentType(APPLICATION_JSON).content(request)).andExpect(status().isForbidden());
+        mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(admin))
+                .contentType(APPLICATION_JSON).content(request)).andExpect(status().isForbidden());
+        mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(admin)))
+                .andExpect(status().isForbidden());
         assertThat(playersIn(league)).isEqualTo(1);
+        assertThat(nameOf(player)).isEqualTo("Iago");
+        assertThat(retiredAt(player)).isNull();
     }
 }
