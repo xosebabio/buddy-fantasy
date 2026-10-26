@@ -43,7 +43,7 @@ public record LeagueSettings(
     }
 
     public static LeagueSettings defaults() {
-        return new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, null, 2, 2, 7, false, false,
+        return new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, null, 2, 2, 7, false, true,
                 new BigDecimal("100"), new BigDecimal("0.05"), new BigDecimal("10"), BigDecimal.ONE);
     }
 

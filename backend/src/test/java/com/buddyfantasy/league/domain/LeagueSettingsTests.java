@@ -22,7 +22,7 @@ class LeagueSettingsTests {
         assertThat(defaults.lineupMaxChanges()).isEqualTo(2);
         assertThat(defaults.lineupSize()).isEqualTo(7);
         assertThat(defaults.lineupFormationEnabled()).isFalse();
-        assertThat(defaults.lineupBudgetEnabled()).isFalse();
+        assertThat(defaults.lineupBudgetEnabled()).isTrue();
         assertThat(defaults.lineupBudget()).isEqualByComparingTo("100");
         assertThat(defaults.marketK()).isEqualByComparingTo("0.05");
         assertThat(defaults.marketMaxChangePct()).isEqualByComparingTo("10");
