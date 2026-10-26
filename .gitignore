@@ -29,3 +29,5 @@ target/
 
 # IDE
 .idea/
+
+.env

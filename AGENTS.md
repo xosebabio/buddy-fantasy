@@ -13,7 +13,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado actual
 
-Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `backend/` (módulos vacíos, kernel `shared`, `CommandBus`, tests de arquitectura) según `docs/backend-structure-plan.md`. Aún no hay `frontend/`. Mantén actualizada la sección *Comandos* de este archivo.
+Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `backend/` (kernel `shared`, `CommandBus`, tests de arquitectura) según `docs/01-backend-structure-plan.md`, con el modelo base y el login de Google (`identity`, `league`) según `docs/02-base-model-and-google-login-plan.md`. Aún no hay `frontend/`. Mantén actualizada la sección *Comandos* de este archivo.
 
 ## Stack
 
@@ -21,7 +21,7 @@ Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `bac
 | --- | --- |
 | Backend | Java 21+, Spring Boot 3, Spring Modulith (monolito modular) |
 | Base de datos | PostgreSQL + Flyway |
-| Autenticación | Spring Security + OAuth2 login (Google) |
+| Autenticación | Spring Security + OAuth2 login (solo Google), sesión en Spring Session JDBC |
 | Jobs | `@Scheduled` + ShedLock |
 | Frontend | Angular + `@angular/pwa`, mobile first (Angular Material o PrimeNG, por decidir) |
 | Notificaciones | webpush-java + SMTP (Brevo, Resend…) |
@@ -63,7 +63,7 @@ Reglas:
 
 ### Roles
 
-Los roles son **por liga**, no globales. Un usuario puede ser administrador de una liga y manager en otra. Toda comprobación de permisos recibe la liga como contexto.
+Los roles son **por liga**, no globales. Un usuario puede ser administrador de una liga y manager en otra. Toda comprobación de permisos recibe la liga como contexto. Una membership tiene un único rol (`ADMIN` o `MANAGER`) y **el administrador siempre juega como manager** en su liga: trata `ADMIN` como manager al preguntar si alguien puede alinear, valorar o puntuar.
 
 ### Puntuación por acción (precargada, editable por liga)
 
@@ -158,7 +158,7 @@ mvn test -Dtest='ModularityTests,HexagonalArchitectureTests'   # solo verificaci
 mvn spring-boot:run                                     # arranque local contra el Postgres de arriba
 ```
 
-Configuración por variables de entorno: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SWAGGER_UI_ENABLED` (valores por defecto en `backend/src/main/resources/application.yml`).
+Configuración por variables de entorno (valores por defecto en `backend/src/main/resources/application.yml`): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SWAGGER_UI_ENABLED`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (cliente OAuth de Google Cloud; sin ellas el login no funciona, pero la app arranca) y `SESSION_COOKIE_SECURE` (`true` en producción, `false` en local). Redirect URI en local: `http://localhost:8080/login/oauth2/code/google`.
 Docker 29+ exige Testcontainers ≥ 1.21.4 (ya fijado en `pom.xml`). Los handlers de comandos deben ser clases, no lambdas (el bus resuelve el tipo de comando por genéricos).
 Lint: pendiente.
 
@@ -166,12 +166,10 @@ Lint: pendiente.
 
 No las resuelvas por tu cuenta. Si una tarea depende de alguna, pregunta o deja la opción configurable:
 
-- ¿El administrador puede ser manager en su propia liga?
 - Formato de valoración por defecto y conversión de la media a puntos (redondeo incluido).
 - ¿Dos managers pueden alinear al mismo jugador? (Probablemente sí, al haber un solo equipo.)
 - Papel del valor del jugador: informativo, presupuesto o mercado de fichajes.
 - ¿Mínimo de votos para que cuente la valoración?
-- Login: solo Google o también email + contraseña.
 
 ## Roadmap
 
