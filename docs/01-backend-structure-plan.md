@@ -84,7 +84,7 @@ Reglas de dependencia (verificadas con ArchUnit, ver §6):
 | `adapter` | `application`, `domain`; frameworks |
 | otro módulo | solo paquete raíz del módulo (`LeagueApi`, eventos) |
 
-Los controllers solo conocen el `CommandBus` (y `QueryBus` si aplica) y los records `Command`/`Query`; los handlers solo conocen puertos `out`.
+Los controllers solo conocen el `CommandBus` (`dispatch` para commands, `ask` para queries) y los records `Command`/`Query`; los handlers solo conocen puertos `out`.
 
 ### 3.1 Patrón Command + bus (D6, D7)
 
@@ -109,7 +109,7 @@ public interface CommandBus { <R> R dispatch(Command<R> command); }
 
 ### 3.2 Lecturas (D8)
 
-CQRS **solo cuando sea necesario**: por defecto, una lectura simple puede usar el puerto `out` del repositorio. Cuando una pantalla necesite una proyección (clasificación, ficha con estadísticas…), se crea un `Query<R>` + `QueryHandler` que consulta directamente con `JdbcClient`/proyecciones, sin pasar por el dominio, y un `QueryBus` simétrico (sin transacción de escritura, `readOnly`). Las proyecciones solo leen tablas del propio módulo.
+CQRS **solo cuando sea necesario**: por defecto, una lectura simple puede usar el puerto `out` del repositorio. Cuando una pantalla necesite una proyección (clasificación, ficha con estadísticas…), se crea un `Query<R>` + `QueryHandler` que consulta directamente con `JdbcClient`/proyecciones, sin pasar por el dominio, que se ejecuta con `CommandBus.ask` (transacción `readOnly`). Las proyecciones solo leen tablas del propio módulo.
 
 ## 4. Comunicación entre módulos
 

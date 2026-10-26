@@ -4,6 +4,8 @@ import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.shared.application.Command;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.application.CommandHandler;
+import com.buddyfantasy.shared.application.Query;
+import com.buddyfantasy.shared.application.QueryHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,9 @@ class CommandBusTests {
     record InTransaction() implements Command<Boolean> {
     }
 
+    record ReadOnlyProbe() implements Query<Boolean> {
+    }
+
     record InsertThenFail() implements Command<Void> {
     }
 
@@ -45,6 +50,14 @@ class CommandBusTests {
         @Override
         public Boolean handle(InTransaction command) {
             return TransactionSynchronizationManager.isActualTransactionActive();
+        }
+    }
+
+    static class ReadOnlyProbeHandler implements QueryHandler<ReadOnlyProbe, Boolean> {
+
+        @Override
+        public Boolean handle(ReadOnlyProbe query) {
+            return TransactionSynchronizationManager.isCurrentTransactionReadOnly();
         }
     }
 
@@ -74,6 +87,11 @@ class CommandBusTests {
         @Bean
         InTransactionHandler inTransactionHandler() {
             return new InTransactionHandler();
+        }
+
+        @Bean
+        ReadOnlyProbeHandler readOnlyProbeHandler() {
+            return new ReadOnlyProbeHandler();
         }
 
         @Bean
@@ -114,5 +132,10 @@ class CommandBusTests {
     @Test
     void rejectsInvalidCommandsBeforeCallingTheHandler() {
         assertThatThrownBy(() -> bus.dispatch(new Echo(" "))).isInstanceOf(ConstraintViolationException.class);
+    }
+
+    @Test
+    void askRunsQueriesInAReadOnlyTransaction() {
+        assertThat(bus.ask(new ReadOnlyProbe())).isTrue();
     }
 }
