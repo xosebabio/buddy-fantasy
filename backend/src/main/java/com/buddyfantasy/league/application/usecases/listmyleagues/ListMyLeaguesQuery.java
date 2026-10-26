@@ -5,5 +5,5 @@ import java.util.UUID;
 
 import com.buddyfantasy.shared.application.Query;
 
-public record ListMyLeagues(UUID userId) implements Query<List<MyLeagueView>> {
+public record ListMyLeaguesQuery(UUID userId) implements Query<List<MyLeagueView>> {
 }

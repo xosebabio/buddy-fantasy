@@ -85,7 +85,7 @@ Angular ──GET /oauth2/authorization/google──► Google ──callback─
 ```
 
 1. El frontend redirige al navegador a `/oauth2/authorization/google`.
-2. Tras el callback, un `OidcUserService` propio (adaptador `identity/adapter/in/web`) despacha por el `CommandBus` el comando **`RegisterOrLoginUser(googleSub, email, name, avatarUrl)`**.
+2. Tras el callback, un `OidcUserService` propio (adaptador `identity/adapter/in/web`) despacha por el `CommandBus` el comando **`RegisterOrLoginUserCommand(googleSub, email, name, avatarUrl)`**.
 3. El handler busca por `google_sub`: si existe actualiza `last_login_at`; si no, crea el usuario (UUID nuevo, `Clock` inyectado). Es idempotente y devuelve el `UserId`.
 4. El principal de la sesión lleva el `UserId` interno, no solo el subject de Google. Lo exponemos con un `CurrentUser` en `shared` (utilidad de seguridad prevista en el plan de estructura §5), para que ningún módulo importe clases de `identity`.
 5. Si Google no devuelve `email_verified = true`, se rechaza el login.
@@ -152,8 +152,8 @@ identity/
 ├── IdentityApi.java?                 # solo si otro módulo necesita datos de usuario (no por ahora)
 ├── domain/        User, UserId
 ├── application/
-│   ├── usecases/  registerorloginuser/ → RegisterOrLoginUser, RegisterOrLoginUserHandler
-│   │              getcurrentuser/      → GetCurrentUser, GetCurrentUserHandler
+│   ├── usecases/  registerorloginuser/ → RegisterOrLoginUserCommand, RegisterOrLoginUserHandler
+│   │              getcurrentuser/      → GetCurrentUserQuery, GetCurrentUserHandler
 │   └── port/out/  UserRepository
 └── adapter/
     ├── in/web/    SecurityConfig, GoogleOidcUserService, MeController, LogoutHandler
@@ -164,7 +164,7 @@ league/
 ├── domain/        League, Membership, LeagueId
 ├── application/
 │   ├── LeagueAccessService.java                # implementa LeagueAccess
-│   ├── usecases/  listmyleagues/ → ListMyLeagues, ListMyLeaguesHandler
+│   ├── usecases/  listmyleagues/ → ListMyLeaguesQuery, ListMyLeaguesHandler
 │   └── port/out/  LeagueRepository, MembershipRepository
 └── adapter/
     ├── in/web/    MyLeaguesController
@@ -183,7 +183,7 @@ Reglas a respetar: `ModularityTests` y `HexagonalArchitectureTests` deben seguir
 | Test | Qué verifica |
 | --- | --- |
 | Migraciones | Flyway aplica V2–V4 sobre Postgres limpio; `ddl-auto: validate` pasa |
-| `RegisterOrLoginUser` | Primer login crea el usuario; segundo login con el mismo `sub` no duplica y solo actualiza `last_login_at`; un `sub` distinto con el mismo email crea otro usuario |
+| `RegisterOrLoginUserCommand` | Primer login crea el usuario; segundo login con el mismo `sub` no duplica y solo actualiza `last_login_at`; un `sub` distinto con el mismo email crea otro usuario |
 | Tiempo | Los timestamps salen del `Clock` inyectado (con `Clock` fijo en el test) |
 | Seguridad | `/api/me` sin sesión → `401` (sin redirección); health → `200` sin autenticar; `POST` sin token CSRF → `403`; con token → permitido |
 | Login | Con `oidcLogin()` de `spring-security-test` se crea el usuario y `/api/me` devuelve sus datos; login con `email_verified = false` se rechaza |
@@ -196,7 +196,7 @@ Reglas a respetar: `ModularityTests` y `HexagonalArchitectureTests` deben seguir
 | # | Tarea | Resultado |
 | --- | --- | --- |
 | 1 | Migraciones V2 (identity), V3 (league), V4 (Spring Session) y `spring-session-jdbc` en el `pom.xml` | Flyway aplica en Testcontainers |
-| 2 | `identity`: dominio, puerto, adaptador JPA y `RegisterOrLoginUser` con su test | Alta idempotente por `google_sub` |
+| 2 | `identity`: dominio, puerto, adaptador JPA y `RegisterOrLoginUserCommand` con su test | Alta idempotente por `google_sub` |
 | 3 | `league`: dominio, repositorios JPA y `LeagueAccess` con su test | Roles por liga comprobables |
 | 4 | `SecurityConfig`: OAuth2 login, `401` en API, CSRF, logout, sesión JDBC y `OidcUserService` propio | Login completo con `oidcLogin()` en tests |
 | 5 | `GET /api/me` y `GET /api/me/leagues` | Endpoints cubiertos por tests |

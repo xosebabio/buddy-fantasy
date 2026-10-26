@@ -4,5 +4,5 @@ import java.util.UUID;
 
 import com.buddyfantasy.shared.application.Query;
 
-public record GetCurrentUser(UUID userId) implements Query<UserView> {
+public record GetCurrentUserQuery(UUID userId) implements Query<UserView> {
 }

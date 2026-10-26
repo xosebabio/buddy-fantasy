@@ -7,7 +7,7 @@ import com.buddyfantasy.shared.application.QueryHandler;
 import org.springframework.stereotype.Component;
 
 @Component
-class GetCurrentUserHandler implements QueryHandler<GetCurrentUser, UserView> {
+class GetCurrentUserHandler implements QueryHandler<GetCurrentUserQuery, UserView> {
 
     private final UserRepository users;
 
@@ -16,7 +16,7 @@ class GetCurrentUserHandler implements QueryHandler<GetCurrentUser, UserView> {
     }
 
     @Override
-    public UserView handle(GetCurrentUser query) {
+    public UserView handle(GetCurrentUserQuery query) {
         User user = users.findById(new UserId(query.userId()))
                 .orElseThrow(() -> new IllegalStateException("Session user not found: " + query.userId()));
         return new UserView(user.id().value(), user.displayName(), user.email(), user.avatarUrl());

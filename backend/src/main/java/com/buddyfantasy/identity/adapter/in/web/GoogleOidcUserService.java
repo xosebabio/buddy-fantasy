@@ -1,6 +1,6 @@
 package com.buddyfantasy.identity.adapter.in.web;
 
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUser;
+import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
 import com.buddyfantasy.identity.domain.UserId;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
@@ -30,7 +30,7 @@ class GoogleOidcUserService extends OidcUserService {
         if (!Boolean.TRUE.equals(google.getEmailVerified())) {
             throw new OAuth2AuthenticationException(new OAuth2Error("email_not_verified"));
         }
-        UserId id = bus.dispatch(new RegisterOrLoginUser(
+        UserId id = bus.dispatch(new RegisterOrLoginUserCommand(
                 google.getSubject(), google.getEmail(), displayName(google), google.getPicture()));
         return new CurrentUser(google.getAuthorities(), google.getIdToken(), google.getUserInfo(), id.value());
     }

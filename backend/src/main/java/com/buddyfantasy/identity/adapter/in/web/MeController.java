@@ -1,6 +1,6 @@
 package com.buddyfantasy.identity.adapter.in.web;
 
-import com.buddyfantasy.identity.application.usecases.getcurrentuser.GetCurrentUser;
+import com.buddyfantasy.identity.application.usecases.getcurrentuser.GetCurrentUserQuery;
 import com.buddyfantasy.identity.application.usecases.getcurrentuser.UserView;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
@@ -19,6 +19,6 @@ class MeController {
 
     @GetMapping("/api/me")
     UserView me(@AuthenticationPrincipal CurrentUser user) {
-        return bus.ask(new GetCurrentUser(user.userId()));
+        return bus.ask(new GetCurrentUserQuery(user.userId()));
     }
 }

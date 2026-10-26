@@ -6,7 +6,7 @@ import com.buddyfantasy.shared.application.QueryHandler;
 import org.springframework.stereotype.Component;
 
 @Component
-class ListMyLeaguesHandler implements QueryHandler<ListMyLeagues, List<MyLeagueView>> {
+class ListMyLeaguesHandler implements QueryHandler<ListMyLeaguesQuery, List<MyLeagueView>> {
 
     private final MyLeaguesReadModel readModel;
 
@@ -15,7 +15,7 @@ class ListMyLeaguesHandler implements QueryHandler<ListMyLeagues, List<MyLeagueV
     }
 
     @Override
-    public List<MyLeagueView> handle(ListMyLeagues query) {
+    public List<MyLeagueView> handle(ListMyLeaguesQuery query) {
         return readModel.findByUserId(query.userId());
     }
 }

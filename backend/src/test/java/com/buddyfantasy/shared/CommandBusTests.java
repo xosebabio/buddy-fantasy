@@ -25,43 +25,43 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Import({PostgresTestConfig.class, CommandBusTests.Handlers.class})
 class CommandBusTests {
 
-    record Echo(@NotBlank String text) implements Command<String> {
+    record EchoCommand(@NotBlank String text) implements Command<String> {
     }
 
-    record InTransaction() implements Command<Boolean> {
+    record InTransactionCommand() implements Command<Boolean> {
     }
 
-    record ReadOnlyProbe() implements Query<Boolean> {
+    record ReadOnlyProbeQuery() implements Query<Boolean> {
     }
 
-    record InsertThenFail() implements Command<Void> {
+    record InsertThenFailCommand() implements Command<Void> {
     }
 
-    static class EchoHandler implements CommandHandler<Echo, String> {
+    static class EchoHandler implements CommandHandler<EchoCommand, String> {
 
         @Override
-        public String handle(Echo command) {
+        public String handle(EchoCommand command) {
             return "echo:" + command.text();
         }
     }
 
-    static class InTransactionHandler implements CommandHandler<InTransaction, Boolean> {
+    static class InTransactionHandler implements CommandHandler<InTransactionCommand, Boolean> {
 
         @Override
-        public Boolean handle(InTransaction command) {
+        public Boolean handle(InTransactionCommand command) {
             return TransactionSynchronizationManager.isActualTransactionActive();
         }
     }
 
-    static class ReadOnlyProbeHandler implements QueryHandler<ReadOnlyProbe, Boolean> {
+    static class ReadOnlyProbeHandler implements QueryHandler<ReadOnlyProbeQuery, Boolean> {
 
         @Override
-        public Boolean handle(ReadOnlyProbe query) {
+        public Boolean handle(ReadOnlyProbeQuery query) {
             return TransactionSynchronizationManager.isCurrentTransactionReadOnly();
         }
     }
 
-    static class InsertThenFailHandler implements CommandHandler<InsertThenFail, Void> {
+    static class InsertThenFailHandler implements CommandHandler<InsertThenFailCommand, Void> {
 
         private final JdbcTemplate jdbc;
 
@@ -70,7 +70,7 @@ class CommandBusTests {
         }
 
         @Override
-        public Void handle(InsertThenFail command) {
+        public Void handle(InsertThenFailCommand command) {
             jdbc.update("insert into shedlock values ('bus-test', now(), now(), 'test')");
             throw new IllegalStateException("boom");
         }
@@ -113,17 +113,17 @@ class CommandBusTests {
 
     @Test
     void dispatchesToTheMatchingHandler() {
-        assertThat(bus.dispatch(new Echo("hi"))).isEqualTo("echo:hi");
+        assertThat(bus.dispatch(new EchoCommand("hi"))).isEqualTo("echo:hi");
     }
 
     @Test
     void runsHandlerInsideATransaction() {
-        assertThat(bus.dispatch(new InTransaction())).isTrue();
+        assertThat(bus.dispatch(new InTransactionCommand())).isTrue();
     }
 
     @Test
     void rollsBackWhenHandlerThrows() {
-        assertThatThrownBy(() -> bus.dispatch(new InsertThenFail())).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> bus.dispatch(new InsertThenFailCommand())).isInstanceOf(IllegalStateException.class);
 
         Integer rows = jdbc.queryForObject("select count(*) from shedlock where name = 'bus-test'", Integer.class);
         assertThat(rows).isZero();
@@ -131,11 +131,11 @@ class CommandBusTests {
 
     @Test
     void rejectsInvalidCommandsBeforeCallingTheHandler() {
-        assertThatThrownBy(() -> bus.dispatch(new Echo(" "))).isInstanceOf(ConstraintViolationException.class);
+        assertThatThrownBy(() -> bus.dispatch(new EchoCommand(" "))).isInstanceOf(ConstraintViolationException.class);
     }
 
     @Test
     void askRunsQueriesInAReadOnlyTransaction() {
-        assertThat(bus.ask(new ReadOnlyProbe())).isTrue();
+        assertThat(bus.ask(new ReadOnlyProbeQuery())).isTrue();
     }
 }

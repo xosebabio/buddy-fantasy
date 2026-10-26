@@ -2,7 +2,7 @@ package com.buddyfantasy.league.adapter.in.web;
 
 import java.util.List;
 
-import com.buddyfantasy.league.application.usecases.listmyleagues.ListMyLeagues;
+import com.buddyfantasy.league.application.usecases.listmyleagues.ListMyLeaguesQuery;
 import com.buddyfantasy.league.application.usecases.listmyleagues.MyLeagueView;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
@@ -21,6 +21,6 @@ class MyLeaguesController {
 
     @GetMapping("/api/me/leagues")
     List<MyLeagueView> myLeagues(@AuthenticationPrincipal CurrentUser user) {
-        return bus.ask(new ListMyLeagues(user.userId()));
+        return bus.ask(new ListMyLeaguesQuery(user.userId()));
     }
 }

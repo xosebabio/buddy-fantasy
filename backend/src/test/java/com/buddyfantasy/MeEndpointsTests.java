@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUser;
+import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
 import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
@@ -59,7 +59,7 @@ class MeEndpointsTests {
     }
 
     private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUser(sub, sub + "@x.com", "Name " + sub, "http://pic/" + sub)).value();
+        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, "http://pic/" + sub)).value();
     }
 
     private static CurrentUser principal(UUID userId) {

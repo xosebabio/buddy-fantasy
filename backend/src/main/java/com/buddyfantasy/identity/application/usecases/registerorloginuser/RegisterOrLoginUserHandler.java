@@ -10,7 +10,7 @@ import com.buddyfantasy.shared.application.CommandHandler;
 import org.springframework.stereotype.Component;
 
 @Component
-class RegisterOrLoginUserHandler implements CommandHandler<RegisterOrLoginUser, UserId> {
+class RegisterOrLoginUserHandler implements CommandHandler<RegisterOrLoginUserCommand, UserId> {
 
     private final UserRepository users;
     private final Clock clock;
@@ -21,7 +21,7 @@ class RegisterOrLoginUserHandler implements CommandHandler<RegisterOrLoginUser, 
     }
 
     @Override
-    public UserId handle(RegisterOrLoginUser command) {
+    public UserId handle(RegisterOrLoginUserCommand command) {
         Instant now = clock.instant();
         User user = users.findByGoogleSub(command.googleSub()).orElse(null);
         if (user == null) {

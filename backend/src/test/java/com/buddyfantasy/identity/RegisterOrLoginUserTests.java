@@ -6,7 +6,7 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUser;
+import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
 import com.buddyfantasy.identity.domain.UserId;
 import com.buddyfantasy.shared.application.CommandBus;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,8 +71,8 @@ class RegisterOrLoginUserTests {
         clock.now = T0;
     }
 
-    private static RegisterOrLoginUser login(String sub, String email) {
-        return new RegisterOrLoginUser(sub, email, "Name " + sub, "http://avatar/" + sub);
+    private static RegisterOrLoginUserCommand login(String sub, String email) {
+        return new RegisterOrLoginUserCommand(sub, email, "Name " + sub, "http://avatar/" + sub);
     }
 
     private Instant column(UserId id, String column) {
@@ -94,7 +94,7 @@ class RegisterOrLoginUserTests {
         UserId first = bus.dispatch(login("sub-1", "a@x.com"));
         clock.now = T0.plusSeconds(3600);
 
-        UserId second = bus.dispatch(new RegisterOrLoginUser("sub-1", "other@x.com", "Other name", null));
+        UserId second = bus.dispatch(new RegisterOrLoginUserCommand("sub-1", "other@x.com", "Other name", null));
 
         assertThat(second).isEqualTo(first);
         assertThat(jdbc.queryForObject("select count(*) from identity_user", Integer.class)).isEqualTo(1);
