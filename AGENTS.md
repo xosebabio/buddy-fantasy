@@ -51,10 +51,12 @@ Monolito modular con Spring Modulith. Un paquete de primer nivel por módulo:
 | `scoring` | Puntos por jugador/manager y clasificaciones | RF-30–33 |
 | `market` | Valor de mercado de los jugadores | RF-34–36 |
 | `notification` | Web Push, email, preferencias y centro de avisos | RF-37–40 |
+| `datadefinition` | Definiciones de datos compartidas sin lógica (`Position`, `ScoringAction`) | — |
 
 Reglas:
 
 - Los módulos **no acceden a los internals de otros módulos**. Solo usan su API pública (paquete raíz del módulo) o **eventos de dominio** (`MatchClosed`, `RatingWindowClosed`, `MatchdayScored`…).
+- `datadefinition` es un módulo hoja y su paquete raíz es API pública: solo enums y records sin lógica, usados por dos o más módulos. No depende de ningún otro módulo; todos pueden depender de él. Si un tipo necesita comportamiento, va a `shared` o a su módulo dueño.
 - Mantén un test de verificación de Modulith (`ApplicationModules.of(...).verify()`) que falle si se rompen las dependencias.
 - Cada módulo es dueño de sus tablas. Nada de joins SQL entre tablas de módulos distintos.
 - Diseña pensando en que un módulo pueda extraerse a servicio algún día: eventos en lugar de llamadas síncronas cuando el flujo lo permita.
