@@ -27,3 +27,6 @@ docs/
 
 # Maven
 target/
+
+# IDE
+.idea/
