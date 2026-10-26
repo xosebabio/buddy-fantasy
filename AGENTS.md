@@ -104,7 +104,7 @@ Los roles son **por liga**, no globales. Un usuario puede ser administrador de u
 - N jugadores (por defecto 7), formación por posiciones opcional.
 - Editable hasta X horas antes del partido (por defecto 2 h); máximo Y cambios por jornada (por defecto 2).
 - Si el manager no la toca, se arrastra la de la jornada anterior.
-- Presupuesto máximo opcional (desactivado por defecto).
+- Presupuesto máximo de la alineación según el valor vigente de los jugadores (activado por defecto, 100 M; el admin puede desactivarlo).
 
 ### Valor de mercado
 
@@ -170,7 +170,6 @@ No las resuelvas por tu cuenta. Si una tarea depende de alguna, pregunta o deja 
 
 - Formato de valoración por defecto y conversión de la media a puntos (redondeo incluido).
 - ¿Dos managers pueden alinear al mismo jugador? (Probablemente sí, al haber un solo equipo.)
-- Papel del valor del jugador: informativo, presupuesto o mercado de fichajes.
 - ¿Mínimo de votos para que cuente la valoración?
 
 ## Roadmap

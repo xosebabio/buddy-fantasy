@@ -90,7 +90,7 @@ Reglas confirmadas: el gol de penalti vale +3 sea cual sea la posición, y la do
 - RF-26: Un manager puede hacer como máximo Y cambios por jornada (configurable).
 - RF-27: La alineación bloqueada es la que puntúa en esa jornada.
 - RF-28: Si un manager no toca su alineación, se mantiene la de la jornada anterior.
-- RF-29: Opcional: presupuesto máximo de la alineación según el valor de los jugadores.
+- RF-29: Presupuesto máximo (activado por defecto, desactivable por liga) de la alineación según el valor de los jugadores.
 
 ### Puntuación y clasificación
 
@@ -126,7 +126,7 @@ Todos se guardan por liga y los edita el administrador. Los valores por defecto 
 | Cambios máximos por jornada | 2 |  |
 | Tamaño de la alineación | 7 | Típico en fútbol 7; ajustar al formato de la peña |
 | Formación por posiciones | Desactivada |  |
-| Presupuesto de la alineación | Desactivado |  |
+| Presupuesto de la alineación | Activado (100 M) | El admin puede desactivarlo |
 | Puntos por acción | Tabla editable | Precargada con la tabla estilo Biwenger; gol según posición |
 | Factor k del valor de mercado | 0,05 |  |
 | Tope de variación del valor por jornada | ±10 % |  |
@@ -220,7 +220,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 - [ ] ¿El administrador puede ser también manager en su propia liga? Tiene acceso a datos antes que nadie.
 - [ ] ¿Picas o nota decimal por defecto? ¿Cómo se convierte la media en puntos? Propuesta: cada pica vale 1 punto, como en Biwenger.
 - [ ] ¿Pueden dos managers alinear al mismo jugador? En una liga de un solo equipo parece imprescindible que sí.
-- [ ] ¿Qué papel tiene el valor del jugador: solo informativo, límite de presupuesto o mercado de fichajes?
+- [x] Papel del valor del jugador: límite de presupuesto de la alineación (RF-29), con el valor vigente al guardar y al bloquear (decidido).
 - [ ] ¿Valoraciones con un mínimo de votos para contar, para evitar que una sola nota decida?
 - [x] Login: solo Google (decidido en v1).
 

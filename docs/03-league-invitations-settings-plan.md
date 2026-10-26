@@ -17,13 +17,13 @@ Fuera de alcance: frontend, notificación de invitación (RF-38, Fase 3), jugado
 
 ## 2. Modelo de datos (migraciones nuevas, no se edita V1–V4)
 
-**Unidad monetaria:** todos los valores de jugador y el presupuesto se expresan en **millones** (`NUMERIC(10,2)`), y el valor mínimo por defecto es 1 M. El presupuesto por defecto es 100 M; se mantiene el flag `lineup_budget_enabled` (desactivado por defecto, como en `requirements.md`/RF-29) para que el límite solo se aplique si el admin lo activa.
+**Unidad monetaria:** todos los valores de jugador y el presupuesto se expresan en **millones** (`NUMERIC(10,2)`), y el valor mínimo por defecto es 1 M. El presupuesto por defecto es 100 M; se mantiene el flag `lineup_budget_enabled` (activado por defecto desde el plan 04) para que el admin pueda desactivar el límite.
 
 **V5__league_settings.sql**
 
 - `league_settings` (1:1 con `league_league`, PK = `league_id`), una columna por parámetro, con `CHECK` de rango:
   - `rating_window_hours` (24), `rating_format` (`SPADES` | `DECIMAL`, def. `SPADES`), `rating_points_per_unit` (1), `default_rating` (NULL = sin nota por defecto)
-  - `lineup_lock_hours` (2), `lineup_max_changes` (2), `lineup_size` (7), `lineup_formation_enabled` (false), `lineup_budget_enabled` (false), `lineup_budget` (100, en millones)
+  - `lineup_lock_hours` (2), `lineup_max_changes` (2), `lineup_size` (7), `lineup_formation_enabled` (false), `lineup_budget_enabled` (true, ver `04-squad-players-plan.md`), `lineup_budget` (100, en millones)
   - `market_k` (0.05), `market_max_change_pct` (10), `market_min_value` (1, en millones)
 - `league_scoring_rule` (`league_id`, `action`, `position`, `points`, PK compuesta): 9 acciones × 4 posiciones = 36 filas sembradas por liga. `action` y `position` con `CHECK` sobre los enums.
 - Alternativa descartada: JSONB para la tabla de puntos; se prefieren filas para validar con constraints y consultar sin parsear.
@@ -132,7 +132,7 @@ Cada tarea es un commit `feat(league): … (RF-0x)` en Conventional Commits.
 
 Cerradas:
 
-1. **Valor mínimo de mercado:** 1 M; valores y presupuesto en millones; presupuesto por defecto 100 M (activable con `lineup_budget_enabled`).
+1. **Valor mínimo de mercado:** 1 M; valores y presupuesto en millones; presupuesto por defecto 100 M (desactivable con `lineup_budget_enabled`).
 2. **`Position` y similares:** nuevo módulo `datadefinition` para definiciones sin lógica; lo que tenga lógica va a `shared`.
 
 3. **Editar parámetros tras puntuar:** permitido y **no se recalcula** automáticamente; el recálculo es una acción explícita del admin (RF-16, Fase 4).
