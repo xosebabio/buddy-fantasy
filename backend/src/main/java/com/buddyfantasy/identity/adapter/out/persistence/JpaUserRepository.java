@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.buddyfantasy.identity.application.port.out.UserRepository;
 import com.buddyfantasy.identity.domain.User;
+import com.buddyfantasy.identity.domain.UserId;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -13,6 +14,11 @@ class JpaUserRepository implements UserRepository {
 
     JpaUserRepository(SpringDataUserRepository jpa) {
         this.jpa = jpa;
+    }
+
+    @Override
+    public Optional<User> findById(UserId id) {
+        return jpa.findById(id.value()).map(UserMapper::toDomain);
     }
 
     @Override
