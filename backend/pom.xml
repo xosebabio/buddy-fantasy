@@ -23,6 +23,7 @@
     <shedlock.version>6.9.2</shedlock.version>
     <testcontainers.version>1.21.4</testcontainers.version>
     <archunit.version>1.4.1</archunit.version>
+    <awssdk.version>2.55.6</awssdk.version>
   </properties>
 
   <dependencyManagement>
@@ -31,6 +32,13 @@
         <groupId>org.springframework.modulith</groupId>
         <artifactId>spring-modulith-bom</artifactId>
         <version>${spring-modulith.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>bom</artifactId>
+        <version>${awssdk.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -114,6 +122,18 @@
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
       <version>${springdoc.version}</version>
+    </dependency>
+
+    <!-- Player photos (squad): S3 + presigned URLs. Sync client only, so the Netty client is not needed. -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>netty-nio-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

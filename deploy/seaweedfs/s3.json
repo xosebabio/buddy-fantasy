@@ -1,0 +1,18 @@
+{
+  "identities": [
+    {
+      "name": "buddyfantasy",
+      "credentials": [
+        {
+          "accessKey": "buddyfantasy",
+          "secretKey": "buddyfantasy-local"
+        }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    {
+      "name": "anonymous",
+      "actions": ["Read"]
+    }
+  ]
+}

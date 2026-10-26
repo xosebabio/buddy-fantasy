@@ -30,6 +30,13 @@ spring:
         schema-initialization:
           enabled: false # la tabla event_publication la crea Flyway (V1__baseline.sql)
 
+squad:
+  photos:
+    s3:
+      bucket: ${S3_BUCKET:buddy-fantasy-photos}
+      region: ${S3_REGION:eu-west-1}
+      endpoint: ${S3_ENDPOINT:} # solo en local (SeaweedFS: http://localhost:8333); vacío en AWS
+
 server:
   forward-headers-strategy: framework # redirect_uri correcto detrás de Caddy
   servlet:

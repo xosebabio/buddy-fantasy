@@ -16,5 +16,43 @@ services:
       timeout: 3s
       retries: 10
 
+  # S3-compatible storage for player photos (S3 + CloudFront in production). Local-only credentials and
+  # anonymous read in seaweedfs/s3.json, so photos are served straight from http://localhost:8333/<bucket>.
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=64
+    ports:
+      - "8333:8333"
+    volumes:
+      - seaweedfs-data:/data
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8333/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # One-off job: creates the photo bucket and its CORS rules for the Angular dev server.
+  seaweedfs-init:
+    image: amazon/aws-cli:2.27.0
+    depends_on:
+      seaweedfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: buddyfantasy
+      AWS_SECRET_ACCESS_KEY: buddyfantasy-local
+      AWS_DEFAULT_REGION: eu-west-1
+      BUCKET: ${S3_BUCKET:-buddy-fantasy-photos}
+    volumes:
+      - ./seaweedfs/cors.json:/init/cors.json:ro
+    entrypoint: ["sh", "-c"]
+    command:
+      - >
+        aws --endpoint-url http://seaweedfs:8333 s3api head-bucket --bucket "$$BUCKET" 2>/dev/null
+        || aws --endpoint-url http://seaweedfs:8333 s3api create-bucket --bucket "$$BUCKET";
+        aws --endpoint-url http://seaweedfs:8333 s3api put-bucket-cors --bucket "$$BUCKET"
+        --cors-configuration file:///init/cors.json
+
 volumes:
   postgres-data:
+  seaweedfs-data:

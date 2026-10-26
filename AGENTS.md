@@ -153,14 +153,15 @@ Usa Testcontainers con PostgreSQL para tests de integración, no H2.
 Desde la raíz del repo:
 
 ```bash
-docker compose -f deploy/docker-compose.dev.yml up -d   # Postgres local (puerto 5432)
+docker compose -f deploy/docker-compose.dev.yml up -d   # Postgres (5432) y SeaweedFS para fotos (S3 en 8333; crea el bucket)
 cd backend
 mvn -B verify                                           # build + todos los tests (requiere Docker para Testcontainers)
 mvn test -Dtest='ModularityTests,HexagonalArchitectureTests'   # solo verificación de arquitectura (sin Docker)
-mvn spring-boot:run                                     # arranque local contra el Postgres de arriba
+S3_ENDPOINT=http://localhost:8333 AWS_ACCESS_KEY_ID=buddyfantasy AWS_SECRET_ACCESS_KEY=buddyfantasy-local \
+  mvn spring-boot:run                                   # arranque local contra los servicios de arriba
 ```
 
-Configuración por variables de entorno (valores por defecto en `backend/src/main/resources/application.yml`): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SWAGGER_UI_ENABLED`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (cliente OAuth de Google Cloud; sin ellas el login no funciona, pero la app arranca) y `SESSION_COOKIE_SECURE` (`true` en producción, `false` en local). Redirect URI en local: `http://localhost:8080/login/oauth2/code/google`.
+Configuración por variables de entorno (valores por defecto en `backend/src/main/resources/application.yml`): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SWAGGER_UI_ENABLED`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (cliente OAuth de Google Cloud; sin ellas el login no funciona, pero la app arranca), `SESSION_COOKIE_SECURE` (`true` en producción, `false` en local), y para las fotos `S3_BUCKET`, `S3_REGION` y `S3_ENDPOINT` (solo en local; vacía en AWS). Las credenciales de S3 salen de la cadena por defecto del AWS SDK (rol IAM en producción, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` en local; las de SeaweedFS están en `deploy/seaweedfs/s3.json` y solo valen en local). Redirect URI en local: `http://localhost:8080/login/oauth2/code/google`.
 Docker 29+ exige Testcontainers ≥ 1.21.4 (ya fijado en `pom.xml`). Los handlers de comandos deben ser clases, no lambdas (el bus resuelve el tipo de comando por genéricos).
 Lint: pendiente.
 

@@ -65,7 +65,7 @@ Cada handler recibe `userId` y `leagueId` y llama a `LeagueAccess` primero. El `
 
 ### Puerto y adaptador
 
-- Puerto `PlayerPhotoStorage` en `application/port/out` (`createUpload`, `exists`, `delete`); adaptador `S3PlayerPhotoStorage` en `adapter/out/storage` con el AWS SDK v2 (`software.amazon.awssdk:s3`, presignado con `S3Presigner`). El dominio y la capa de aplicación no conocen S3.
+- Puerto `PlayerPhotoStorage` en `application/port/out` (`createUpload`, `find` —metadatos de tipo y tamaño vía `HeadObject`—, `delete`); adaptador `S3PlayerPhotoStorage` en `adapter/out/storage` con el AWS SDK v2 (`software.amazon.awssdk:s3`, presignado con `S3Presigner`). El dominio y la capa de aplicación no conocen S3.
 - El resultado de `createUpload` es un record con `uploadUrl`, `headers` obligatorios, `key` y `expiresAt`.
 - Reloj inyectable (`Clock`) para `expiresAt`; nunca `Instant.now()` directo.
 
@@ -74,8 +74,8 @@ Cada handler recibe `userId` y `leagueId` y llama a `LeagueAccess` primero. El `
 | Variable | Uso |
 | --- | --- |
 | `S3_BUCKET`, `S3_REGION` | Bucket de fotos. |
-| `S3_ENDPOINT` | Opcional; si está definida (MinIO en local) se usa con *path-style*. |
-| `PHOTOS_BASE_URL` | Origen CloudFront en producción; en local, `http://localhost:9000/<bucket>`. |
+| `S3_ENDPOINT` | Opcional; si está definida (SeaweedFS en local, `http://localhost:8333`) se usa con *path-style*. |
+| `PHOTOS_BASE_URL` | Origen CloudFront en producción; en local, `http://localhost:8333/<bucket>`. |
 | Credenciales | Cadena por defecto del SDK (rol IAM en producción, variables `AWS_*` en local). Nada en disco. |
 
 ### Infraestructura AWS (manual por ahora; IaC queda para Fase 0/5)
@@ -88,7 +88,7 @@ Cada handler recibe `userId` y `leagueId` y llama a `LeagueAccess` primero. El `
 
 ### Desarrollo local
 
-`deploy/docker-compose.dev.yml` añade **MinIO** (puertos 9000/9001) con un job de inicialización que crea el bucket con lectura anónima y CORS para `http://localhost:4200`. Documentar las variables en `AGENTS.md` (*Comandos*).
+`deploy/docker-compose.dev.yml` añade **SeaweedFS** (`chrislusf/seaweedfs`, S3 en el puerto 8333) con credenciales solo locales y lectura anónima (`deploy/seaweedfs/s3.json`), y un job de inicialización (`amazon/aws-cli`) que crea el bucket y su CORS para `http://localhost:4200` (`deploy/seaweedfs/cors.json`). Se descartó MinIO porque sus imágenes oficiales ya no se pueden descargar de Docker Hub ni de quay.io. Documentar las variables en `AGENTS.md` (*Comandos*).
 
 ## 6. API HTTP (`squad/adapter/in/web`)
 
@@ -112,7 +112,7 @@ Todos exigen sesión (`401`) y CSRF en los que mutan. Autorización en el handle
 | Alta/edición | Admin crea y edita; manager → `403`; admin de otra liga → `403`; posición o valor inválidos → `400`; dorsal repetido entre activos → `409`; dorsal reutilizable tras la baja. |
 | Baja lógica | El jugador deja de salir en la lista de un manager y sigue saliendo en la del admin con `includeRetired`; la ficha sigue accesible. |
 | Aislamiento entre ligas | Acceder/editar un jugador de la liga A usando la ruta de la B → `404`. |
-| Fotos (adaptador) | Contra **MinIO con Testcontainers**: la URL prefirmada permite subir exactamente lo declarado y rechaza otro tipo/tamaño; `exists` y `delete` funcionan. El resto de tests usan un fake de `PlayerPhotoStorage`. |
+| Fotos (adaptador) | Contra **SeaweedFS con Testcontainers** (verifica firmas SigV4 como S3): la URL prefirmada permite subir exactamente lo declarado y rechaza otro tipo/tamaño o sin `Cache-Control`; `find` y `delete` funcionan. El resto de tests usan un fake de `PlayerPhotoStorage`. |
 | Fotos (casos de uso) | `photoKey` de otra liga o inexistente → `400`; cambiar la foto borra la anterior; tipo o tamaño no permitido → `400`. |
 | Eventos | `PlayerRegistered` y `PlayerRetired` se publican una vez por operación. |
 | Seguridad | Todos los endpoints sin sesión → `401`; mutaciones sin CSRF → `403` (ampliar `ApiSecurityTests`). |
@@ -125,7 +125,7 @@ Todos exigen sesión (`401`) y CSRF en los que mutan. Autorización en el handle
 | 1 | Migración V7, `Player` y eventos, con tests unitarios; actualizar `allowedDependencies` de `squad` | Dominio verificado |
 | 2 | Persistencia, `RegisterPlayerCommand`, `GetPlayerQuery`, `ListPlayersQuery` y sus endpoints (sin foto) | RF-09/RF-10/RF-11 base |
 | 3 | `UpdatePlayerCommand` y `RetirePlayerCommand` (con dorsal y baja lógica) | CRUD completo |
-| 4 | MinIO en el compose dev, puerto `PlayerPhotoStorage` y adaptador S3 con su test | Subida y borrado de objetos |
+| 4 | SeaweedFS en el compose dev, puerto `PlayerPhotoStorage` y adaptador S3 con su test | Subida y borrado de objetos |
 | 5 | `CreatePhotoUploadCommand`, validación de `photoKey` y `photoUrl` en las respuestas | Fotos de punta a punta |
 | 6 | Tests de seguridad y arquitectura; `AGENTS.md` (estado, comandos, variables) y marcar el ítem en `requirements.md` | Ítem de Fase 1 cerrado |
 
@@ -147,7 +147,7 @@ Cerradas:
 
 1. **Baja:** borrado lógico, sin reactivación en v1.
 2. **Foto:** S3 privado + CloudFront con OAC y caché; subida directa por URL prefirmada; claves UUID inmutables; acceso público a CloudFront (sin cookies firmadas).
-3. **Dev local:** MinIO en el compose dev y Testcontainers.
+3. **Dev local:** SeaweedFS en el compose dev y Testcontainers (sustituye a MinIO, cuyas imágenes oficiales ya no están disponibles).
 4. **Dorsal:** opcional y único entre activos.
 5. **Ficha:** base ahora; historial de puntos y gráfica de valor con `scoring` y `market`.
 
