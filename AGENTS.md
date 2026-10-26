@@ -125,6 +125,8 @@ Todos los parámetros configurables (ventana, formato, bloqueo, cambios, tamaño
 
 ## Convenciones
 
+- Los mappers (entidad ↔ dominio, DTO ↔ dominio) son clases con `@lombok.experimental.UtilityClass`, con métodos sin `static` explícito. Una interfaz o clase por archivo, también los repositorios Spring Data.
+- Casos de uso (commands y queries) en `application/usecases/<caso>/`, un paquete por caso de uso con su `Command`/`Query` y su `Handler`.
 - Código, identificadores, nombres de tablas y commits en **inglés**; textos de la interfaz en **español**.
 - Migraciones Flyway versionadas (`V<n>__descripcion.sql`). **Nunca edites una migración ya aplicada**: crea una nueva.
 - Referencia los requisitos por su código (`RF-xx`, `RNF-xx`) en commits, PRs y comentarios cuando aplique.
