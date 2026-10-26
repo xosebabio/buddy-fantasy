@@ -13,7 +13,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado actual
 
-El repositorio está vacío (solo `README.md`). Estamos en la **Fase 0 · Fundamentos** del roadmap. Cuando se añadan comandos de build/test reales, actualiza la sección *Comandos* de este archivo.
+Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `backend/` (módulos vacíos, kernel `shared`, `CommandBus`, tests de arquitectura) según `docs/backend-structure-plan.md`. Aún no hay `frontend/`. Mantén actualizada la sección *Comandos* de este archivo.
 
 ## Stack
 
@@ -145,7 +145,19 @@ Usa Testcontainers con PostgreSQL para tests de integración, no H2.
 
 ## Comandos
 
-_Pendiente de definir cuando exista el esqueleto del proyecto._ Añade aquí build, test, lint y arranque local (p. ej. `docker compose up`).
+Desde la raíz del repo:
+
+```bash
+docker compose -f deploy/docker-compose.dev.yml up -d   # Postgres local (puerto 5432)
+cd backend
+mvn -B verify                                           # build + todos los tests (requiere Docker para Testcontainers)
+mvn test -Dtest='ModularityTests,HexagonalArchitectureTests'   # solo verificación de arquitectura (sin Docker)
+mvn spring-boot:run                                     # arranque local contra el Postgres de arriba
+```
+
+Configuración por variables de entorno: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SWAGGER_UI_ENABLED` (valores por defecto en `backend/src/main/resources/application.yml`).
+Docker 29+ exige Testcontainers ≥ 1.21.4 (ya fijado en `pom.xml`). Los handlers de comandos deben ser clases, no lambdas (el bus resuelve el tipo de comando por genéricos).
+Lint: pendiente.
 
 ## Decisiones abiertas
 
