@@ -2,6 +2,8 @@ package com.buddyfantasy.league.domain;
 
 import java.math.BigDecimal;
 
+import com.buddyfantasy.shared.domain.DomainValidationException;
+
 /**
  * Per-league parameters (RF-07). Money values are in millions. {@code defaultRating} is nullable
  * (no default rating for players without votes).
@@ -51,7 +53,7 @@ public record LeagueSettings(
 
     private static void require(boolean condition, String message) {
         if (!condition) {
-            throw new IllegalArgumentException(message);
+            throw new DomainValidationException(message);
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.buddyfantasy.shared.infrastructure;
 
+import com.buddyfantasy.shared.domain.DomainValidationException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -18,5 +19,10 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                 .toList());
         return problem;
+    }
+
+    @ExceptionHandler(DomainValidationException.class)
+    ProblemDetail handleDomainValidation(DomainValidationException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 }
