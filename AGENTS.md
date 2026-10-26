@@ -13,7 +13,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado actual
 
-Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `backend/` (kernel `shared`, `CommandBus`, tests de arquitectura) según `docs/01-backend-structure-plan.md`, con el modelo base y el login de Google (`identity`, `league`) según `docs/02-base-model-and-google-login-plan.md`. Aún no hay `frontend/`. Mantén actualizada la sección *Comandos* de este archivo.
+Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `backend/` (kernel `shared`, `CommandBus`, tests de arquitectura) según `docs/01-backend-structure-plan.md`, con el modelo base y el login de Google (`identity`, `league`) según `docs/02-base-model-and-google-login-plan.md`. Primer ítem de la **Fase 1** hecho (`docs/03-league-invitations-settings-plan.md`): crear liga, invitación por enlace, parámetros y tabla de puntos por liga, y gestión de miembros (RF-05–08), con el módulo `datadefinition`. Aún no hay `frontend/`. Mantén actualizada la sección *Comandos* de este archivo.
 
 ## Stack
 
