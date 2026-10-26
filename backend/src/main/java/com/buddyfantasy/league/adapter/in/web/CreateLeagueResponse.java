@@ -2,5 +2,5 @@ package com.buddyfantasy.league.adapter.in.web;
 
 import java.util.UUID;
 
-record CreateLeagueResponse(UUID id) {
+record CreateLeagueResponse(UUID id, String invitationToken) {
 }

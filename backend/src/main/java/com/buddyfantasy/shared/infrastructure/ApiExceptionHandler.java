@@ -1,6 +1,7 @@
 package com.buddyfantasy.shared.infrastructure;
 
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -24,5 +25,11 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DomainValidationException.class)
     ProblemDetail handleDomainValidation(DomainValidationException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    /** Generic body on purpose: callers must not learn why the resource is missing. */
+    @ExceptionHandler(NotFoundException.class)
+    ProblemDetail handleNotFound(NotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Not found");
     }
 }

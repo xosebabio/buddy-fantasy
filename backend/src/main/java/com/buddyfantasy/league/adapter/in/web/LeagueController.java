@@ -4,11 +4,11 @@ import java.net.URI;
 import java.util.UUID;
 
 import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
+import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
 import com.buddyfantasy.league.application.usecases.getleague.GetLeagueQuery;
 import com.buddyfantasy.league.application.usecases.getleague.LeagueView;
 import com.buddyfantasy.league.application.usecases.getleaguesettings.GetLeagueSettingsQuery;
 import com.buddyfantasy.league.application.usecases.updateleaguesettings.UpdateLeagueSettingsCommand;
-import com.buddyfantasy.league.domain.LeagueId;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import jakarta.validation.Valid;
@@ -33,9 +33,9 @@ class LeagueController {
     @PostMapping("/api/leagues")
     ResponseEntity<CreateLeagueResponse> create(@AuthenticationPrincipal CurrentUser user,
                                                 @Valid @RequestBody CreateLeagueRequest request) {
-        LeagueId id = bus.dispatch(new CreateLeagueCommand(user.userId(), request.name()));
-        return ResponseEntity.created(URI.create("/api/leagues/" + id.value()))
-                .body(new CreateLeagueResponse(id.value()));
+        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(user.userId(), request.name()));
+        return ResponseEntity.created(URI.create("/api/leagues/" + created.id().value()))
+                .body(new CreateLeagueResponse(created.id().value(), created.invitationToken()));
     }
 
     @GetMapping("/api/leagues/{id}")

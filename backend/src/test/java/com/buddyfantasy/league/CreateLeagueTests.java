@@ -64,6 +64,7 @@ class CreateLeagueTests {
     @BeforeEach
     void reset() {
         jdbc.update("delete from league_membership");
+        jdbc.update("delete from league_invitation");
         jdbc.update("delete from league_scoring_rule");
         jdbc.update("delete from league_settings");
         jdbc.update("delete from league_league");
@@ -91,11 +92,13 @@ class CreateLeagueTests {
                         .contentType(APPLICATION_JSON).content("{\"name\":\"  Peña del domingo \"}"))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
-                .andExpect(jsonPath("$.id").exists());
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.invitationToken").isNotEmpty());
 
         assertThat(count("league_league")).isEqualTo(1);
         assertThat(count("league_settings")).isEqualTo(1);
         assertThat(count("league_scoring_rule")).isEqualTo(36);
+        assertThat(count("league_invitation")).isEqualTo(1);
         assertThat(jdbc.queryForObject("select name from league_league", String.class)).isEqualTo("Peña del domingo");
 
         mvc.perform(get("/api/me/leagues").with(oidcLogin().oidcUser(principal(ana))))

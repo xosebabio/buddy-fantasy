@@ -41,6 +41,7 @@ class LeagueAccessTests {
     @BeforeEach
     void reset() {
         jdbc.update("delete from league_membership");
+        jdbc.update("delete from league_invitation");
         jdbc.update("delete from league_scoring_rule");
         jdbc.update("delete from league_settings");
         jdbc.update("delete from league_league");

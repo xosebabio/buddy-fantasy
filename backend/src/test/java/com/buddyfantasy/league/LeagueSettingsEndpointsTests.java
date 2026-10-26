@@ -66,6 +66,7 @@ class LeagueSettingsEndpointsTests {
     @BeforeEach
     void setUp() {
         jdbc.update("delete from league_membership");
+        jdbc.update("delete from league_invitation");
         jdbc.update("delete from league_scoring_rule");
         jdbc.update("delete from league_settings");
         jdbc.update("delete from league_league");
@@ -73,7 +74,7 @@ class LeagueSettingsEndpointsTests {
         admin = register("admin");
         manager = register("manager");
         outsider = register("outsider");
-        league = bus.dispatch(new CreateLeagueCommand(admin, "Peña")).value();
+        league = bus.dispatch(new CreateLeagueCommand(admin, "Peña")).id().value();
         memberships.save(Membership.join(new LeagueId(league), manager,
                 LeagueRole.MANAGER, NOW));
     }
@@ -153,7 +154,7 @@ class LeagueSettingsEndpointsTests {
 
     @Test
     void managerAndAdminOfAnotherLeagueCannotEdit() throws Exception {
-        UUID otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).value();
+        UUID otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
         ObjectNode body = currentSettings().put("lineupSize", 11);
 
         update(manager, body).andExpect(status().isForbidden());
