@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.buddyfantasy.league.LeagueRole;
+import com.buddyfantasy.shared.domain.ConflictException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -22,5 +23,12 @@ public class Membership {
 
     public static Membership join(LeagueId leagueId, UUID userId, LeagueRole role, Instant now) {
         return new Membership(UUID.randomUUID(), leagueId, userId, role, now);
+    }
+
+    /** The league always keeps its admin: they can neither be removed nor leave (changing admin is out of v1). */
+    public void requireRemovable() {
+        if (role == LeagueRole.ADMIN) {
+            throw new ConflictException("The league admin cannot be removed or leave the league");
+        }
     }
 }

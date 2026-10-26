@@ -1,5 +1,6 @@
 package com.buddyfantasy.league.adapter.out.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,5 +25,15 @@ class JpaMembershipRepository implements MembershipRepository {
     @Override
     public void save(Membership membership) {
         jpa.save(MembershipMapper.toEntity(membership));
+    }
+
+    @Override
+    public List<Membership> findByLeagueId(UUID leagueId) {
+        return jpa.findByLeagueIdOrderByJoinedAtAsc(leagueId).stream().map(MembershipMapper::toDomain).toList();
+    }
+
+    @Override
+    public void delete(Membership membership) {
+        jpa.deleteById(membership.id());
     }
 }

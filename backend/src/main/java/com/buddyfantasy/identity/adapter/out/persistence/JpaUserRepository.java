@@ -1,5 +1,7 @@
 package com.buddyfantasy.identity.adapter.out.persistence;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import com.buddyfantasy.identity.application.port.out.UserRepository;
@@ -19,6 +21,11 @@ class JpaUserRepository implements UserRepository {
     @Override
     public Optional<User> findById(UserId id) {
         return jpa.findById(id.value()).map(UserMapper::toDomain);
+    }
+
+    @Override
+    public List<User> findAllById(Collection<UserId> ids) {
+        return jpa.findAllById(ids.stream().map(UserId::value).toList()).stream().map(UserMapper::toDomain).toList();
     }
 
     @Override

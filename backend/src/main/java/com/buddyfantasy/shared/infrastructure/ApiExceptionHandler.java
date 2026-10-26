@@ -1,5 +1,6 @@
 package com.buddyfantasy.shared.infrastructure;
 
+import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
 import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -31,5 +32,10 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     ProblemDetail handleNotFound(NotFoundException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Not found");
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    ProblemDetail handleConflict(ConflictException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 }
