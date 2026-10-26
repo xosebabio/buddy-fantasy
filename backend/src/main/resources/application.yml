@@ -13,6 +13,9 @@ spring:
       hibernate.jdbc.time_zone: UTC
   flyway:
     enabled: true
+  session:
+    jdbc:
+      initialize-schema: never # las tablas las crea Flyway (V4__identity_spring_session.sql)
   modulith:
     events:
       jdbc:
