@@ -176,8 +176,8 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 ### Fase 0 · Fundamentos
 
 - [ ] Repositorio, Spring Boot 3 con Spring Modulith y estructura de módulos
-- [ ] PostgreSQL con Flyway y modelo base (usuario, liga, membership)
-- [ ] Spring Security con login de Google y roles por liga
+- [x] PostgreSQL con Flyway y modelo base (usuario, liga, membership)
+- [x] Spring Security con login de Google y roles por liga
 - [ ] Dockerfile, Docker Compose (app + Postgres + Caddy) y pipeline de CI
 - [ ] VPS con dominio, HTTPS y backup diario de la base de datos
 
@@ -222,5 +222,5 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 - [ ] ¿Pueden dos managers alinear al mismo jugador? En una liga de un solo equipo parece imprescindible que sí.
 - [ ] ¿Qué papel tiene el valor del jugador: solo informativo, límite de presupuesto o mercado de fichajes?
 - [ ] ¿Valoraciones con un mínimo de votos para contar, para evitar que una sola nota decida?
-- [ ] Login: solo Google, o también email + contraseña.
+- [x] Login: solo Google (decidido en v1).
 
