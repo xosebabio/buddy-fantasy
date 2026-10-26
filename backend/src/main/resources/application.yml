@@ -16,11 +16,28 @@ spring:
   session:
     jdbc:
       initialize-schema: never # las tablas las crea Flyway (V4__identity_spring_session.sql)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:unset}
+            client-secret: ${GOOGLE_CLIENT_SECRET:unset}
+            scope: openid,profile,email
   modulith:
     events:
       jdbc:
         schema-initialization:
           enabled: false # la tabla event_publication la crea Flyway (V1__baseline.sql)
+
+server:
+  forward-headers-strategy: framework # redirect_uri correcto detrás de Caddy
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
 
 management:
   endpoints:
