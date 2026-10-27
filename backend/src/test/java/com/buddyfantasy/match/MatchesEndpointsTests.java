@@ -114,7 +114,10 @@ class MatchesEndpointsTests {
         return schedule(league, admin, matchday, "Rival " + matchday, kickoffAt);
     }
 
-    /** Draft result and one line written directly, as the sheet use case comes in a later step. */
+    /**
+     * Draft result and one line written directly, so these tests do not depend on the squad; the sheet use case is
+     * covered by {@link MatchSheetEndpointsTests}.
+     */
     private void recordDraftSheet(UUID matchId, int goalsFor, int goalsAgainst, UUID playerId, int goals) {
         jdbc.update("update match_match set goals_for = ?, goals_against = ? where id = ?",
                 goalsFor, goalsAgainst, matchId);

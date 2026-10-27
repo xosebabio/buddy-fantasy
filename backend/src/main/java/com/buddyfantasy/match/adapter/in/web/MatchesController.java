@@ -4,14 +4,17 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.getmatch.GetMatchQuery;
 import com.buddyfantasy.match.application.usecases.getmatch.MatchView;
 import com.buddyfantasy.match.application.usecases.listmatches.ListMatchesQuery;
 import com.buddyfantasy.match.application.usecases.listmatches.MatchSummaryView;
+import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
 import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.MatchId;
+import com.buddyfantasy.match.domain.MatchSheetWarning;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import jakarta.validation.Valid;
@@ -66,5 +69,21 @@ class MatchesController {
                                 @PathVariable UUID matchId) {
         bus.dispatch(new DeleteMatchCommand(user.userId(), id, matchId));
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/api/leagues/{id}/matches/{matchId}/sheet")
+    MatchSheetResponse recordSheet(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
+                                   @PathVariable UUID matchId, @Valid @RequestBody MatchSheetRequest request) {
+        MatchResultRequest result = request.result();
+        List<MatchSheetWarning> warnings = bus.dispatch(new RecordMatchSheetCommand(user.userId(), id, matchId,
+                result == null ? null : result.goalsFor(), result == null ? null : result.goalsAgainst(),
+                request.performances().stream().map(PlayerPerformanceRequest::toLine).toList()));
+        return new MatchSheetResponse(warnings);
+    }
+
+    @PostMapping("/api/leagues/{id}/matches/{matchId}/close")
+    MatchView close(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @PathVariable UUID matchId) {
+        bus.dispatch(new CloseMatchCommand(user.userId(), id, matchId));
+        return get(user, id, matchId);
     }
 }
