@@ -159,13 +159,15 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 
 **G10 · Flujo completo de una jornada.** Un único test solo por HTTP y con el job a mano: el admin crea la liga, el manager se une por enlace, plantilla, calendario, ambos guardan alineación, el reloj avanza, el job bloquea, acta, cierre, alineaciones bloqueadas visibles para todos, corrección y auditoría. Es la base que ampliarán `rating`, `scoring` y `market` (§4.3).
 
+> Hecho así: `MatchdayFlowTests` (mismo contexto que `LineupEndpointsTests`), con `MutableClock` y el job a mano. Los usuarios se registran con `TestFixtures`: el login de Google lo cubre ya `SessionTests` (G6); todo lo demás va por HTTP. El admin crea la liga, Ana ve la invitación y se une, y la liga aparece en sus ligas y en los miembros; el admin da de alta 8 jugadores y 2 partidos; los dos guardan alineación y nadie ve las alineaciones hasta el bloqueo (`409`); el job bloquea a su hora y los dos ven las dos alineaciones; Ana pasa a preparar la jornada 2 con 2 cambios; el admin graba el acta (Ana no ve el borrador) y cierra; el partido cerrado se ve con su resultado y estadísticas; una corrección cambia el resultado, la auditoría la registra con el antes y el después (solo para el admin) y las alineaciones bloqueadas no cambian. No destapó fallos. El acta y el cierre van en instantes distintos: la auditoría se ordena por `occurred_at` y, con el reloj quieto, el orden de un empate no está definido (en la realidad no coinciden).
+
 **G11 · Migraciones inmutables.** Test que compara el checksum de cada migración aplicada (`flyway_schema_history`) con un fichero versionado `backend/src/test/resources/db/migration-checksums.txt`. Editar `V1`–`V11` hace fallar el test; una migración nueva se añade al fichero en el mismo cambio.
 
 > Hecho así: `MigrationChecksumsTests` lee `version`, `checksum` y `script` de las migraciones aplicadas en `flyway_schema_history` y las compara con `db/migration-checksums.txt` (una línea `<versión> <checksum> <script>` por migración). Distingue tres fallos: migración editada o renombrada (muestra el checksum antiguo y el nuevo), migración borrada y migración nueva sin registrar (el mensaje imprime las líneas que hay que añadir). Los checksums de partida salen de V1–V11 tal como están, que en git no se han tocado desde su commit original. Comprobado añadiendo un comentario a `V8`: falla el test.
 
 ### 4.3 Contratos de integración de los módulos futuros
 
-Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `ApiSecurityTests` y del escaneo de G1, limpieza automática (T2), checksums (G11), conteo de sentencias en sus pantallas (G9) y ampliación del flujo de G10.
+Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `ApiSecurityTests` y del escaneo de G1, limpieza automática (T2), checksums (G11), conteo de sentencias en sus pantallas (G9, `ScreenStatementsTests`) y ampliación del flujo de G10 (`MatchdayFlowTests`).
 
 **`scoring` (RF-15, RF-16, RF-30–33)**
 - `MatchClosed` + `LineupsLocked`, en cualquier orden → puntos de cada jugador y de cada manager, y `MatchdayScored` una vez.
@@ -211,7 +213,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada |✅ |
 | 11 | G8: zona horaria | RNF-05 cubierto | ✅ |
 | 12 | G9: sentencias por pantalla con `datasource-proxy` | RNF-09 vigilado | ✅ |
-| 13 | G10: flujo completo de una jornada | Prueba de humo de la Fase 1 | |
+| 13 | G10: flujo completo de una jornada | Prueba de humo de la Fase 1 | ✅ |
 | 14 | `AGENTS.md`: sección *Tests* (ayudas compartidas, `DatabaseCleaner`, `TestFixtures`, checksums, `SqlStatements`), *Comandos* (informe de JaCoCo, `EVENTS_RESUBMIT_JOB_CRON` y la suite en `Europe/Madrid`) e *Invariantes técnicas* (listeners idempotentes) | Convenciones documentadas | |
 
 Cada paso deja la suite en verde. Si un test nuevo destapa un fallo (por ejemplo un `500` en G2 o G3, o una conversión de zona en G8), el arreglo va en el mismo paso.
