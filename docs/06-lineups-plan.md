@@ -86,7 +86,7 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
 
 | Caso | Tipo | Permiso | Notas |
 | --- | --- | --- | --- |
-| `SaveLineupCommand` | command | `requireMember` | Reemplaza la alineación de trabajo (RF-24, RF-26, RF-29). Carga el calendario (`MatchApi`), los parámetros, las versiones del manager y los jugadores (`PlayerCatalog`), valida con `LineupRules` y guarda una versión con `saved_at = now`. Si es igual a la actual, no hace nada. Devuelve el mismo estado que `GetMyLineupQuery`. |
+| `SaveLineupCommand` | command | `requireMember` | Reemplaza la alineación de trabajo (RF-24, RF-26, RF-29). Carga el calendario (`MatchApi`), los parámetros, las versiones del manager y los jugadores (`PlayerCatalog`), valida con `LineupRules` y guarda una versión con `saved_at = now`. Si es igual a la actual y sigue siendo válida, no crea versión (una igual que ya no cabe en el presupuesto da `400`, aunque siga vigente). Devuelve el mismo estado que `GetMyLineupQuery`. |
 | `GetMyLineupQuery` | query | `requireMember` | Alineación de trabajo, partido objetivo (jornada, `kickoffAt`, `lockAt`), cambios usados y restantes, valor total y presupuesto, y avisos: `OVER_BUDGET` (con los valores vigentes ya no cabe), `RETIRED_PLAYERS` y `SIZE_MISMATCH`. Sin alineación devuelve una vacía. |
 | `GetLockedLineupsQuery` | query | `requireMember` | Alineaciones bloqueadas de un partido, con el valor de cada jugador al bloquear y `overBudget`. Partido sin bloquear → `409`; partido de otra liga → `404`. |
 
@@ -132,7 +132,7 @@ Todos exigen sesión (`401`) y CSRF en el `PUT`. Autorización en el handler (`4
 | 1 | V9, mínimos por posición y tope de `lockHours` en `LeagueSettings` (dominio, persistencia y API de parámetros); `LeagueSettingsProvider` y `memberIds` | Parámetros de formación configurables | ✅ |
 | 2 | `MatchApi` en `match` e `initialValue` en `SquadPlayer`, con sus tests | Calendario y valores consultables | ✅ |
 | 3 | V11, `LineupTimeline`, `LineupRules`, `MatchLineupLock` y eventos, con tests unitarios; `allowedDependencies` de `lineup` | Dominio verificado | ✅ |
-| 4 | Persistencia, `PlayerCatalog`, `SaveLineupCommand`, `GetMyLineupQuery` y sus endpoints | RF-24, RF-26, RF-28, RF-29 | |
+| 4 | Persistencia, `PlayerCatalog`, `SaveLineupCommand`, `GetMyLineupQuery` y sus endpoints | RF-24, RF-26, RF-28, RF-29 | ✅ |
 | 5 | `LineupLocker`, `LockDueLineupsJob` y listeners de `MatchClosed`, `MatchRescheduled` y `MatchDeleted` | RF-25, RF-27 y `LineupsLocked` | |
 | 6 | `GetLockedLineupsQuery` y visibilidad | Alineaciones bloqueadas visibles | |
 | 7 | Tests de seguridad y arquitectura; `AGENTS.md` (estado) y marcar el ítem en `requirements.md` | Ítem de Fase 1 cerrado | |

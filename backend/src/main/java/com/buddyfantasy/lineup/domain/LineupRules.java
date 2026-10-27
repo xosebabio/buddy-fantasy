@@ -35,12 +35,7 @@ public final class LineupRules {
      * {@link DomainValidationException} with a {@link LineupError} code.
      */
     public void requireValid(List<UUID> playerIds, Map<UUID, LineupPlayer> players) {
-        if (new HashSet<>(playerIds).size() != playerIds.size()) {
-            throw invalid(LineupError.DUPLICATE_PLAYER, "A player appears more than once in the lineup");
-        }
-        if (playerIds.size() != settings.size()) {
-            throw invalid(LineupError.SIZE, "A lineup has exactly " + settings.size() + " players");
-        }
+        requireShape(playerIds);
         for (UUID playerId : playerIds) {
             LineupPlayer player = players.get(playerId);
             if (player == null) {
@@ -55,6 +50,19 @@ public final class LineupRules {
         }
         if (isOverBudget(totalValue(playerIds, players))) {
             throw invalid(LineupError.OVER_BUDGET, "The lineup exceeds the budget of " + settings.budget());
+        }
+    }
+
+    /**
+     * Exactly {@code size} different players, checked without the players' data: a malformed lineup is rejected
+     * before looking them up. Part of {@link #requireValid}.
+     */
+    public void requireShape(List<UUID> playerIds) {
+        if (new HashSet<>(playerIds).size() != playerIds.size()) {
+            throw invalid(LineupError.DUPLICATE_PLAYER, "A player appears more than once in the lineup");
+        }
+        if (playerIds.size() != settings.size()) {
+            throw invalid(LineupError.SIZE, "A lineup has exactly " + settings.size() + " players");
         }
     }
 
