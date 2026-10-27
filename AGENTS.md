@@ -135,6 +135,10 @@ Todos los parámetros configurables (ventana, formato, bloqueo, cambios, tamaño
 - Migraciones Flyway versionadas (`V<n>__descripcion.sql`). **Nunca edites una migración ya aplicada**: crea una nueva.
 - Referencia los requisitos por su código (`RF-xx`, `RNF-xx`) en commits, PRs y comentarios cuando aplique.
 - Commits en formato Conventional Commits (`feat:`, `fix:`, `chore:`…).
+- **Marca el progreso al terminar cada tarea**, en el mismo cambio que la completa:
+  - En el plan (`docs/NN-*-plan.md`), marca la fila de la tarea en la tabla *Orden de ejecución* con ✅ en una columna `Hecho` (añádela si no existe).
+  - En `docs/requirements.md`, cambia `- [ ]` por `- [x]` en el ítem del roadmap cuando esté completo del todo (si queda una parte para otra fase o módulo, indícalo en el propio ítem), y marca las *Decisiones abiertas* que se vayan cerrando.
+  - Actualiza *Estado actual* de este archivo cuando cierres un ítem del roadmap.
 - **No hagas commits (ni push) salvo que el usuario lo pida explícitamente.** Deja los cambios en el árbol de trabajo para que los revise.
 - Frontend mobile first: diseña primero para pantalla de móvil.
 
