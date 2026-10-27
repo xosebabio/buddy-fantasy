@@ -1,13 +1,17 @@
 package com.buddyfantasy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -51,8 +55,22 @@ public final class ApiEndpoints {
     }
 
     public static List<Endpoint> scan(RequestMappingHandlerMapping mappings) {
+        return scan(mappings, handler -> true);
+    }
+
+    /** The endpoints whose handler reads a {@code @RequestBody}. */
+    public static List<Endpoint> withBody(RequestMappingHandlerMapping mappings) {
+        return scan(mappings, handler -> Arrays.stream(handler.getMethodParameters())
+                .anyMatch(parameter -> parameter.hasParameterAnnotation(RequestBody.class)));
+    }
+
+    private static List<Endpoint> scan(RequestMappingHandlerMapping mappings, Predicate<HandlerMethod> filter) {
         List<Endpoint> endpoints = new ArrayList<>();
-        for (RequestMappingInfo info : mappings.getHandlerMethods().keySet()) {
+        for (Map.Entry<RequestMappingInfo, HandlerMethod> mapping : mappings.getHandlerMethods().entrySet()) {
+            if (!filter.test(mapping.getValue())) {
+                continue;
+            }
+            RequestMappingInfo info = mapping.getKey();
             for (String pattern : info.getPathPatternsCondition().getPatternValues()) {
                 if (!pattern.startsWith("/api/")) {
                     continue;

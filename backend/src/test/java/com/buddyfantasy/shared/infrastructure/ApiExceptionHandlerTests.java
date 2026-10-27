@@ -5,6 +5,7 @@ import com.buddyfantasy.shared.domain.DomainValidationException;
 import com.buddyfantasy.shared.domain.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.access.AccessDeniedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,5 +36,22 @@ class ApiExceptionHandlerTests {
 
         assertThat(invalid.getProperties()).isNull();
         assertThat(conflict.getProperties()).isNull();
+    }
+
+    @Test
+    void accessDeniedIs403WithoutItsReason() {
+        ProblemDetail forbidden = handler.handleAccessDenied(new AccessDeniedException("Not an admin of league 42"));
+
+        assertThat(forbidden.getStatus()).isEqualTo(403);
+        assertThat(forbidden.getDetail()).isEqualTo("Forbidden");
+    }
+
+    @Test
+    void unexpectedErrorsAre500WithoutTheirMessage() {
+        ProblemDetail error = handler.handleUnexpected(new IllegalStateException("secret internals"));
+
+        assertThat(error.getStatus()).isEqualTo(500);
+        assertThat(error.getDetail()).isEqualTo("Internal error");
+        assertThat(error.getProperties()).isNull();
     }
 }

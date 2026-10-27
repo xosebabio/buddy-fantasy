@@ -54,7 +54,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RNF-09 Rendimiento | 🟡 | Conteo de sentencias en `MatchApiTests`, `SquadApiTests`, `LeagueSettingsProviderTests`, `MatchRepositoryTests` | No en los **endpoints de las pantallas principales** (partidos, jugadores, miembros, alineaciones bloqueadas) ni con volumen realista. Hibernate no cuenta las consultas de `JdbcTemplate`. |
 | RNF-10 RGPD | — | | Borrado de cuenta no implementado. |
 | RNF-11 Calidad | 🟡 | Plazos de alineación ✅ | Puntuación, valoración y mercado llegan con sus módulos. Sin medida de cobertura. |
-| Contrato de errores | 🟡 | `ApiExceptionHandlerTests` (unitario), un caso de UUID mal formado en el cuerpo de la alineación | Sin tests de JSON mal formado, cuerpo vacío, UUID inválido en la ruta, enum desconocido ni de que un error inesperado dé `500` sin filtrar detalles. |
+| Contrato de errores | ✅ | `ApiErrorsTests`, `ApiExceptionHandlerTests` | |
 | Migraciones | 🟡 | `*MigrationTests` | Nada impide **editar una migración ya aplicada** (la BD de test nace vacía, así que Flyway nunca ve el checksum antiguo). |
 
 ## 3. Problemas de la infraestructura de tests
@@ -103,6 +103,8 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 > Hecho así: `LeagueAuthorizationTests`, con los 27 endpoints de liga en `rules()` (`LeagueRole.MANAGER` = cualquier miembro, `ADMIN` = solo el admin) sobre una liga con un partido, un jugador y un miembro reales para las variables de la ruta. Además comprueba que las peticiones rechazadas no escriben nada: un `md5` de las filas de cada tabla antes y después (salvo `spring_session*` y el historial de Flyway). El escaneo de endpoints es ahora `ApiEndpoints`, compartido con `ApiSecurityTests`. Comprobado quitando a mano `requireAdmin` de `DeleteMatchHandler` y `requireMember` de `GetMyLineupHandler`: fallan los dos tests.
 
 **G2 · Contrato de errores HTTP.** Con un endpoint representativo de cada tipo: JSON mal formado, cuerpo vacío, UUID inválido en la ruta, enum desconocido (`"position": "PORTERO"`), método no soportado → `400`/`405` con `ProblemDetail`; un fallo inesperado (un handler de test que lanza `IllegalStateException`) → `500` sin mensaje interno ni traza. Además, un escaneo: ningún endpoint que muta responde `500` a un cuerpo vacío.
+
+> Hecho así: `ApiErrorsTests`, con un controlador de test que lanza `IllegalStateException` (solo en su contexto). `ApiExceptionHandler` añade un manejador genérico de `Exception` → `500` con `detail: "Internal error"` (el error completo solo va al log) y, para que este no se lo trague, mapea `AccessDeniedException` de los handlers a `403` con `ProblemDetail`. Los dos escaneos recorren los endpoints de la app: todo endpoint con `@RequestBody` (`ApiEndpoints.withBody`) responde `400` con `ProblemDetail` a un cuerpo ausente, vacío, `{}`, `null`, `[]` o ilegible, y ningún endpoint que muta responde `5xx` sin cuerpo. No destapó ningún `500`: el `CommandBus` valida también los comandos. Comprobado quitando el manejador genérico y forzando un `NullPointerException` en `PlayersController`: fallan los tests.
 
 **G3 · Concurrencia con Postgres real.** Con `ExecutorService` y `CountDownLatch`, comprobando el estado final (nunca tiempos), repetido varias veces:
 - Dos altas simultáneas con el mismo dorsal → una `201` y una `409`, nunca `500`.
@@ -181,7 +183,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 2 | T4: `TestFixtures` y migración de los `setUp` | Tests más cortos, misma cobertura | ✅ |
 | 3 | T5: JaCoCo en `verify` y artefacto en CI | Informe de cobertura de partida | ✅ |
 | 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | ✅ |
-| 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | |
+| 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | ✅ |
 | 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | |
 | 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual | |
 | 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | |
