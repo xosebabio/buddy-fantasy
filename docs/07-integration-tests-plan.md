@@ -30,10 +30,10 @@ Lo que ya está bien resuelto y conviene mantener:
 
 | Requisito | Estado | Tests | Hueco |
 | --- | --- | --- | --- |
-| RF-01 Login con Google | 🟡 | `GoogleOidcUserServiceTests`, `RegisterOrLoginUserTests`, `SecurityTests` | No se comprueba que el login cree la sesión en `spring_session` (Spring Session JDBC). |
+| RF-01 Login con Google | ✅ | `GoogleOidcUserServiceTests`, `RegisterOrLoginUserTests`, `SecurityTests`, `SessionTests` | |
 | RF-02 Perfil | 🟡 | `MeEndpointsTests` (lectura) | Edición de nombre y avatar no implementada. |
 | RF-03 Recuperar contraseña | — | | No aplica: solo Google. |
-| RF-04 Cierre de sesión | 🟡 | `SecurityTests` (`204`) | No se comprueba que la sesión JDBC se borre ni la cookie se invalide. Gestión de sesiones activas no implementada. |
+| RF-04 Cierre de sesión | 🟡 | `SecurityTests`, `SessionTests` | Gestión de sesiones activas no implementada. |
 | RF-05 Crear liga | ✅ | `CreateLeagueTests` (incluido rollback) | |
 | RF-06 Invitación | ✅ | `InvitationEndpointsTests`, `ConcurrencyTests` | |
 | RF-07 Parámetros | 🟡 | `LeagueSettingsEndpointsTests`, `LeagueDefaultsTests`, `ConfiguredLimitsTests` | No se prueba el efecto de cambiar parámetros **con la temporada en marcha** sobre alineaciones y bloqueo. |
@@ -47,7 +47,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RF-17 – RF-23 Valoraciones | — | | Ver §4.3. |
 | RF-24 – RF-29 Alineaciones | ✅ | `LineupEndpointsTests`, `LineupLockTests`, `ConcurrencyTests` | Parámetros cambiados a mitad. Un miembro expulsado que vuelve recupera su alineación anterior; debe empezar de cero (D2, G7). |
 | RF-30 – RF-40 | — | | Ver §4.3. |
-| RNF-02 Autorización y CSRF | 🟡 | `ApiSecurityTests` (sesión y CSRF), un test por endpoint para rol y liga | La autorización **por rol y liga** se prueba a mano endpoint a endpoint: un endpoint nuevo puede olvidarla sin que falle nada. Cookies de sesión (`HttpOnly`, `SameSite`, `Secure`) sin test. Endpoints fuera de `/api` (`/actuator/modulith`, `/v3/api-docs`) sin test. |
+| RNF-02 Autorización y CSRF | ✅ | `ApiSecurityTests` (sesión y CSRF), `LeagueAuthorizationTests` (rol y liga), `SecurityTests` (fuera de `/api`), `SessionTests` (cookies) | |
 | RNF-03 Plazos y jobs | ✅ | `LineupLockTests`, `SchedulerLockTests`, `SchedulingArchitectureTests`, `EventResubmissionTests` | |
 | RNF-04 Auditoría | ✅ | `MatchAuditEndpointsTests`, `MatchMigrationTests` | |
 | RNF-05 Zona horaria | ❌ | | Ningún test con la JVM o Postgres fuera de UTC, ni de que el JSON devuelva instantes con `Z`. |
@@ -131,6 +131,8 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 **G6 · Sesión y cookies (RF-01, RF-04).** Con el servidor real (`webEnvironment = RANDOM_PORT`): un login simulado crea la fila en `spring_session`; `POST /api/logout` la borra y caduca la cookie `SESSION`; la cookie es `HttpOnly` y `SameSite=Lax`, y `Secure` con `SESSION_COOKIE_SECURE=true`. Fuera de `/api`: solo `/actuator/health` (y sus *probes*) es público; `/actuator/modulith`, `/actuator/info` y `/v3/api-docs` exigen sesión; Swagger UI está apagado por defecto.
 
 > La parte fuera de `/api` ya está hecha (paso 4), en `SecurityTests`: recorre los endpoints de actuator expuestos (`PathMappedEndpoints`), así que uno expuesto más adelante queda cubierto sin listarlo. Sin sesión responden `401` a una petición que no es de navegador (un navegador va al login de Google).
+>
+> El resto, hecho así: `SessionTests`, con el servidor real y un cliente HTTP del JDK que guarda sus cookies y no sigue redirecciones. El login es el de verdad salvo la pantalla de Google: `FakeGoogle` (un `HttpServer` del JDK) hace de endpoints de token, JWKS y *userinfo*, y firma el ID token con una clave de test y el `nonce` de la petición de autorización, así que pasan el filtro de OAuth2, la validación del ID token y `GoogleOidcUserService`. Comprueba que empezar el login guarda la sesión en `spring_session`; que al volver con el código se registra el usuario, la sesión queda autenticada con su `principal_name` y `/api/me` responde; que una cuenta sin email verificado no entra; que `POST /api/logout` (con el token CSRF como lo manda la SPA) borra la fila, caduca la cookie (`Max-Age=0`) y la cookie antigua ya no abre sesión; y que `SESSION` es `HttpOnly` y `SameSite=Lax`, y `Secure` solo con `SESSION_COOKIE_SECURE=true` (en un `@Nested` con su propio contexto, que apunta al puerto de su servidor: la instancia exterior se inyecta con el contexto exterior). No destapó fallos. Ojo: surefire resume un `@Nested` en el `.txt` de su clase con el recuento solo de la clase exterior, pero el build sí falla si falla un test anidado.
 
 **G7 · Parámetros cambiados con la temporada en marcha (RF-07 × RF-24–29).**
 - Subir `lockHours` adelanta el bloqueo de un partido aún no bloqueado; bajarlo lo retrasa.
@@ -197,7 +199,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | ✅ |
 | 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual |✅ |
 | 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | ✅ |
-| 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | |
+| 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | ✅ |
 | 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada | |
 | 11 | G8: zona horaria | RNF-05 cubierto | |
 | 12 | G9: sentencias por pantalla con `datasource-proxy` | RNF-09 vigilado | |
