@@ -55,7 +55,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RNF-10 RGPD | — | | Borrado de cuenta no implementado. |
 | RNF-11 Calidad | 🟡 | Plazos de alineación ✅ | Puntuación, valoración y mercado llegan con sus módulos. Sin medida de cobertura. |
 | Contrato de errores | ✅ | `ApiErrorsTests`, `ApiExceptionHandlerTests` | |
-| Migraciones | 🟡 | `*MigrationTests` | Nada impide **editar una migración ya aplicada** (la BD de test nace vacía, así que Flyway nunca ve el checksum antiguo). |
+| Migraciones | ✅ | `*MigrationTests`, `MigrationChecksumsTests` | |
 
 ## 3. Problemas de la infraestructura de tests
 
@@ -143,6 +143,8 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 
 **G11 · Migraciones inmutables.** Test que compara el checksum de cada migración aplicada (`flyway_schema_history`) con un fichero versionado `backend/src/test/resources/db/migration-checksums.txt`. Editar `V1`–`V11` hace fallar el test; una migración nueva se añade al fichero en el mismo cambio.
 
+> Hecho así: `MigrationChecksumsTests` lee `version`, `checksum` y `script` de las migraciones aplicadas en `flyway_schema_history` y las compara con `db/migration-checksums.txt` (una línea `<versión> <checksum> <script>` por migración). Distingue tres fallos: migración editada o renombrada (muestra el checksum antiguo y el nuevo), migración borrada y migración nueva sin registrar (el mensaje imprime las líneas que hay que añadir). Los checksums de partida salen de V1–V11 tal como están, que en git no se han tocado desde su commit original. Comprobado añadiendo un comentario a `V8`: falla el test.
+
 ### 4.3 Contratos de integración de los módulos futuros
 
 Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `ApiSecurityTests` y del escaneo de G1, limpieza automática (T2), checksums (G11), conteo de sentencias en sus pantallas (G9) y ampliación del flujo de G10.
@@ -184,7 +186,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 3 | T5: JaCoCo en `verify` y artefacto en CI | Informe de cobertura de partida | ✅ |
 | 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | ✅ |
 | 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | ✅ |
-| 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | |
+| 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | ✅ |
 | 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual | |
 | 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | |
 | 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | |

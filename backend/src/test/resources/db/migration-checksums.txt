@@ -1,0 +1,15 @@
+# Flyway checksums of the applied migrations, checked by MigrationChecksumsTests (docs/07-integration-tests-plan.md, G11).
+# Never change a line: if a checksum no longer matches, revert the migration and add a new one.
+# Add the line of each new migration in the same change; the failing test prints it.
+# <version> <checksum> <script>
+1 1605867940 V1__baseline.sql
+2 -743334986 V2__identity_create_tables.sql
+3 -1637069291 V3__league_create_tables.sql
+4 -313379772 V4__identity_spring_session.sql
+5 79446663 V5__league_settings.sql
+6 -84433663 V6__league_invitation.sql
+7 -1562321 V7__squad_create_tables.sql
+8 -1501905743 V8__match_create_tables.sql
+9 1456841440 V9__league_lineup_formation.sql
+10 1959152757 V10__relax_business_limit_checks.sql
+11 2067199921 V11__lineup_create_tables.sql
