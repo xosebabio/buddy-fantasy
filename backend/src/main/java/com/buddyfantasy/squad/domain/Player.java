@@ -24,7 +24,6 @@ import lombok.experimental.Accessors;
 public class Player extends AggregateRoot {
 
     public static final int MAX_NAME_LENGTH = 100;
-    public static final int MAX_PHOTO_KEY_LENGTH = 200;
     /** Matches {@code NUMERIC(10, 2)}: values in millions with up to 8 integer digits and 2 decimals. */
     private static final int VALUE_SCALE = 2;
     private static final int VALUE_INTEGER_DIGITS = 8;
@@ -35,31 +34,45 @@ public class Player extends AggregateRoot {
     private ShirtNumber shirtNumber;
     private Position position;
     private BigDecimal initialValue;
-    private String photoKey;
+    private PlayerPhotoKey photoKey;
     private final Instant createdAt;
     private Instant retiredAt;
 
+    /** Players start without a photo: it is uploaded and confirmed as a separate step ({@link #changePhoto}). */
     public static Player register(UUID leagueId, String name, ShirtNumber shirtNumber, Position position,
-            BigDecimal initialValue, String photoKey, Instant now) {
-        validate(name, position, initialValue, photoKey);
+            BigDecimal initialValue, Instant now) {
+        validate(name, position, initialValue);
         Player player = new Player(PlayerId.generate(), leagueId, name, shirtNumber, position, initialValue,
-                photoKey, now, null);
+                null, now, null);
         player.register(new PlayerRegistered(leagueId, player.id.value(), initialValue, now));
         return player;
     }
 
-    /** Replaces every editable field. A retired player can no longer be edited. */
-    public void update(String newName, ShirtNumber newShirtNumber, Position newPosition, BigDecimal newInitialValue,
-            String newPhotoKey) {
-        if (isRetired()) {
-            throw new ConflictException("A retired player cannot be edited");
-        }
-        validate(newName, newPosition, newInitialValue, newPhotoKey);
+    /** Replaces every editable field except the photo. A retired player can no longer be edited. */
+    public void update(String newName, ShirtNumber newShirtNumber, Position newPosition, BigDecimal newInitialValue) {
+        requireActive();
+        validate(newName, newPosition, newInitialValue);
         name = newName;
         shirtNumber = newShirtNumber;
         position = newPosition;
         initialValue = newInitialValue;
+    }
+
+    /** Sets an uploaded photo; the key must have been generated for this player. Idempotent with the same key. */
+    public void changePhoto(PlayerPhotoKey newPhotoKey) {
+        requireActive();
+        if (newPhotoKey == null || !newPhotoKey.belongsTo(leagueId, id)) {
+            throw new DomainValidationException("Photo key does not belong to this player");
+        }
         photoKey = newPhotoKey;
+    }
+
+    /**
+     * Idempotent. Unlike other edits it is allowed on retired players, so the photo of someone who left the team
+     * can still be taken down.
+     */
+    public void removePhoto() {
+        photoKey = null;
     }
 
     /** Idempotent: retiring twice keeps the first instant and publishes a single event. */
@@ -74,7 +87,13 @@ public class Player extends AggregateRoot {
         return retiredAt != null;
     }
 
-    private static void validate(String name, Position position, BigDecimal initialValue, String photoKey) {
+    private void requireActive() {
+        if (isRetired()) {
+            throw new ConflictException("A retired player cannot be edited");
+        }
+    }
+
+    private static void validate(String name, Position position, BigDecimal initialValue) {
         if (name == null || name.isBlank() || name.length() > MAX_NAME_LENGTH) {
             throw new DomainValidationException("Player name must be 1-" + MAX_NAME_LENGTH + " characters");
         }
@@ -88,9 +107,6 @@ public class Player extends AggregateRoot {
         if (normalized.scale() > VALUE_SCALE || normalized.precision() - normalized.scale() > VALUE_INTEGER_DIGITS) {
             throw new DomainValidationException("Player initial value must have at most "
                     + VALUE_INTEGER_DIGITS + " integer digits and " + VALUE_SCALE + " decimals");
-        }
-        if (photoKey != null && (photoKey.isBlank() || photoKey.length() > MAX_PHOTO_KEY_LENGTH)) {
-            throw new DomainValidationException("Photo key must be 1-" + MAX_PHOTO_KEY_LENGTH + " characters");
         }
     }
 }

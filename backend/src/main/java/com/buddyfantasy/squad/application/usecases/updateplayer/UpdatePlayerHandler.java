@@ -36,8 +36,7 @@ class UpdatePlayerHandler implements CommandHandler<UpdatePlayerCommand, Void> {
                 && players.existsActiveShirtNumber(command.leagueId(), shirtNumber)) {
             throw new ConflictException("Shirt number already taken by an active player");
         }
-        player.update(command.name().strip(), shirtNumber, command.position(), command.initialValue(),
-                player.photoKey());
+        player.update(command.name().strip(), shirtNumber, command.position(), command.initialValue());
         players.save(player);
         return null;
     }

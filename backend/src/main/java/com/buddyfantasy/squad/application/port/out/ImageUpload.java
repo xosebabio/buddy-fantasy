@@ -4,5 +4,5 @@ import java.time.Instant;
 import java.util.Map;
 
 /** A presigned upload. The client must send a PUT to {@code uploadUrl} with exactly these {@code headers}. */
-public record PhotoUpload(String uploadUrl, Map<String, String> headers, String key, Instant expiresAt) {
+public record ImageUpload(String uploadUrl, Map<String, String> headers, String key, Instant expiresAt) {
 }

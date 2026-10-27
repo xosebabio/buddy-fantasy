@@ -10,8 +10,8 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
 
-import com.buddyfantasy.squad.application.port.out.PhotoUpload;
-import com.buddyfantasy.squad.application.port.out.StoredPhoto;
+import com.buddyfantasy.squad.application.port.out.ImageUpload;
+import com.buddyfantasy.squad.application.port.out.StoredImage;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 /** Runs the real adapter and its Spring config against SeaweedFS, which verifies SigV4 signatures like S3. */
 @Testcontainers
-class S3PlayerPhotoStorageTests {
+class S3ImageStorageTests {
 
     static final String ACCESS_KEY = "test-access";
     static final String SECRET_KEY = "test-secret";
@@ -51,19 +51,19 @@ class S3PlayerPhotoStorageTests {
 
     static S3Client s3;
     static S3Presigner presigner;
-    static S3PlayerPhotoStorage storage;
+    static S3ImageStorage storage;
 
     @BeforeAll
     static void setUp() {
         // the config uses the SDK's default credentials chain, which reads these system properties
         System.setProperty("aws.accessKeyId", ACCESS_KEY);
         System.setProperty("aws.secretAccessKey", SECRET_KEY);
-        S3PhotoProperties properties = new S3PhotoProperties(BUCKET, "eu-west-1",
+        S3StorageProperties properties = new S3StorageProperties(BUCKET, "eu-west-1",
                 "http://" + SEAWEEDFS.getHost() + ":" + SEAWEEDFS.getMappedPort(8333));
         S3StorageConfig config = new S3StorageConfig();
-        s3 = config.photoS3Client(properties);
-        presigner = config.photoS3Presigner(properties);
-        storage = new S3PlayerPhotoStorage(s3, presigner, BUCKET, Clock.fixed(NOW, ZoneOffset.UTC));
+        s3 = config.imageS3Client(properties);
+        presigner = config.imageS3Presigner(properties);
+        storage = new S3ImageStorage(s3, presigner, BUCKET, Clock.fixed(NOW, ZoneOffset.UTC));
         s3.createBucket(request -> request.bucket(BUCKET));
     }
 
@@ -79,7 +79,7 @@ class S3PlayerPhotoStorageTests {
         return "leagues/" + UUID.randomUUID() + "/players/" + UUID.randomUUID() + ".jpg";
     }
 
-    static int put(PhotoUpload upload, Map<String, String> headers, byte[] body) throws Exception {
+    static int put(ImageUpload upload, Map<String, String> headers, byte[] body) throws Exception {
         HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(upload.uploadUrl()))
                 .PUT(HttpRequest.BodyPublishers.ofByteArray(body));
         headers.forEach(request::header);
@@ -89,29 +89,29 @@ class S3PlayerPhotoStorageTests {
     @Test
     void presignedUploadAcceptsExactlyTheDeclaredFile() throws Exception {
         String key = newKey();
-        PhotoUpload upload = storage.createUpload(key, "image/jpeg", 1024);
+        ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
 
         assertThat(upload.key()).isEqualTo(key);
-        assertThat(upload.expiresAt()).isEqualTo(NOW.plus(S3PlayerPhotoStorage.UPLOAD_TTL));
+        assertThat(upload.expiresAt()).isEqualTo(NOW.plus(S3ImageStorage.UPLOAD_TTL));
         // the SDK lowercases signed header names; HTTP header names are case-insensitive
         assertThat(upload.headers()).containsOnly(
                 Map.entry("content-type", "image/jpeg"),
-                Map.entry("cache-control", S3PlayerPhotoStorage.CACHE_CONTROL));
+                Map.entry("cache-control", S3ImageStorage.CACHE_CONTROL));
 
         assertThat(put(upload, upload.headers(), new byte[1024])).isEqualTo(200);
 
-        assertThat(storage.find(key)).contains(new StoredPhoto("image/jpeg", 1024));
+        assertThat(storage.find(key)).contains(new StoredImage("image/jpeg", 1024));
         assertThat(s3.headObject(request -> request.bucket(BUCKET).key(key)).cacheControl())
-                .isEqualTo(S3PlayerPhotoStorage.CACHE_CONTROL);
+                .isEqualTo(S3ImageStorage.CACHE_CONTROL);
     }
 
     @Test
     void presignedUploadRejectsAnotherContentType() throws Exception {
         String key = newKey();
-        PhotoUpload upload = storage.createUpload(key, "image/jpeg", 1024);
+        ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
 
         int status = put(upload, Map.of("Content-Type", "image/png",
-                "Cache-Control", S3PlayerPhotoStorage.CACHE_CONTROL), new byte[1024]);
+                "Cache-Control", S3ImageStorage.CACHE_CONTROL), new byte[1024]);
 
         assertThat(status).isEqualTo(403);
         assertThat(storage.find(key)).isEmpty();
@@ -120,7 +120,7 @@ class S3PlayerPhotoStorageTests {
     @Test
     void presignedUploadRejectsAnotherSize() throws Exception {
         String key = newKey();
-        PhotoUpload upload = storage.createUpload(key, "image/jpeg", 1024);
+        ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
 
         assertThat(put(upload, upload.headers(), new byte[2048])).isEqualTo(403);
         assertThat(put(upload, upload.headers(), new byte[10])).isEqualTo(403);
@@ -130,7 +130,7 @@ class S3PlayerPhotoStorageTests {
     @Test
     void presignedUploadRejectsAMissingCacheControl() throws Exception {
         String key = newKey();
-        PhotoUpload upload = storage.createUpload(key, "image/jpeg", 1024);
+        ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
 
         assertThat(put(upload, Map.of("Content-Type", "image/jpeg"), new byte[1024])).isEqualTo(403);
         assertThat(storage.find(key)).isEmpty();
@@ -144,7 +144,7 @@ class S3PlayerPhotoStorageTests {
     @Test
     void deleteRemovesTheObjectAndIsIdempotent() throws Exception {
         String key = newKey();
-        PhotoUpload upload = storage.createUpload(key, "image/webp", 16);
+        ImageUpload upload = storage.createUpload(key, "image/webp", 16);
         assertThat(put(upload, upload.headers(), new byte[16])).isEqualTo(200);
 
         storage.delete(key);

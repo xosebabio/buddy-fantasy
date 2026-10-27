@@ -7,9 +7,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.buddyfantasy.squad.application.port.out.PhotoUpload;
-import com.buddyfantasy.squad.application.port.out.PlayerPhotoStorage;
-import com.buddyfantasy.squad.application.port.out.StoredPhoto;
+import com.buddyfantasy.squad.application.port.out.ImageUpload;
+import com.buddyfantasy.squad.application.port.out.ImageStorage;
+import com.buddyfantasy.squad.application.port.out.StoredImage;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
@@ -18,11 +18,11 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
-/** S3 adapter (AWS in production, SeaweedFS locally). Photos are served by CloudFront, never from the bucket. */
-class S3PlayerPhotoStorage implements PlayerPhotoStorage {
+/** S3 adapter (AWS in production, SeaweedFS locally). Images are served by CloudFront, never from the bucket. */
+class S3ImageStorage implements ImageStorage {
 
     static final Duration UPLOAD_TTL = Duration.ofMinutes(5);
-    /** Keys are immutable, so browsers and CloudFront may cache a photo for a year. */
+    /** Keys are immutable, so browsers and CloudFront may cache an image for a year. */
     static final String CACHE_CONTROL = "public, max-age=31536000, immutable";
     /** Signed too, but set by the browser itself ({@code fetch} forbids them), so they are not handed to the client. */
     private static final Set<String> IMPLICIT_HEADERS = Set.of("host", "content-length");
@@ -32,7 +32,7 @@ class S3PlayerPhotoStorage implements PlayerPhotoStorage {
     private final String bucket;
     private final Clock clock;
 
-    S3PlayerPhotoStorage(S3Client s3, S3Presigner presigner, String bucket, Clock clock) {
+    S3ImageStorage(S3Client s3, S3Presigner presigner, String bucket, Clock clock) {
         this.s3 = s3;
         this.presigner = presigner;
         this.bucket = bucket;
@@ -40,7 +40,7 @@ class S3PlayerPhotoStorage implements PlayerPhotoStorage {
     }
 
     @Override
-    public PhotoUpload createUpload(String key, String contentType, long sizeBytes) {
+    public ImageUpload createUpload(String key, String contentType, long sizeBytes) {
         PresignedPutObjectRequest presigned = presigner.presignPutObject(presign -> presign
                 .signatureDuration(UPLOAD_TTL)
                 .putObjectRequest(put -> put.bucket(bucket).key(key)
@@ -50,14 +50,14 @@ class S3PlayerPhotoStorage implements PlayerPhotoStorage {
         Map<String, String> headers = presigned.signedHeaders().entrySet().stream()
                 .filter(header -> !IMPLICIT_HEADERS.contains(header.getKey().toLowerCase()))
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, header -> String.join(",", header.getValue())));
-        return new PhotoUpload(presigned.url().toString(), headers, key, clock.instant().plus(UPLOAD_TTL));
+        return new ImageUpload(presigned.url().toString(), headers, key, clock.instant().plus(UPLOAD_TTL));
     }
 
     @Override
-    public Optional<StoredPhoto> find(String key) {
+    public Optional<StoredImage> find(String key) {
         try {
             HeadObjectResponse head = s3.headObject(request -> request.bucket(bucket).key(key));
-            return Optional.of(new StoredPhoto(head.contentType(), head.contentLength()));
+            return Optional.of(new StoredImage(head.contentType(), head.contentLength()));
         } catch (NoSuchKeyException e) {
             return Optional.empty();
         } catch (S3Exception e) {

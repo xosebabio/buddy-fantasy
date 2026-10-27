@@ -36,7 +36,7 @@ class RegisterPlayerHandler implements CommandHandler<RegisterPlayerCommand, Pla
             throw new ConflictException("Shirt number already taken by an active player");
         }
         Player player = Player.register(command.leagueId(), command.name().strip(), shirtNumber, command.position(),
-                command.initialValue(), null, clock.instant());
+                command.initialValue(), clock.instant());
         players.save(player);
         player.pullEvents().forEach(events::publishEvent);
         return player.id();
