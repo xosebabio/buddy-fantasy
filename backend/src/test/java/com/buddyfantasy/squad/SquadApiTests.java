@@ -12,6 +12,7 @@ import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,22 +54,44 @@ class SquadApiTests {
     }
 
     private Player player(UUID leagueId, String name, Position position) {
-        Player player = Player.register(leagueId, name, null, position, new BigDecimal("5"), NOW, limits.get());
+        return player(leagueId, name, position, new BigDecimal("5"));
+    }
+
+    private Player player(UUID leagueId, String name, Position position, BigDecimal initialValue) {
+        Player player = Player.register(leagueId, name, null, position, initialValue, NOW, limits.get());
         players.save(player);
         return player;
     }
 
+    /** {@code NUMERIC(10, 2)} comes back with scale 2: values are compared by amount. */
+    private static RecursiveComparisonConfiguration byAmount() {
+        return RecursiveComparisonConfiguration.builder()
+                .withComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+                .build();
+    }
+
     @Test
-    void returnsTheRequestedPlayersOfTheLeagueWithPositionAndStatus() {
-        Player keeper = player(LEAGUE, "Iago", Position.GOALKEEPER);
-        Player forward = player(LEAGUE, "Brais", Position.FORWARD);
+    void returnsTheRequestedPlayersOfTheLeagueWithPositionStatusAndInitialValue() {
+        Player keeper = player(LEAGUE, "Iago", Position.GOALKEEPER, new BigDecimal("12.5"));
+        Player forward = player(LEAGUE, "Brais", Position.FORWARD, new BigDecimal("8"));
         player(LEAGUE, "Not asked", Position.DEFENDER);
 
         List<SquadPlayer> result = squad.findPlayers(LEAGUE, List.of(keeper.id().value(), forward.id().value()));
 
-        assertThat(result).containsExactlyInAnyOrder(
-                new SquadPlayer(keeper.id().value(), Position.GOALKEEPER, true),
-                new SquadPlayer(forward.id().value(), Position.FORWARD, true));
+        assertThat(result).usingRecursiveFieldByFieldElementComparator(byAmount()).containsExactlyInAnyOrder(
+                new SquadPlayer(keeper.id().value(), Position.GOALKEEPER, true, new BigDecimal("12.5")),
+                new SquadPlayer(forward.id().value(), Position.FORWARD, true, new BigDecimal("8")));
+    }
+
+    @Test
+    void returnsTheInitialValueAsEditedByTheAdmin() {
+        Player player = player(LEAGUE, "Iago", Position.DEFENDER, new BigDecimal("5"));
+        player.update("Iago", null, Position.DEFENDER, new BigDecimal("7.25"), limits.get());
+        players.save(player);
+
+        assertThat(squad.findPlayers(LEAGUE, List.of(player.id().value())))
+                .singleElement().extracting(SquadPlayer::initialValue)
+                .satisfies(value -> assertThat(value).isEqualByComparingTo("7.25"));
     }
 
     @Test
@@ -78,7 +101,8 @@ class SquadApiTests {
         players.save(retired);
 
         assertThat(squad.findPlayers(LEAGUE, List.of(retired.id().value())))
-                .containsExactly(new SquadPlayer(retired.id().value(), Position.MIDFIELDER, false));
+                .usingRecursiveFieldByFieldElementComparator(byAmount())
+                .containsExactly(new SquadPlayer(retired.id().value(), Position.MIDFIELDER, false, new BigDecimal("5")));
     }
 
     @Test

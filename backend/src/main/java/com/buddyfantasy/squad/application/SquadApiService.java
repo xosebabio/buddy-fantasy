@@ -32,6 +32,6 @@ class SquadApiService implements SquadApi {
     }
 
     private static SquadPlayer toSquadPlayer(Player player) {
-        return new SquadPlayer(player.id().value(), player.position(), !player.isRetired());
+        return new SquadPlayer(player.id().value(), player.position(), !player.isRetired(), player.initialValue());
     }
 }

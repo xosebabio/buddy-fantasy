@@ -1,9 +1,11 @@
 package com.buddyfantasy.match.adapter.out.persistence;
 
+import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.match.domain.Match;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.match.domain.MatchResult;
 import com.buddyfantasy.match.domain.MatchSheet;
+import com.buddyfantasy.match.domain.MatchStatus;
 import com.buddyfantasy.match.domain.Matchday;
 import com.buddyfantasy.match.domain.PlayerPerformance;
 import lombok.experimental.UtilityClass;
@@ -24,6 +26,11 @@ class MatchMapper {
                 m.kickoffAt(), m.status(), result == null ? null : (short) result.goalsFor(),
                 result == null ? null : (short) result.goalsAgainst(), m.createdAt(), m.closedAt(),
                 m.sheet().performances().stream().map(MatchMapper::toEmbeddable).toList());
+    }
+
+    /** Does not touch the lazy sheet. */
+    MatchSchedule toSchedule(MatchEntity e) {
+        return new MatchSchedule(e.id, e.leagueId, e.matchday, e.kickoffAt, e.status == MatchStatus.CLOSED);
     }
 
     PlayerPerformance toPerformance(PlayerPerformanceEmbeddable e) {
