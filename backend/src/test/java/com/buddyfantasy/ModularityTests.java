@@ -1,8 +1,11 @@
 package com.buddyfantasy;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.modulith.core.ApplicationModule;
 import org.springframework.modulith.core.ApplicationModules;
 import org.springframework.modulith.docs.Documenter;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ModularityTests {
 
@@ -11,6 +14,24 @@ class ModularityTests {
     @Test
     void verifiesModuleStructure() {
         modules.verify();
+    }
+
+    @Test
+    void matchDependsOnlyOnLeagueSquadAndDataDefinition() {
+        var match = modules.getModuleByName("match").orElseThrow();
+
+        assertThat(match.getDirectDependencies(modules).uniqueModules().map(ApplicationModule::getName))
+                .isSubsetOf("league", "squad", "datadefinition", "shared")
+                .contains("league", "squad", "datadefinition");
+    }
+
+    @Test
+    void squadAndLeagueDoNotDependOnMatch() {
+        for (String name : new String[] {"squad", "league"}) {
+            var module = modules.getModuleByName(name).orElseThrow();
+
+            assertThat(module.getAllDependencies(modules).containsModuleNamed("match")).as(name).isFalse();
+        }
     }
 
     @Test

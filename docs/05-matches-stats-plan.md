@@ -134,7 +134,7 @@ Las fechas se envían y devuelven en ISO-8601 (`Instant`, UTC). Todos los endpoi
 | 4 | `UpdateMatchCommand` y `DeleteMatchCommand` | Aplazados y suspendidos | ✅ |
 | 5 | `RecordMatchSheetCommand` (con avisos y visibilidad) y `CloseMatchCommand` | RF-13, RF-14 y `MatchClosed` | ✅ |
 | 6 | Correcciones en partidos cerrados y `ListMatchAuditQuery` | RF-16 y RNF-04 | ✅ |
-| 7 | Tests de seguridad y arquitectura; `AGENTS.md` (estado) y marcar el ítem en `requirements.md`, indicando que el cálculo de RF-15 llega con `scoring` | Ítem de Fase 1 cerrado |  |
+| 7 | Tests de seguridad y arquitectura; `AGENTS.md` (estado) y marcar el ítem en `requirements.md`, indicando que el cálculo de RF-15 llega con `scoring` | Ítem de Fase 1 cerrado | ✅ |
 
 Cada tarea es un commit `feat(match): … (RF-12)` en Conventional Commits.
 

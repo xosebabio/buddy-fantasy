@@ -185,7 +185,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 - [x] Crear liga, invitar managers por enlace y configurar parámetros (RF-05 a RF-08)
 - [x] CRUD de jugadores con valor inicial (RF-09 a RF-11)
-- [ ] Partidos, convocatoria, resultado y estadísticas con su tabla de puntos (RF-12 a RF-16)
+- [x] Partidos, convocatoria, resultado y estadísticas con su tabla de puntos (RF-12 a RF-16). `match` guarda y publica el acta; el cálculo de puntos de RF-15 llega con *Cálculo de puntos por acción según posición y clasificaciones* (`scoring`)
 - [ ] Alineaciones: edición, bloqueo X horas antes y límite de cambios (RF-24 a RF-29)
 - [ ] Cálculo de puntos por acción según posición y clasificaciones (RF-30 a RF-33)
 
@@ -204,7 +204,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 ### Fase 4 · Pulido y operación
 
-- [ ] Correcciones del administrador con auditoría y recálculo (RF-16, RNF-04)
+- [ ] Correcciones del administrador con auditoría y recálculo (RF-16, RNF-04). Hechas en Fase 1 las correcciones del acta con auditoría y el evento `MatchCorrected`; falta el recálculo en `scoring` y `rating`
 - [ ] Logs, health checks y alertas de caída (RNF-08)
 - [ ] Tests de puntuación, plazos y mercado; restauración de backup probada
 - [ ] RGPD: consentimiento y borrado de cuenta (RNF-10)
