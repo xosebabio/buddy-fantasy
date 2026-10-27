@@ -16,12 +16,10 @@ import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -47,19 +45,7 @@ class LeagueSettingsProviderTests {
     LeagueLimitsRepository limits;
 
     @Autowired
-    JdbcTemplate jdbc;
-
-    @Autowired
     EntityManagerFactory entityManagerFactory;
-
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-    }
 
     private League league(String name) {
         League league = League.create(name, NOW, defaults.settings(), defaults.scoringRules(), limits.get());

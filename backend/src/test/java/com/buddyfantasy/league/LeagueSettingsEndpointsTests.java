@@ -1,8 +1,6 @@
 package com.buddyfantasy.league;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
@@ -12,7 +10,6 @@ import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCom
 import com.buddyfantasy.league.domain.LeagueId;
 import com.buddyfantasy.league.domain.Membership;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.shared.security.CurrentUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,15 +19,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import static com.buddyfantasy.TestUsers.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,12 +59,6 @@ class LeagueSettingsEndpointsTests {
 
     @BeforeEach
     void setUp() {
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-        jdbc.update("delete from identity_user");
         admin = register("admin");
         manager = register("manager");
         outsider = register("outsider");
@@ -81,11 +69,6 @@ class LeagueSettingsEndpointsTests {
 
     private UUID register(String sub) {
         return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", sub, null)).value();
-    }
-
-    private static RequestPostProcessor as(UUID userId) {
-        OidcIdToken token = new OidcIdToken("t", NOW, NOW.plusSeconds(3600), Map.of("sub", "any"));
-        return oidcLogin().oidcUser(new CurrentUser(List.of(new SimpleGrantedAuthority("OIDC_USER")), token, null, userId));
     }
 
     private ObjectNode currentSettings() throws Exception {

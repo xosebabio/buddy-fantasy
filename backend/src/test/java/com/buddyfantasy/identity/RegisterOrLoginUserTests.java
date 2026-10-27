@@ -1,10 +1,8 @@
 package com.buddyfantasy.identity;
 
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.UUID;
 
+import com.buddyfantasy.MutableClock;
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
 import com.buddyfantasy.identity.domain.UserId;
@@ -13,48 +11,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Import({PostgresTestConfig.class, RegisterOrLoginUserTests.FixedClockConfig.class})
+@Import({PostgresTestConfig.class, MutableClock.Config.class})
 class RegisterOrLoginUserTests {
 
     static final Instant T0 = Instant.parse("2026-01-10T10:00:00Z");
-
-    static class MutableClock extends Clock {
-        Instant now = T0;
-
-        @Override
-        public java.time.ZoneId getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(java.time.ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return now;
-        }
-    }
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class FixedClockConfig {
-
-        @Bean
-        @Primary
-        MutableClock testClock() {
-            return new MutableClock();
-        }
-    }
 
     @Autowired
     CommandBus bus;
@@ -67,7 +33,6 @@ class RegisterOrLoginUserTests {
 
     @BeforeEach
     void reset() {
-        jdbc.update("delete from identity_user");
         clock.now = T0;
     }
 

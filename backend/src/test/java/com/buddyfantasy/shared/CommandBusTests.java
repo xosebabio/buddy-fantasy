@@ -8,7 +8,6 @@ import com.buddyfantasy.shared.application.Query;
 import com.buddyfantasy.shared.application.QueryHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotBlank;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -105,11 +104,6 @@ class CommandBusTests {
 
     @Autowired
     JdbcTemplate jdbc;
-
-    @BeforeEach
-    void cleanUp() {
-        jdbc.update("delete from shedlock where name = 'bus-test'");
-    }
 
     @Test
     void dispatchesToTheMatchingHandler() {

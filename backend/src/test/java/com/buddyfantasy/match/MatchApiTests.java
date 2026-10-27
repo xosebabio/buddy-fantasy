@@ -18,12 +18,10 @@ import com.buddyfantasy.match.domain.Venue;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,15 +45,7 @@ class MatchApiTests {
     MatchLimitsRepository limits;
 
     @Autowired
-    JdbcTemplate jdbc;
-
-    @Autowired
     EntityManagerFactory entityManagerFactory;
-
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from match_match");
-    }
 
     private Match scheduled(UUID leagueId, int matchday, Instant kickoffAt) {
         Match match = Match.schedule(leagueId, new Matchday(matchday), "Rival " + matchday, Venue.HOME, kickoffAt,

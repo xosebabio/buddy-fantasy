@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.shared.security.CurrentUser;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,11 +29,6 @@ class GoogleOidcUserServiceTests {
 
     @Autowired
     JdbcTemplate jdbc;
-
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from identity_user");
-    }
 
     private static OidcUser google(boolean emailVerified) {
         OidcIdToken token = new OidcIdToken("t", Instant.now(), Instant.now().plusSeconds(60), Map.of(

@@ -1,8 +1,6 @@
 package com.buddyfantasy;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
@@ -14,19 +12,14 @@ import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.Membership;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.shared.security.CurrentUser;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static com.buddyfantasy.TestUsers.as;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,26 +49,8 @@ class MeEndpointsTests {
     @Autowired
     MembershipRepository memberships;
 
-    @Autowired
-    JdbcTemplate jdbc;
-
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-        jdbc.update("delete from identity_user");
-    }
-
     private UUID register(String sub) {
         return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, "http://pic/" + sub)).value();
-    }
-
-    private static CurrentUser principal(UUID userId) {
-        OidcIdToken token = new OidcIdToken("t", NOW, NOW.plusSeconds(3600), Map.of("sub", "any"));
-        return new CurrentUser(List.of(new SimpleGrantedAuthority("OIDC_USER")), token, null, userId);
     }
 
     private void join(String leagueName, UUID userId, LeagueRole role) {
@@ -88,7 +63,7 @@ class MeEndpointsTests {
     void meReturnsTheAuthenticatedUser() throws Exception {
         UUID id = register("ana");
 
-        mvc.perform(get("/api/me").with(oidcLogin().oidcUser(principal(id))))
+        mvc.perform(get("/api/me").with(as(id)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.displayName").value("Name ana"))
@@ -109,7 +84,7 @@ class MeEndpointsTests {
         join("Beta", ana, LeagueRole.MANAGER);
         join("Gamma", bob, LeagueRole.ADMIN);
 
-        mvc.perform(get("/api/me/leagues").with(oidcLogin().oidcUser(principal(ana))))
+        mvc.perform(get("/api/me/leagues").with(as(ana)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].name").value("Alpha"))
@@ -122,7 +97,7 @@ class MeEndpointsTests {
     void myLeaguesIsEmptyWithoutMemberships() throws Exception {
         UUID ana = register("ana");
 
-        mvc.perform(get("/api/me/leagues").with(oidcLogin().oidcUser(principal(ana))))
+        mvc.perform(get("/api/me/leagues").with(as(ana)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }

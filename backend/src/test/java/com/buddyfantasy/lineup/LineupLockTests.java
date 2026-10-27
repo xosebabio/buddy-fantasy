@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.buddyfantasy.Listeners;
+import com.buddyfantasy.MutableClock;
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
@@ -40,7 +42,6 @@ import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 /**
  * Locking the lineups of a match (RF-25, RF-27, RF-29) by the lock job or when the match is closed, and unlocking
@@ -90,22 +91,7 @@ class LineupLockTests {
 
     @BeforeEach
     void setUp() {
-        awaitListeners();
         clock.now = NOW;
-        jdbc.update("delete from lineup_locked_player");
-        jdbc.update("delete from lineup_locked_lineup");
-        jdbc.update("delete from lineup_match_lock");
-        jdbc.update("delete from lineup_version");
-        jdbc.update("delete from match_audit_entry");
-        jdbc.update("delete from match_player_performance");
-        jdbc.update("delete from match_match");
-        jdbc.update("delete from squad_player");
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-        jdbc.update("delete from identity_user");
         admin = register("admin");
         ana = register("ana");
         CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
@@ -146,21 +132,12 @@ class LineupLockTests {
         bus.dispatch(new RecordMatchSheetCommand(admin, league, matchId, 1, 0, List.of(
                 new PerformanceLine(squad.get(10), 1, 0, 0, 0, 0, 0, false, false, false))));
         bus.dispatch(new CloseMatchCommand(admin, league, matchId));
-        awaitListeners();
+        Listeners.await(jdbc);
     }
 
     private void postpone(UUID matchId, int matchday, Instant kickoffAt) {
         bus.dispatch(new UpdateMatchCommand(admin, league, matchId, matchday, "Rival", Venue.HOME, kickoffAt));
-        awaitListeners();
-    }
-
-    /**
-     * The match events reach lineup asynchronously after commit. Waits until every listener has completed, so a
-     * listener that throws fails the test instead of being missed.
-     */
-    private void awaitListeners() {
-        await().atMost(Duration.ofSeconds(10)).until(() -> jdbc.queryForObject(
-                "select count(*) from event_publication where completion_date is null", Integer.class) == 0);
+        Listeners.await(jdbc);
     }
 
     private List<UUID> lockedMatches() {
@@ -404,7 +381,7 @@ class LineupLockTests {
         job.lockDueLineups();
 
         bus.dispatch(new DeleteMatchCommand(admin, league, match1));
-        awaitListeners();
+        Listeners.await(jdbc);
 
         assertThat(lockedMatches()).isEmpty();
         assertThat(jdbc.queryForObject("select count(*) from lineup_locked_lineup", Integer.class)).isZero();

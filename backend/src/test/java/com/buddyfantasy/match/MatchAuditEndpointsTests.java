@@ -3,7 +3,6 @@ package com.buddyfantasy.match;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
@@ -20,7 +19,6 @@ import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCo
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.shared.security.CurrentUser;
 import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,14 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import static com.buddyfantasy.TestUsers.as;
 import static org.hamcrest.Matchers.contains;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,7 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PostgresTestConfig.class)
 class MatchAuditEndpointsTests {
 
-    static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
     static final Instant KICKOFF = Instant.parse("2026-01-11T10:00:00Z");
 
     @Autowired
@@ -54,9 +47,6 @@ class MatchAuditEndpointsTests {
 
     @Autowired
     CommandBus bus;
-
-    @Autowired
-    JdbcTemplate jdbc;
 
     UUID admin;
     UUID ana;
@@ -68,15 +58,6 @@ class MatchAuditEndpointsTests {
 
     @BeforeEach
     void setUp() {
-        jdbc.update("delete from match_audit_entry");
-        jdbc.update("delete from match_match");
-        jdbc.update("delete from squad_player");
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-        jdbc.update("delete from identity_user");
         admin = register("admin");
         ana = register("ana");
         outsider = register("outsider");
@@ -95,11 +76,6 @@ class MatchAuditEndpointsTests {
 
     private UUID player(String name, Position position) {
         return bus.dispatch(new RegisterPlayerCommand(admin, league, name, null, position, BigDecimal.TEN)).value();
-    }
-
-    private static RequestPostProcessor as(UUID userId) {
-        OidcIdToken idToken = new OidcIdToken("t", NOW, NOW.plusSeconds(3600), Map.of("sub", "any"));
-        return oidcLogin().oidcUser(new CurrentUser(List.of(new SimpleGrantedAuthority("OIDC_USER")), idToken, null, userId));
     }
 
     private UUID schedule(UUID leagueId, UUID leagueAdmin) {

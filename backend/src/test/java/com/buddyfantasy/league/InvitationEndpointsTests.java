@@ -1,8 +1,6 @@
 package com.buddyfantasy.league;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
@@ -10,7 +8,6 @@ import com.buddyfantasy.identity.application.usecases.registerorloginuser.Regist
 import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
 import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.shared.security.CurrentUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,15 +16,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import static com.buddyfantasy.TestUsers.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,8 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(PostgresTestConfig.class)
 class InvitationEndpointsTests {
-
-    static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
 
     @Autowired
     MockMvc mvc;
@@ -61,12 +53,6 @@ class InvitationEndpointsTests {
 
     @BeforeEach
     void setUp() {
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-        jdbc.update("delete from identity_user");
         admin = register("admin");
         ana = register("ana");
         bob = register("bob");
@@ -77,11 +63,6 @@ class InvitationEndpointsTests {
 
     private UUID register(String sub) {
         return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", sub, null)).value();
-    }
-
-    private static RequestPostProcessor as(UUID userId) {
-        OidcIdToken idToken = new OidcIdToken("t", NOW, NOW.plusSeconds(3600), Map.of("sub", "any"));
-        return oidcLogin().oidcUser(new CurrentUser(List.of(new SimpleGrantedAuthority("OIDC_USER")), idToken, null, userId));
     }
 
     private ResultActions join(UUID user, String t) throws Exception {

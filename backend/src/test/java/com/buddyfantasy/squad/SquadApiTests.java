@@ -14,12 +14,10 @@ import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.hibernate.stat.Statistics;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,15 +41,7 @@ class SquadApiTests {
     SquadLimitsRepository limits;
 
     @Autowired
-    JdbcTemplate jdbc;
-
-    @Autowired
     EntityManagerFactory entityManagerFactory;
-
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from squad_player");
-    }
 
     private Player player(UUID leagueId, String name, Position position) {
         return player(leagueId, name, position, new BigDecimal("5"));

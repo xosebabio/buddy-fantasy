@@ -3,7 +3,6 @@ package com.buddyfantasy.league;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
@@ -16,8 +15,6 @@ import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCom
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.shared.security.CurrentUser;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,16 +22,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.buddyfantasy.TestUsers.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -69,23 +64,8 @@ class CreateLeagueTests {
     @Autowired
     JdbcTemplate jdbc;
 
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-        jdbc.update("delete from identity_user");
-    }
-
     private UUID register(String sub) {
         return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private static CurrentUser principal(UUID userId) {
-        OidcIdToken token = new OidcIdToken("t", NOW, NOW.plusSeconds(3600), Map.of("sub", "any"));
-        return new CurrentUser(List.of(new SimpleGrantedAuthority("OIDC_USER")), token, null, userId);
     }
 
     private int count(String table) {
@@ -96,7 +76,7 @@ class CreateLeagueTests {
     void createsLeagueWithSettingsRulesAndAdminMembership() throws Exception {
         UUID ana = register("ana");
 
-        mvc.perform(post("/api/leagues").with(oidcLogin().oidcUser(principal(ana))).with(csrf())
+        mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
                         .contentType(APPLICATION_JSON).content("{\"name\":\"  Peña del domingo \"}"))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
@@ -109,7 +89,7 @@ class CreateLeagueTests {
         assertThat(count("league_invitation")).isEqualTo(1);
         assertThat(jdbc.queryForObject("select name from league_league", String.class)).isEqualTo("Peña del domingo");
 
-        mvc.perform(get("/api/me/leagues").with(oidcLogin().oidcUser(principal(ana))))
+        mvc.perform(get("/api/me/leagues").with(as(ana)))
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Peña del domingo"))
                 .andExpect(jsonPath("$[0].role").value("ADMIN"));
@@ -147,7 +127,7 @@ class CreateLeagueTests {
         UUID ana = register("ana");
 
         for (String body : List.of("{\"name\":\"  \"}", "{}", "{\"name\":\"" + "x".repeat(101) + "\"}")) {
-            mvc.perform(post("/api/leagues").with(oidcLogin().oidcUser(principal(ana))).with(csrf())
+            mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
                             .contentType(APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest());
         }
@@ -160,7 +140,7 @@ class CreateLeagueTests {
 
         mvc.perform(post("/api/leagues").with(csrf()).contentType(APPLICATION_JSON).content("{\"name\":\"A\"}"))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(post("/api/leagues").with(oidcLogin().oidcUser(principal(ana)))
+        mvc.perform(post("/api/leagues").with(as(ana))
                         .contentType(APPLICATION_JSON).content("{\"name\":\"A\"}"))
                 .andExpect(status().isForbidden());
         assertThat(count("league_league")).isZero();

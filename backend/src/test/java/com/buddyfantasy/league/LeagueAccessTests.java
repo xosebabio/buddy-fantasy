@@ -10,12 +10,10 @@ import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.Membership;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.AccessDeniedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,18 +40,6 @@ class LeagueAccessTests {
 
     @Autowired
     MembershipRepository memberships;
-
-    @Autowired
-    JdbcTemplate jdbc;
-
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from league_membership");
-        jdbc.update("delete from league_invitation");
-        jdbc.update("delete from league_scoring_rule");
-        jdbc.update("delete from league_settings");
-        jdbc.update("delete from league_league");
-    }
 
     private League league(String name) {
         League league = League.create(name, NOW, defaults.settings(), defaults.scoringRules(), limits.get());

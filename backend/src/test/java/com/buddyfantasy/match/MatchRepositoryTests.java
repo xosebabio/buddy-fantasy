@@ -19,7 +19,6 @@ import com.buddyfantasy.match.domain.Venue;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,11 +53,6 @@ class MatchRepositoryTests {
 
     @Autowired
     EntityManagerFactory entityManagerFactory;
-
-    @BeforeEach
-    void reset() {
-        jdbc.update("delete from match_match");
-    }
 
     static PlayerPerformance line(UUID playerId, Position position, int goals) {
         return new PlayerPerformance(playerId, position, goals, 1, 0, 1, 2, 0, true, false, true);

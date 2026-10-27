@@ -71,11 +71,15 @@ Lo que ya está bien resuelto y conviene mantener:
 
 **T1 · Un único Postgres.** Contenedor estático en `PostgresTestConfig` (arrancado una vez por JVM y expuesto con `@ServiceConnection`), compartido por todos los contextos. Flyway migra una vez; los demás contextos validan. Los tests se siguen ejecutando en serie, así que compartir BD es seguro si T2 limpia todo entre tests.
 
+> Hecho así: el contenedor no es un *bean* (Spring Boot cierra los contenedores *bean* al cerrar su contexto, y dejaría sin BD a los contextos aún en caché), sino un estático expuesto con un `JdbcConnectionDetails`. Postgres arranca con `max_connections=300` y los tests usan `spring.datasource.hikari.minimum-idle: 1`, porque cada contexto en caché tiene su propio pool contra la misma BD.
+
 **T2 · `DatabaseCleaner`.** Un bean de test (o extensión de JUnit) que primero espera a que no queden publicaciones pendientes en `event_publication` (lo que hoy hace `awaitListeners`) y después hace `TRUNCATE ... CASCADE` de **todas** las tablas del esquema leídas de `information_schema`, salvo `flyway_schema_history`. Incluye `event_publication`, `shedlock` y `spring_session`. Sustituye las 22 listas manuales; las tablas de módulos nuevos se limpian solas.
+
+> Hecho así: es un `TestExecutionListener` registrado en `META-INF/spring.factories`, así que se aplica a todo test de Spring sin anotarlo. Solo trunca las tablas con filas (truncar también las vacías costaba más del doble). `shedlock` no se trunca: se liberan sus bloqueos (`lock_until = locked_at`), porque ShedLock recuerda las filas que ya ha creado y después solo las actualiza, y con la fila borrada el job no volvería a bloquear nunca. Si un listener de un test anterior no termina en 10 s, falla el test siguiente con la lista de publicaciones incompletas, y la BD se limpia igualmente.
 
 **T3 · Ayudas compartidas** en el paquete raíz de test (`com.buddyfantasy`, públicas):
 - `MutableClock` (con su `Config`) sustituye también a `FixedClockConfig`.
-- `Listeners.await()` (la espera de `event_publication`), que usan los tests que provocan eventos antes de comprobar sus efectos.
+- `Listeners.await(jdbc)` (la espera de `event_publication`, sin el retardo inicial de 100 ms de Awaitility), que usan los tests que provocan eventos antes de comprobar sus efectos.
 - `TestUsers.as(userId)` para MockMvc.
 
 **T4 · `TestFixtures`.** Bean de test sobre el `CommandBus` para preparar datos sin repetir código: `user(sub)`, `league(admin)` → `CreatedLeague`, `join(user, league)`, `squad(league, posiciones…)`, `schedule(league, jornada, kickoff)`, `closeWithSheet(match, …)`, `settings(league, …)`. Se migran todos los `setUp`.
@@ -165,7 +169,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 
 | # | Tarea | Salida | Hecho |
 | --- | --- | --- | --- |
-| 1 | T1, T2, T3: un Postgres, `DatabaseCleaner`, `MutableClock`, `Listeners.await()` y `as(...)` compartidos; migrar todas las clases | Suite en verde con 1 contenedor de Postgres y sin `delete from` a mano | |
+| 1 | T1, T2, T3: un Postgres, `DatabaseCleaner`, `MutableClock`, `Listeners.await()` y `as(...)` compartidos; migrar todas las clases | Suite en verde con 1 contenedor de Postgres y sin `delete from` a mano | ✅ |
 | 2 | T4: `TestFixtures` y migración de los `setUp` | Tests más cortos, misma cobertura | |
 | 3 | T5: JaCoCo en `verify` y artefacto en CI | Informe de cobertura de partida | |
 | 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | |
