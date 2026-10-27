@@ -2,6 +2,7 @@ package com.buddyfantasy.shared.infrastructure;
 
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import com.buddyfantasy.shared.domain.ErrorCode;
 import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DomainValidationException.class)
     ProblemDetail handleDomainValidation(DomainValidationException e) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+        return withCode(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage()), e.code());
     }
 
     /** Generic body on purpose: callers must not learn why the resource is missing. */
@@ -36,6 +37,13 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     ProblemDetail handleConflict(ConflictException e) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+        return withCode(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage()), e.code());
+    }
+
+    private static ProblemDetail withCode(ProblemDetail problem, ErrorCode code) {
+        if (code != null) {
+            problem.setProperty("code", code.name());
+        }
+        return problem;
     }
 }

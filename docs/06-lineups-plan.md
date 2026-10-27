@@ -77,9 +77,10 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
   - tamaño exacto y sin repetidos; todos activos y de la liga;
   - mínimos por posición si la formación está activa;
   - suma de valores ≤ presupuesto si está activo;
-  - `changes(baseline, nueva, retirados, size)` = `max(0, |nueva \ baseline| − gratis)`, con `gratis` = jugadores retirados de `baseline` + `max(0, size − |baseline|)`. Sin `baseline`, no hay límite.
-- `MatchLineupLock` (aggregate del bloqueo): `lock(match, lockAt, lineups, now)` calcula `totalValue` y `overBudget` de cada alineación y publica `LineupsLocked`; `unlock(now)` publica `LineupsUnlocked`.
-- Errores: `DomainValidationException` (`400`) por tamaño, repetidos, jugador inactivo o ajeno, formación o presupuesto; `ConflictException` (`409`) por superar el límite de cambios.
+  - `changes(baseline, nueva, retirados, size)` = `max(0, |nueva \ baseline| − gratis)`, con `gratis` = jugadores retirados de `baseline` que ya no están en la nueva + `max(0, size − |baseline|)`. Sin `baseline`, no hay límite.
+- `MatchLineupLock` (aggregate del bloqueo): `lock(match, settings, lineups, players, now)` calcula `lockAt`, el valor de cada jugador, `totalValue` y `overBudget` de cada alineación y publica `LineupsLocked` (antes de `lockAt` → `409`); `reschedule(newKickoffAt, lockHours, now)` publica `LineupsUnlocked` y devuelve `true` si el nuevo `lockAt` queda en el futuro (el llamante borra el bloqueo).
+- `LineupRules.warnings(...)` calcula los avisos `OVER_BUDGET`, `RETIRED_PLAYERS` y `SIZE_MISMATCH` de `GetMyLineupQuery`.
+- Errores: `DomainValidationException` (`400`) por tamaño, repetidos, jugador inactivo o ajeno, formación o presupuesto; `ConflictException` (`409`) por superar el límite de cambios. Llevan un código `LineupError` (`ErrorCode` de `shared`) que el `ApiExceptionHandler` devuelve en la propiedad `code` del *problem detail*.
 
 ## 5. Casos de uso y job (`lineup/application/usecases/<caso>/`)
 
@@ -130,7 +131,7 @@ Todos exigen sesión (`401`) y CSRF en el `PUT`. Autorización en el handler (`4
 | --- | --- | --- | --- |
 | 1 | V9, mínimos por posición y tope de `lockHours` en `LeagueSettings` (dominio, persistencia y API de parámetros); `LeagueSettingsProvider` y `memberIds` | Parámetros de formación configurables | ✅ |
 | 2 | `MatchApi` en `match` e `initialValue` en `SquadPlayer`, con sus tests | Calendario y valores consultables | ✅ |
-| 3 | V11, `LineupTimeline`, `LineupRules`, `MatchLineupLock` y eventos, con tests unitarios; `allowedDependencies` de `lineup` | Dominio verificado | |
+| 3 | V11, `LineupTimeline`, `LineupRules`, `MatchLineupLock` y eventos, con tests unitarios; `allowedDependencies` de `lineup` | Dominio verificado | ✅ |
 | 4 | Persistencia, `PlayerCatalog`, `SaveLineupCommand`, `GetMyLineupQuery` y sus endpoints | RF-24, RF-26, RF-28, RF-29 | |
 | 5 | `LineupLocker`, `LockDueLineupsJob` y listeners de `MatchClosed`, `MatchRescheduled` y `MatchDeleted` | RF-25, RF-27 y `LineupsLocked` | |
 | 6 | `GetLockedLineupsQuery` y visibilidad | Alineaciones bloqueadas visibles | |
