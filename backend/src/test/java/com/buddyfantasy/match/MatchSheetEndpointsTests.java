@@ -412,6 +412,107 @@ class MatchSheetEndpointsTests {
                 .andExpect(jsonPath("$[0].result.goalsFor").value(2));
     }
 
+    private UUID closedMatch(String sheet) throws Exception {
+        UUID match = schedule(KICKOFF);
+        putSheet(admin, match, sheet).andExpect(status().isOk());
+        close(admin, match).andExpect(status().isOk());
+        return match;
+    }
+
+    @Test
+    void correctingAClosedMatchPublishesMatchCorrectedWithTheWholeSheet() throws Exception {
+        UUID match = closedMatch(sheet(2, 1, line(forward, "\"goals\": 2"), line(keeper, "\"penaltiesSaved\": 1")));
+        String closedAt = JsonPath.read(mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match)
+                .with(as(admin))).andReturn().getResponse().getContentAsString(), "$.closedAt");
+
+        // the keeper did not play after all, the defender did and one goal was an assist
+        putSheet(admin, match, sheet(2, 1, line(forward, "\"goals\": 1, \"assists\": 1"),
+                line(defender, "\"goals\": 1, \"yellowCard\": true")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.warnings.length()").value(0));
+
+        assertThat(events.stream(MatchCorrected.class)).singleElement().satisfies(e -> {
+            assertThat(e.leagueId()).isEqualTo(league);
+            assertThat(e.matchId()).isEqualTo(match);
+            assertThat(e.matchday()).isEqualTo(1);
+            assertThat(e.performances()).containsExactlyInAnyOrder(
+                    new PlayerPerformanceData(forward, Position.FORWARD, 1, 0, 0, 0, 1, 0, false, false, false),
+                    new PlayerPerformanceData(defender, Position.DEFENDER, 1, 0, 0, 0, 0, 0, true, false, false));
+        });
+        assertThat(events.stream(MatchClosed.class)).hasSize(1);
+        mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(ana)))
+                .andExpect(jsonPath("$.status").value("CLOSED"))
+                .andExpect(jsonPath("$.closedAt").value(closedAt))
+                .andExpect(jsonPath("$.performances.length()").value(2))
+                .andExpect(jsonPath("$.performances[?(@.playerId == '%s')].assists", forward).value(1))
+                .andExpect(jsonPath("$.performances[?(@.playerId == '%s')].position", defender).value("DEFENDER"));
+        Map<String, Object> entry = jdbc.queryForMap("""
+                select actor_user_id, jsonb_array_length(before -> 'performances') as lines_before,
+                       before -> 'performances' @> ?::jsonb as keeper_before,
+                       after -> 'performances' @> ?::jsonb as keeper_after
+                from match_audit_entry where match_id = ? and action = 'CORRECTED'""",
+                "[{\"playerId\": \"" + keeper + "\"}]", "[{\"playerId\": \"" + keeper + "\"}]", match);
+        assertThat(entry).containsEntry("actor_user_id", admin)
+                .containsEntry("lines_before", 2)
+                .containsEntry("keeper_before", true)
+                .containsEntry("keeper_after", false);
+        assertThat(auditActionsOf(match)).containsExactly("SCHEDULED", "SHEET_RECORDED", "CLOSED", "CORRECTED");
+    }
+
+    @Test
+    void theSameSheetOnAClosedMatchIsNotACorrection() throws Exception {
+        UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1"), line(defender, "")));
+
+        putSheet(admin, match, sheet(1, 0, line(defender, ""), line(forward, "\"goals\": 1")))
+                .andExpect(status().isOk());
+
+        assertThat(events.stream(MatchCorrected.class)).isEmpty();
+        assertThat(auditActionsOf(match)).containsExactly("SCHEDULED", "SHEET_RECORDED", "CLOSED");
+    }
+
+    @Test
+    void aCorrectionKeepsTheSheetComplete() throws Exception {
+        UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1")));
+
+        putSheet(admin, match, sheet(null, null, line(forward, "\"goals\": 1"))).andExpect(status().isConflict());
+        putSheet(admin, match, sheet(1, 0)).andExpect(status().isConflict());
+
+        mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)))
+                .andExpect(jsonPath("$.result.goalsFor").value(1))
+                .andExpect(jsonPath("$.performances.length()").value(1));
+        assertThat(events.stream(MatchCorrected.class)).isEmpty();
+        assertThat(auditActionsOf(match)).doesNotContain("CORRECTED");
+    }
+
+    @Test
+    void aCorrectionKeepsPlayersRetiredAfterTheMatchButCannotAddThem() throws Exception {
+        UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1")));
+        bus.dispatch(new UpdatePlayerCommand(admin, league, forward, "Iago", null, Position.MIDFIELDER, BigDecimal.TEN));
+        bus.dispatch(new RetirePlayerCommand(admin, league, forward));
+        bus.dispatch(new RetirePlayerCommand(admin, league, defender));
+
+        putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"), line(defender, "")))
+                .andExpect(status().isBadRequest());
+        putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1, \"yellowCard\": true")))
+                .andExpect(status().isOk());
+
+        assertThat(events.stream(MatchCorrected.class)).singleElement().satisfies(e -> assertThat(e.performances())
+                .containsExactly(new PlayerPerformanceData(forward, Position.FORWARD, 1, 0, 0, 0, 0, 0, true, false,
+                        false)));
+    }
+
+    @Test
+    void onlyTheLeagueAdminCorrectsAClosedMatch() throws Exception {
+        UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1")));
+
+        for (UUID user : List.of(ana, outsider)) {
+            putSheet(user, match, sheet(2, 0, line(forward, "\"goals\": 2"))).andExpect(status().isForbidden());
+        }
+
+        assertThat(events.stream(MatchCorrected.class)).isEmpty();
+        assertThat(auditActionsOf(match)).containsExactly("SCHEDULED", "SHEET_RECORDED", "CLOSED");
+    }
+
     @Test
     void onlyTheLeagueAdminRecordsTheSheetAndClosesTheMatch() throws Exception {
         UUID match = schedule(KICKOFF);

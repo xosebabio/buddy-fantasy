@@ -8,6 +8,8 @@ import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.getmatch.GetMatchQuery;
 import com.buddyfantasy.match.application.usecases.getmatch.MatchView;
+import com.buddyfantasy.match.application.usecases.listmatchaudit.ListMatchAuditQuery;
+import com.buddyfantasy.match.application.usecases.listmatchaudit.MatchAuditEntryView;
 import com.buddyfantasy.match.application.usecases.listmatches.ListMatchesQuery;
 import com.buddyfantasy.match.application.usecases.listmatches.MatchSummaryView;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
@@ -85,5 +87,11 @@ class MatchesController {
     MatchView close(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @PathVariable UUID matchId) {
         bus.dispatch(new CloseMatchCommand(user.userId(), id, matchId));
         return get(user, id, matchId);
+    }
+
+    @GetMapping("/api/leagues/{id}/matches/{matchId}/audit")
+    List<MatchAuditEntryView> audit(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
+                                    @PathVariable UUID matchId) {
+        return bus.ask(new ListMatchAuditQuery(user.userId(), id, matchId));
     }
 }

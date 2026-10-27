@@ -126,15 +126,15 @@ Las fechas se envían y devuelven en ISO-8601 (`Instant`, UTC). Todos los endpoi
 
 ## 8. Orden de ejecución
 
-| # | Tarea | Resultado |
-| --- | --- | --- |
-| 1 | Migración V8, `Match`, `MatchSheet`, `PlayerPerformance` y eventos, con tests unitarios; `allowedDependencies` de `match` | Dominio verificado |
-| 2 | `SquadApi` en `squad` con su test | Jugadores consultables desde otros módulos |
-| 3 | Persistencia, puerto y adaptador de auditoría, `ScheduleMatchCommand`, `ListMatchesQuery`, `GetMatchQuery` y sus endpoints | RF-12 |
-| 4 | `UpdateMatchCommand` y `DeleteMatchCommand` | Aplazados y suspendidos |
-| 5 | `RecordMatchSheetCommand` (con avisos y visibilidad) y `CloseMatchCommand` | RF-13, RF-14 y `MatchClosed` |
-| 6 | Correcciones en partidos cerrados y `ListMatchAuditQuery` | RF-16 y RNF-04 |
-| 7 | Tests de seguridad y arquitectura; `AGENTS.md` (estado) y marcar el ítem en `requirements.md`, indicando que el cálculo de RF-15 llega con `scoring` | Ítem de Fase 1 cerrado |
+| # | Tarea | Resultado | Hecho |
+| --- | --- | --- | --- |
+| 1 | Migración V8, `Match`, `MatchSheet`, `PlayerPerformance` y eventos, con tests unitarios; `allowedDependencies` de `match` | Dominio verificado | ✅ |
+| 2 | `SquadApi` en `squad` con su test | Jugadores consultables desde otros módulos | ✅ |
+| 3 | Persistencia, puerto y adaptador de auditoría, `ScheduleMatchCommand`, `ListMatchesQuery`, `GetMatchQuery` y sus endpoints | RF-12 | ✅ |
+| 4 | `UpdateMatchCommand` y `DeleteMatchCommand` | Aplazados y suspendidos | ✅ |
+| 5 | `RecordMatchSheetCommand` (con avisos y visibilidad) y `CloseMatchCommand` | RF-13, RF-14 y `MatchClosed` | ✅ |
+| 6 | Correcciones en partidos cerrados y `ListMatchAuditQuery` | RF-16 y RNF-04 | ✅ |
+| 7 | Tests de seguridad y arquitectura; `AGENTS.md` (estado) y marcar el ítem en `requirements.md`, indicando que el cálculo de RF-15 llega con `scoring` | Ítem de Fase 1 cerrado |  |
 
 Cada tarea es un commit `feat(match): … (RF-12)` en Conventional Commits.
 

@@ -78,7 +78,8 @@ class ApiSecurityTests {
                 new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/matches/{matchId}"),
                 new Endpoint(HttpMethod.DELETE, "/api/leagues/{id}/matches/{matchId}"),
                 new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/matches/{matchId}/sheet"),
-                new Endpoint(HttpMethod.POST, "/api/leagues/{id}/matches/{matchId}/close"));
+                new Endpoint(HttpMethod.POST, "/api/leagues/{id}/matches/{matchId}/close"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/matches/{matchId}/audit"));
     }
 
     @Test
