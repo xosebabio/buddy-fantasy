@@ -26,6 +26,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
@@ -36,8 +38,10 @@ import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(PostgresTestConfig.class)
+@RecordApplicationEvents
 class MatchesEndpointsTests {
 
     static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
@@ -61,6 +66,9 @@ class MatchesEndpointsTests {
 
     @MockitoSpyBean
     MatchRepository matches;
+
+    @Autowired
+    ApplicationEvents events;
 
     UUID admin;
     UUID ana;
@@ -127,6 +135,16 @@ class MatchesEndpointsTests {
     private int auditEntriesIn(UUID leagueId) {
         return jdbc.queryForObject("select count(*) from match_audit_entry where league_id = ?", Integer.class,
                 leagueId);
+    }
+
+    private List<Map<String, Object>> auditOf(UUID matchId) {
+        return jdbc.queryForList("""
+                select actor_user_id, action, before ->> 'matchday' as before_matchday,
+                       before ->> 'opponent' as before_opponent, before ->> 'kickoffAt' as before_kickoff_at,
+                       after ->> 'matchday' as after_matchday, after ->> 'opponent' as after_opponent,
+                       after ->> 'venue' as after_venue, after ->> 'kickoffAt' as after_kickoff_at,
+                       after is null as no_after
+                from match_audit_entry where match_id = ? order by occurred_at""", matchId);
     }
 
     private static String body(Integer matchday, String opponent, String venue, String kickoffAt) {
@@ -338,7 +356,228 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    void adminEditsOpponentAndVenueAndTheChangeIsAudited() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(1, "  Os Ninguéns  ", "AWAY", "2026-01-11T10:00:00Z")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.opponent").value("Os Ninguéns"))
+                .andExpect(jsonPath("$.venue").value("AWAY"))
+                .andExpect(jsonPath("$.matchday").value(1))
+                .andExpect(jsonPath("$.kickoffAt").value("2026-01-11T10:00:00Z"));
+
+        assertThat(auditOf(match)).last().satisfies(entry -> assertThat(entry)
+                .containsEntry("actor_user_id", admin)
+                .containsEntry("action", "DETAILS_UPDATED")
+                .containsEntry("before_opponent", "Rival 1")
+                .containsEntry("after_opponent", "Os Ninguéns")
+                .containsEntry("after_venue", "AWAY"));
+        assertThat(events.stream(MatchRescheduled.class)).isEmpty();
+    }
+
+    @Test
+    void postponingAMatchPublishesMatchRescheduledAndIsAudited() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-25T11:30:00Z")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.matchday").value(2))
+                .andExpect(jsonPath("$.kickoffAt").value("2026-01-25T11:30:00Z"));
+
+        assertThat(events.stream(MatchRescheduled.class)).singleElement().satisfies(e -> {
+            assertThat(e.leagueId()).isEqualTo(league);
+            assertThat(e.matchId()).isEqualTo(match);
+            assertThat(e.matchday()).isEqualTo(2);
+            assertThat(e.previousKickoffAt()).isEqualTo(KICKOFF);
+            assertThat(e.kickoffAt()).isEqualTo(Instant.parse("2026-01-25T11:30:00Z"));
+        });
+        assertThat(auditOf(match)).last().satisfies(entry -> assertThat(entry)
+                .containsEntry("action", "RESCHEDULED")
+                .containsEntry("before_matchday", "1")
+                .containsEntry("before_kickoff_at", "2026-01-11T10:00:00Z")
+                .containsEntry("after_matchday", "2")
+                .containsEntry("after_kickoff_at", "2026-01-25T11:30:00Z"));
+    }
+
+    @Test
+    void anUpdateWithoutChangesLeavesNoAuditEntry() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(1, "Rival 1 ", "HOME", "2026-01-11T10:00:00Z")))
+                .andExpect(status().isOk());
+
+        assertThat(auditOf(match)).extracting(entry -> entry.get("action")).containsExactly("SCHEDULED");
+        assertThat(events.stream(MatchRescheduled.class)).isEmpty();
+    }
+
+    @Test
+    void anUpdateKeepsMatchdayAndKickoffUniquePerLeague() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+        schedule(2, KICKOFF.plusSeconds(7 * 86400));
+
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-11T10:00:00Z")))
+                .andExpect(status().isConflict());
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-18T10:00:00Z")))
+                .andExpect(status().isConflict());
+        // keeping its own matchday while moving the kickoff is fine
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-12T19:00:00Z")))
+                .andExpect(status().isOk());
+
+        assertThat(auditOf(match)).extracting(entry -> entry.get("action"))
+                .containsExactly("SCHEDULED", "RESCHEDULED");
+        assertThat(events.stream(MatchRescheduled.class)).hasSize(1);
+    }
+
+    @Test
+    void concurrentClashesOnUpdateAreStill409AndLeaveNoAuditEntry() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+        schedule(2, KICKOFF.plusSeconds(7 * 86400));
+        // simulate a race: the pre-checks pass, the unique indexes reject the update
+        doReturn(false).when(matches).existsMatchday(any(), any());
+        doReturn(false).when(matches).existsKickoff(any(), any());
+
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-11T10:00:00Z")))
+                .andExpect(status().isConflict());
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-18T10:00:00Z")))
+                .andExpect(status().isConflict());
+
+        assertThat(auditOf(match)).hasSize(1);
+        assertThat(events.stream(MatchRescheduled.class)).isEmpty();
+    }
+
+    @Test
+    void aClosedMatchKeepsItsMatchdayAndKickoffButItsDetailsCanChange() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+        recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
+        close(match);
+
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-11T10:00:00Z")))
+                .andExpect(status().isConflict());
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-18T10:00:00Z")))
+                .andExpect(status().isConflict());
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(1, "Os Ninguéns", "AWAY", "2026-01-11T10:00:00Z")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CLOSED"))
+                .andExpect(jsonPath("$.opponent").value("Os Ninguéns"))
+                .andExpect(jsonPath("$.venue").value("AWAY"))
+                .andExpect(jsonPath("$.result.goalsFor").value(1))
+                .andExpect(jsonPath("$.performances.length()").value(1));
+
+        assertThat(auditOf(match)).extracting(entry -> entry.get("action"))
+                .containsExactly("SCHEDULED", "DETAILS_UPDATED");
+        assertThat(events.stream(MatchRescheduled.class)).isEmpty();
+    }
+
+    @Test
+    void invalidUpdatesAre400() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+
+        for (String request : List.of(
+                body(0, "Rival", "HOME", "2026-01-11T10:00:00Z"),
+                body(null, "Rival", "HOME", "2026-01-11T10:00:00Z"),
+                body(1, "  ", "HOME", "2026-01-11T10:00:00Z"),
+                body(1, "x".repeat(101), "HOME", "2026-01-11T10:00:00Z"),
+                body(1, "Rival", "NEUTRAL", "2026-01-11T10:00:00Z"),
+                body(1, "Rival", "HOME", null))) {
+            mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
+                    .contentType(APPLICATION_JSON).content(request)).andExpect(status().isBadRequest());
+        }
+        assertThat(auditOf(match)).hasSize(1);
+    }
+
+    @Test
+    void adminDeletesAScheduledMatchAndItsHistoryIsKept() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+        recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
+
+        mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf()))
+                .andExpect(status().isNoContent());
+
+        assertThat(matchesIn(league)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from match_player_performance where match_id = ?",
+                Integer.class, match)).isZero();
+        mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)))
+                .andExpect(status().isNotFound());
+        assertThat(auditOf(match)).extracting(entry -> entry.get("action")).containsExactly("SCHEDULED", "DELETED");
+        assertThat(auditOf(match)).last().satisfies(entry -> assertThat(entry)
+                .containsEntry("actor_user_id", admin)
+                .containsEntry("before_opponent", "Rival 1")
+                .containsEntry("no_after", true));
+        assertThat(events.stream(MatchDeleted.class)).singleElement().satisfies(e -> {
+            assertThat(e.leagueId()).isEqualTo(league);
+            assertThat(e.matchId()).isEqualTo(match);
+            assertThat(e.matchday()).isEqualTo(1);
+        });
+        // the matchday and the kickoff are free again
+        schedule(1, KICKOFF);
+    }
+
+    @Test
+    void aClosedMatchIsNeverDeleted() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+        recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
+        close(match);
+
+        mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf()))
+                .andExpect(status().isConflict());
+
+        assertThat(matchesIn(league)).isEqualTo(1);
+        assertThat(auditOf(match)).hasSize(1);
+        assertThat(events.stream(MatchDeleted.class)).isEmpty();
+    }
+
+    @Test
+    void onlyTheLeagueAdminCanUpdateOrDelete() throws Exception {
+        UUID match = schedule(1, KICKOFF);
+        String request = body(2, "Otro", "AWAY", "2026-01-18T10:00:00Z");
+
+        // a manager of the league and the admin of another league
+        for (UUID user : List.of(ana, outsider)) {
+            mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(user)).with(csrf())
+                    .contentType(APPLICATION_JSON).content(request)).andExpect(status().isForbidden());
+            mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, match).with(as(user)).with(csrf()))
+                    .andExpect(status().isForbidden());
+        }
+
+        mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)))
+                .andExpect(jsonPath("$.matchday").value(1))
+                .andExpect(jsonPath("$.opponent").value("Rival 1"));
+        assertThat(auditOf(match)).hasSize(1);
+        assertThat(events.stream(MatchRescheduled.class)).isEmpty();
+        assertThat(events.stream(MatchDeleted.class)).isEmpty();
+    }
+
+    @Test
+    void matchesCannotBeUpdatedOrDeletedThroughAnotherLeague() throws Exception {
+        UUID foreign = schedule(otherLeague, outsider, 1, "De otra liga", KICKOFF);
+
+        // the admin of "Peña" using their own league's route with another league's match
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, foreign).with(as(admin)).with(csrf())
+                        .contentType(APPLICATION_JSON).content(body(2, "Otro", "AWAY", "2026-01-18T10:00:00Z")))
+                .andExpect(status().isNotFound());
+        mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, foreign).with(as(admin)).with(csrf()))
+                .andExpect(status().isNotFound());
+
+        mvc.perform(get("/api/leagues/{id}/matches/{m}", otherLeague, foreign).with(as(outsider)))
+                .andExpect(jsonPath("$.matchday").value(1))
+                .andExpect(jsonPath("$.opponent").value("De otra liga"));
+        assertThat(auditOf(foreign)).hasSize(1);
+    }
+
+    @Test
     void securityWithoutSessionOrCsrf() throws Exception {
+
         UUID match = schedule(1, KICKOFF);
         String request = body(2, "Otro", "HOME", "2026-01-18T10:00:00Z");
 
@@ -348,6 +587,15 @@ class MatchesEndpointsTests {
                 .contentType(APPLICATION_JSON).content(request)).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin))
                 .contentType(APPLICATION_JSON).content(request)).andExpect(status().isForbidden());
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(csrf())
+                .contentType(APPLICATION_JSON).content(request)).andExpect(status().isUnauthorized());
+        mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin))
+                .contentType(APPLICATION_JSON).content(request)).andExpect(status().isForbidden());
+        mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, match).with(csrf()))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)))
+                .andExpect(status().isForbidden());
         assertThat(matchesIn(league)).isEqualTo(1);
+        assertThat(auditOf(match)).hasSize(1);
     }
 }

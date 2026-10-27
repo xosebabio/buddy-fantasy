@@ -23,4 +23,7 @@ public interface MatchRepository {
      * league (safety net for concurrent requests).
      */
     void save(Match match);
+
+    /** Physical delete of the match and its sheet; its audit entries stay. */
+    void delete(Match match);
 }

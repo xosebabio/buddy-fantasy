@@ -55,4 +55,9 @@ class JpaMatchRepository implements MatchRepository {
             throw e;
         }
     }
+
+    @Override
+    public void delete(Match match) {
+        jpa.deleteById(match.id().value());
+    }
 }

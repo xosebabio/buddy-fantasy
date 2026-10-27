@@ -4,20 +4,24 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.getmatch.GetMatchQuery;
 import com.buddyfantasy.match.application.usecases.getmatch.MatchView;
 import com.buddyfantasy.match.application.usecases.listmatches.ListMatchesQuery;
 import com.buddyfantasy.match.application.usecases.listmatches.MatchSummaryView;
 import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
+import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,5 +51,20 @@ class MatchesController {
     @GetMapping("/api/leagues/{id}/matches/{matchId}")
     MatchView get(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @PathVariable UUID matchId) {
         return bus.ask(new GetMatchQuery(user.userId(), id, matchId));
+    }
+
+    @PutMapping("/api/leagues/{id}/matches/{matchId}")
+    MatchView update(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @PathVariable UUID matchId,
+                     @Valid @RequestBody MatchRequest request) {
+        bus.dispatch(new UpdateMatchCommand(user.userId(), id, matchId, request.matchday(), request.opponent(),
+                request.venue(), request.kickoffAt()));
+        return get(user, id, matchId);
+    }
+
+    @DeleteMapping("/api/leagues/{id}/matches/{matchId}")
+    ResponseEntity<Void> delete(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
+                                @PathVariable UUID matchId) {
+        bus.dispatch(new DeleteMatchCommand(user.userId(), id, matchId));
+        return ResponseEntity.noContent().build();
     }
 }
