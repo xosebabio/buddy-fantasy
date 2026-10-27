@@ -88,6 +88,8 @@ Lo que ya está bien resuelto y conviene mantener:
 
 **T5 · JaCoCo, solo informe.** `jacoco-maven-plugin` en `mvn verify` (informe HTML en `backend/target/site/jacoco/`), subido como artefacto en `ci.yml`. Sin umbral que rompa el build.
 
+> Hecho así: `jacoco-maven-plugin` 0.8.14 (`jacoco.version` en el `pom.xml`), artefacto `jacoco-report` en CI. Un `backend/lombok.config` marca el código que genera Lombok con `@lombok.Generated` para que JaCoCo no lo cuente. Cobertura de partida (27-oct-2026, 414 tests): 97,9 % de líneas, 91,1 % de ramas; por módulo, en líneas, `identity` 99,0 %, `league` 99,1 %, `squad` 97,8 %, `match` 98,5 %, `lineup` 98,1 %, `shared` 87,2 % (56,2 % de ramas, el más bajo), y el `main` de `BuddyFantasyApplication` sin cubrir.
+
 Se mantiene todo en surefire con `mvn verify` (sin separar unitarios e integración, decidido).
 
 ### 4.2 Huecos de lo ya implementado
@@ -173,7 +175,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | --- | --- | --- | --- |
 | 1 | T1, T2, T3: un Postgres, `DatabaseCleaner`, `MutableClock`, `Listeners.await()` y `as(...)` compartidos; migrar todas las clases | Suite en verde con 1 contenedor de Postgres y sin `delete from` a mano | ✅ |
 | 2 | T4: `TestFixtures` y migración de los `setUp` | Tests más cortos, misma cobertura | ✅ |
-| 3 | T5: JaCoCo en `verify` y artefacto en CI | Informe de cobertura de partida | |
+| 3 | T5: JaCoCo en `verify` y artefacto en CI | Informe de cobertura de partida | ✅ |
 | 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | |
 | 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | |
 | 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | |

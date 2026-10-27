@@ -176,6 +176,7 @@ Desde la raíz del repo:
 docker compose -f deploy/docker-compose.dev.yml up -d   # Postgres (5432) y SeaweedFS para fotos (S3 en 8333; crea el bucket)
 cd backend
 mvn -B verify                                           # build + todos los tests (requiere Docker para Testcontainers)
+                                                        # informe de cobertura (JaCoCo, sin umbral) en target/site/jacoco/index.html
 mvn test -Dtest='ModularityTests,HexagonalArchitectureTests'   # solo verificación de arquitectura (sin Docker)
 S3_ENDPOINT=http://localhost:8333 AWS_ACCESS_KEY_ID=buddyfantasy AWS_SECRET_ACCESS_KEY=buddyfantasy-local \
   mvn spring-boot:run                                   # arranque local contra los servicios de arriba

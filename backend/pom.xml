@@ -24,6 +24,7 @@
     <testcontainers.version>1.21.4</testcontainers.version>
     <archunit.version>1.4.1</archunit.version>
     <awssdk.version>2.55.6</awssdk.version>
+    <jacoco.version>0.8.14</jacoco.version>
   </properties>
 
   <dependencyManagement>
@@ -199,6 +200,27 @@
             </exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <!-- Coverage report only, without a threshold: mvn verify writes target/site/jacoco/index.html -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
