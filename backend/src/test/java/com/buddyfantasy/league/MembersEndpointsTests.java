@@ -3,12 +3,8 @@ package com.buddyfantasy.league;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
-import com.buddyfantasy.league.application.usecases.regenerateinvitation.RegenerateInvitationCommand;
-import com.buddyfantasy.shared.application.CommandBus;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +31,7 @@ class MembersEndpointsTests {
     MockMvc mvc;
 
     @Autowired
-    CommandBus bus;
+    TestFixtures fixtures;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -48,18 +44,13 @@ class MembersEndpointsTests {
 
     @BeforeEach
     void setUp() {
-        admin = register("admin");
-        ana = register("ana");
-        bob = register("bob");
-        outsider = register("outsider");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
-        bus.dispatch(new JoinLeagueCommand(bob, created.invitationToken()));
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, "http://pic/" + sub)).value();
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        bob = fixtures.user("bob");
+        outsider = fixtures.user("outsider");
+        TestLeague peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana, bob);
     }
 
     private int members() {
@@ -135,20 +126,14 @@ class MembersEndpointsTests {
     @Test
     void rolesArePerLeague() throws Exception {
         // ana is MANAGER in "Peña" and ADMIN in her own league
-        UUID anaLeague = bus.dispatch(new CreateLeagueCommand(ana, "De Ana")).id().value();
-        bus.dispatch(new JoinLeagueCommand(bob, inviteTo(anaLeague)));
+        TestLeague anaLeague = fixtures.league(ana, "De Ana");
+        fixtures.join(anaLeague, bob);
 
         mvc.perform(delete("/api/leagues/{id}/members/{m}", league, bob).with(as(ana)).with(csrf()))
                 .andExpect(status().isForbidden());
-        mvc.perform(delete("/api/leagues/{id}/members/{m}", anaLeague, bob).with(as(ana)).with(csrf()))
+        mvc.perform(delete("/api/leagues/{id}/members/{m}", anaLeague.id(), bob).with(as(ana)).with(csrf()))
                 .andExpect(status().isNoContent());
         assertThat(members()).isEqualTo(3);
-    }
-
-    private String inviteTo(UUID leagueId) {
-        UUID leagueAdmin = jdbc.queryForObject(
-                "select user_id from league_membership where league_id = ? and role = 'ADMIN'", UUID.class, leagueId);
-        return bus.dispatch(new RegenerateInvitationCommand(leagueAdmin, leagueId));
     }
 
     @Test

@@ -1,19 +1,15 @@
 package com.buddyfantasy.squad;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.datadefinition.Position;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
-import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +51,9 @@ class PlayersEndpointsTests {
     CommandBus bus;
 
     @Autowired
+    TestFixtures fixtures;
+
+    @Autowired
     JdbcTemplate jdbc;
 
     @Autowired
@@ -66,28 +65,22 @@ class PlayersEndpointsTests {
     UUID admin;
     UUID ana;
     UUID outsider;
+    TestLeague peña;
     UUID league;
+    TestLeague other;
     UUID otherLeague;
 
     @BeforeEach
     void setUp() {
-        admin = register("admin");
-        ana = register("ana");
-        outsider = register("outsider");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        outsider = fixtures.user("outsider");
+        peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana);
         // outsider is ADMIN of another league, never a member of "Peña"
-        otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private UUID addPlayer(UUID leagueId, UUID leagueAdmin, String name, Integer shirtNumber, Position position) {
-        return bus.dispatch(new RegisterPlayerCommand(leagueAdmin, leagueId, name, shirtNumber, position,
-                new BigDecimal("10"))).value();
+        other = fixtures.league(outsider, "Otra");
+        otherLeague = other.id();
     }
 
     private void retire(UUID playerId) {
@@ -177,7 +170,7 @@ class PlayersEndpointsTests {
 
     @Test
     void shirtNumberIsUniqueAmongActivePlayersOfTheLeague() throws Exception {
-        addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Otro", 10, "DEFENDER", "10")))
@@ -191,7 +184,7 @@ class PlayersEndpointsTests {
 
     @Test
     void shirtNumberOfARetiredPlayerCanBeReused() throws Exception {
-        retire(addPlayer(league, admin, "Iago", 10, Position.FORWARD));
+        retire(fixtures.player(peña, "Iago", 10, Position.FORWARD));
 
         mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Otro", 10, "DEFENDER", "10")))
@@ -200,7 +193,7 @@ class PlayersEndpointsTests {
 
     @Test
     void concurrentDuplicateShirtNumberIsStill409() throws Exception {
-        addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        fixtures.player(peña, "Iago", 10, Position.FORWARD);
         // simulate a race: the pre-check passes, the unique index rejects the insert
         doReturn(false).when(players).existsActiveShirtNumber(any(), any());
 
@@ -212,13 +205,13 @@ class PlayersEndpointsTests {
 
     @Test
     void membersSeeTheActiveSquadOrderedByPositionAndShirtNumber() throws Exception {
-        addPlayer(league, admin, "Delantero", 9, Position.FORWARD);
-        addPlayer(league, admin, "Medio sin dorsal", null, Position.MIDFIELDER);
-        addPlayer(league, admin, "Medio 8", 8, Position.MIDFIELDER);
-        addPlayer(league, admin, "Portero", 1, Position.GOALKEEPER);
-        addPlayer(league, admin, "Defensa", 4, Position.DEFENDER);
-        retire(addPlayer(league, admin, "Retirado", 2, Position.DEFENDER));
-        addPlayer(otherLeague, outsider, "De otra liga", 5, Position.DEFENDER);
+        fixtures.player(peña, "Delantero", 9, Position.FORWARD);
+        fixtures.player(peña, "Medio sin dorsal", null, Position.MIDFIELDER);
+        fixtures.player(peña, "Medio 8", 8, Position.MIDFIELDER);
+        fixtures.player(peña, "Portero", 1, Position.GOALKEEPER);
+        fixtures.player(peña, "Defensa", 4, Position.DEFENDER);
+        retire(fixtures.player(peña, "Retirado", 2, Position.DEFENDER));
+        fixtures.player(other, "De otra liga", 5, Position.DEFENDER);
 
         mvc.perform(get("/api/leagues/{id}/players", league).with(as(ana)))
                 .andExpect(status().isOk())
@@ -228,8 +221,8 @@ class PlayersEndpointsTests {
 
     @Test
     void includeRetiredIsHonouredForTheAdminAndIgnoredForManagers() throws Exception {
-        addPlayer(league, admin, "Activo", 9, Position.FORWARD);
-        retire(addPlayer(league, admin, "Retirado", 2, Position.DEFENDER));
+        fixtures.player(peña, "Activo", 9, Position.FORWARD);
+        retire(fixtures.player(peña, "Retirado", 2, Position.DEFENDER));
 
         mvc.perform(get("/api/leagues/{id}/players", league).param("includeRetired", "true").with(as(admin)))
                 .andExpect(status().isOk())
@@ -246,7 +239,7 @@ class PlayersEndpointsTests {
 
     @Test
     void nonMembersCannotListOrSeePlayers() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         mvc.perform(get("/api/leagues/{id}/players", league).with(as(outsider))).andExpect(status().isForbidden());
         mvc.perform(get("/api/leagues/{id}/players/{p}", league, player).with(as(outsider)))
@@ -255,7 +248,7 @@ class PlayersEndpointsTests {
 
     @Test
     void membersSeeThePlayerCardIncludingRetiredPlayers() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         mvc.perform(get("/api/leagues/{id}/players/{p}", league, player).with(as(ana)))
                 .andExpect(status().isOk())
@@ -272,7 +265,7 @@ class PlayersEndpointsTests {
 
     @Test
     void playersAreIsolatedBetweenLeagues() throws Exception {
-        UUID foreign = addPlayer(otherLeague, outsider, "De otra liga", 5, Position.DEFENDER);
+        UUID foreign = fixtures.player(other, "De otra liga", 5, Position.DEFENDER);
 
         // a member of "Peña" asking for another league's player through "Peña"'s route
         mvc.perform(get("/api/leagues/{id}/players/{p}", league, foreign).with(as(ana)))
@@ -283,7 +276,7 @@ class PlayersEndpointsTests {
 
     @Test
     void adminUpdatesEveryEditableField() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(" Iago Aspas ", null, "MIDFIELDER", "20.25")))
@@ -301,9 +294,9 @@ class PlayersEndpointsTests {
 
     @Test
     void updateKeepsOrChangesTheShirtNumberWithoutClashing() throws Exception {
-        UUID iago = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
-        addPlayer(league, admin, "Hugo", 9, Position.FORWARD);
-        retire(addPlayer(league, admin, "Retirado", 7, Position.DEFENDER));
+        UUID iago = fixtures.player(peña, "Iago", 10, Position.FORWARD);
+        fixtures.player(peña, "Hugo", 9, Position.FORWARD);
+        retire(fixtures.player(peña, "Retirado", 7, Position.DEFENDER));
 
         // keeping their own number is fine
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, iago).with(as(admin)).with(csrf())
@@ -322,7 +315,7 @@ class PlayersEndpointsTests {
 
     @Test
     void onlyTheLeagueAdminCanUpdate() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
         String request = body("Cambiado", 10, "FORWARD", "10");
 
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(ana)).with(csrf())
@@ -334,7 +327,7 @@ class PlayersEndpointsTests {
 
     @Test
     void invalidUpdateIs400AndChangesNothing() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         for (String request : List.of(
                 body("Iago", 10, "COACH", "10"),
@@ -349,7 +342,7 @@ class PlayersEndpointsTests {
 
     @Test
     void retiredPlayerCannotBeUpdated() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
         retire(player);
 
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf())
@@ -360,7 +353,7 @@ class PlayersEndpointsTests {
 
     @Test
     void adminRetiresAPlayerWhoLeavesTheActiveSquadButKeepsTheCard() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf()))
                 .andExpect(status().isNoContent());
@@ -378,7 +371,7 @@ class PlayersEndpointsTests {
 
     @Test
     void retireIsIdempotentAndPublishesPlayerRetiredOnce() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf()))
                 .andExpect(status().isNoContent());
@@ -395,7 +388,7 @@ class PlayersEndpointsTests {
 
     @Test
     void onlyTheLeagueAdminCanRetire() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
         mvc.perform(delete("/api/leagues/{id}/players/{p}", league, player).with(as(ana)).with(csrf()))
                 .andExpect(status().isForbidden());
@@ -407,7 +400,7 @@ class PlayersEndpointsTests {
 
     @Test
     void anotherLeaguesPlayerCannotBeUpdatedOrRetired() throws Exception {
-        UUID foreign = addPlayer(otherLeague, outsider, "De otra liga", 5, Position.DEFENDER);
+        UUID foreign = fixtures.player(other, "De otra liga", 5, Position.DEFENDER);
 
         // admin of "Peña" targeting another league's player through "Peña"'s route
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, foreign).with(as(admin)).with(csrf())
@@ -424,7 +417,7 @@ class PlayersEndpointsTests {
 
     @Test
     void securityWithoutSessionOrCsrf() throws Exception {
-        UUID player = addPlayer(league, admin, "Iago", 10, Position.FORWARD);
+        UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
         String request = body("Otro", 11, "FORWARD", "10");
 
         mvc.perform(get("/api/leagues/{id}/players", league)).andExpect(status().isUnauthorized());

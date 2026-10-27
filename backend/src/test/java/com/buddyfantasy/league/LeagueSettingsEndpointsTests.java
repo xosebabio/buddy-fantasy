@@ -1,15 +1,10 @@
 package com.buddyfantasy.league;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.port.out.MembershipRepository;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.domain.LeagueId;
-import com.buddyfantasy.league.domain.Membership;
-import com.buddyfantasy.shared.application.CommandBus;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,16 +30,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PostgresTestConfig.class)
 class LeagueSettingsEndpointsTests {
 
-    static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
-
     @Autowired
     MockMvc mvc;
 
     @Autowired
-    CommandBus bus;
-
-    @Autowired
-    MembershipRepository memberships;
+    TestFixtures fixtures;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -59,16 +49,12 @@ class LeagueSettingsEndpointsTests {
 
     @BeforeEach
     void setUp() {
-        admin = register("admin");
-        manager = register("manager");
-        outsider = register("outsider");
-        league = bus.dispatch(new CreateLeagueCommand(admin, "Peña")).id().value();
-        memberships.save(Membership.join(new LeagueId(league), manager,
-                LeagueRole.MANAGER, NOW));
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", sub, null)).value();
+        admin = fixtures.user("admin");
+        manager = fixtures.user("manager");
+        outsider = fixtures.user("outsider");
+        TestLeague peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, manager);
     }
 
     private ObjectNode currentSettings() throws Exception {
@@ -160,7 +146,7 @@ class LeagueSettingsEndpointsTests {
 
     @Test
     void managerAndAdminOfAnotherLeagueCannotEdit() throws Exception {
-        UUID otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
+        UUID otherLeague = fixtures.league(outsider, "Otra").id();
         ObjectNode body = currentSettings().put("lineupSize", 11);
 
         update(manager, body).andExpect(status().isForbidden());

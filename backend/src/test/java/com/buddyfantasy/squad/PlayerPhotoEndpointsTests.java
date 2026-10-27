@@ -1,18 +1,14 @@
 package com.buddyfantasy.squad;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.datadefinition.Position;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.usecases.confirmplayerphoto.ConfirmPlayerPhotoCommand;
-import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.PlayerPhotoKey;
@@ -51,6 +47,9 @@ class PlayerPhotoEndpointsTests {
     CommandBus bus;
 
     @Autowired
+    TestFixtures fixtures;
+
+    @Autowired
     JdbcTemplate jdbc;
 
     @Autowired
@@ -59,31 +58,25 @@ class PlayerPhotoEndpointsTests {
     UUID admin;
     UUID ana;
     UUID outsider;
+    TestLeague peña;
     UUID league;
+    TestLeague other;
     UUID otherLeague;
     UUID player;
 
     @BeforeEach
     void setUp() {
         storage.reset();
-        admin = register("admin");
-        ana = register("ana");
-        outsider = register("outsider");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        outsider = fixtures.user("outsider");
+        peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana);
         // outsider is ADMIN of another league, never a member of "Peña"
-        otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
-        player = addPlayer(league, admin, "Iago", 10);
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private UUID addPlayer(UUID leagueId, UUID leagueAdmin, String name, Integer shirtNumber) {
-        return bus.dispatch(new RegisterPlayerCommand(leagueAdmin, leagueId, name, shirtNumber, Position.FORWARD,
-                new BigDecimal("10"))).value();
+        other = fixtures.league(outsider, "Otra");
+        otherLeague = other.id();
+        player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
     }
 
     private String photoKeyOf(UUID playerId) {
@@ -150,7 +143,7 @@ class PlayerPhotoEndpointsTests {
         mvc.perform(post("/api/leagues/{id}/players/{p}/photo/upload", league, player).with(as(outsider)).with(csrf())
                 .contentType(APPLICATION_JSON).content(body)).andExpect(status().isForbidden());
 
-        UUID foreign = addPlayer(otherLeague, outsider, "De otra liga", 5);
+        UUID foreign = fixtures.player(other, "De otra liga", 5, Position.FORWARD);
         mvc.perform(post("/api/leagues/{id}/players/{p}/photo/upload", league, foreign).with(as(admin)).with(csrf())
                 .contentType(APPLICATION_JSON).content(body)).andExpect(status().isNotFound());
 
@@ -185,7 +178,7 @@ class PlayerPhotoEndpointsTests {
 
     @Test
     void confirmRejectsKeysOfAnotherPlayerOrLeagueMissingObjectsAndInvalidFiles() throws Exception {
-        UUID teammate = addPlayer(league, admin, "Hugo", 9);
+        UUID teammate = fixtures.player(peña, "Hugo", 9, Position.FORWARD);
         String teammatesKey = uploadedKey(teammate);
         String otherLeaguesKey = PlayerPhotoKey.generate(otherLeague, new PlayerId(player)).value();
         storage.upload(otherLeaguesKey, WEBP, 30_000);
@@ -275,7 +268,7 @@ class PlayerPhotoEndpointsTests {
     void removeRequiresTheLeagueAdminAndTheRightLeague() throws Exception {
         String key = uploadedKey(player);
         confirm(player, key);
-        UUID foreign = addPlayer(otherLeague, outsider, "De otra liga", 5);
+        UUID foreign = fixtures.player(other, "De otra liga", 5, Position.FORWARD);
 
         mvc.perform(delete("/api/leagues/{id}/players/{p}/photo", league, player).with(as(ana)).with(csrf()))
                 .andExpect(status().isForbidden());

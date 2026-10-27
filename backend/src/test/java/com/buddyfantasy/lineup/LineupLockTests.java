@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -12,24 +11,16 @@ import java.util.stream.Stream;
 import com.buddyfantasy.Listeners;
 import com.buddyfantasy.MutableClock;
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.datadefinition.Position;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.league.application.usecases.removemember.RemoveMemberCommand;
 import com.buddyfantasy.lineup.adapter.in.scheduler.LockDueLineupsJob;
 import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLineupsCommand;
 import com.buddyfantasy.lineup.application.usecases.savelineup.SaveLineupCommand;
-import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
-import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceLine;
-import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
-import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +32,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 
+import static com.buddyfantasy.TestFixtures.played;
+import static com.buddyfantasy.datadefinition.Position.DEFENDER;
+import static com.buddyfantasy.datadefinition.Position.FORWARD;
+import static com.buddyfantasy.datadefinition.Position.GOALKEEPER;
+import static com.buddyfantasy.datadefinition.Position.MIDFIELDER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -66,6 +62,9 @@ class LineupLockTests {
     CommandBus bus;
 
     @Autowired
+    TestFixtures fixtures;
+
+    @Autowired
     JdbcTemplate jdbc;
 
     @Autowired
@@ -79,6 +78,7 @@ class LineupLockTests {
 
     UUID admin;
     UUID ana;
+    TestLeague peña;
     UUID league;
     /** 12 active players of 10 M: 2 goalkeepers, 4 defenders, 4 midfielders and 2 forwards, in this order. */
     List<UUID> squad;
@@ -92,36 +92,27 @@ class LineupLockTests {
     @BeforeEach
     void setUp() {
         clock.now = NOW;
-        admin = register("admin");
-        ana = register("ana");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
-        jdbc.update("""
-                update league_settings
-                set lineup_size = 7, lineup_lock_hours = 2, lineup_max_changes = 2, lineup_formation_enabled = false,
-                    lineup_budget_enabled = true, lineup_budget = 100
-                where league_id = ?""", league);
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana);
+        fixtures.settings(peña, settings -> {
+            settings.lineupSize = 7;
+            settings.lineupLockHours = 2;
+            settings.lineupMaxChanges = 2;
+            settings.lineupFormationEnabled = false;
+            settings.lineupBudgetEnabled = true;
+            settings.lineupBudget = new BigDecimal("100");
+        });
 
-        squad = new ArrayList<>();
-        Stream.of(Position.GOALKEEPER, Position.GOALKEEPER, Position.DEFENDER, Position.DEFENDER,
-                        Position.DEFENDER, Position.DEFENDER, Position.MIDFIELDER, Position.MIDFIELDER,
-                        Position.MIDFIELDER, Position.MIDFIELDER, Position.FORWARD, Position.FORWARD)
-                .forEach(position -> squad.add(bus.dispatch(new RegisterPlayerCommand(admin, league, "Player", null,
-                        position, BigDecimal.TEN)).value()));
+        squad = fixtures.squad(peña, GOALKEEPER, GOALKEEPER, DEFENDER, DEFENDER, DEFENDER, DEFENDER, MIDFIELDER,
+                MIDFIELDER, MIDFIELDER, MIDFIELDER, FORWARD, FORWARD);
         lineupA = List.copyOf(squad.subList(0, 7));
         lineupB = Stream.concat(squad.subList(0, 5).stream(), Stream.of(squad.get(7), squad.get(8))).toList();
 
-        match1 = schedule(1, KICKOFF_1);
-        match2 = schedule(2, KICKOFF_2);
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private UUID schedule(int matchday, Instant kickoffAt) {
-        return bus.dispatch(new ScheduleMatchCommand(admin, league, matchday, "Rival", Venue.HOME, kickoffAt)).value();
+        match1 = fixtures.schedule(peña, 1, KICKOFF_1);
+        match2 = fixtures.schedule(peña, 2, KICKOFF_2);
     }
 
     private void save(UUID userId, List<UUID> playerIds) {
@@ -129,10 +120,7 @@ class LineupLockTests {
     }
 
     private void close(UUID matchId) {
-        bus.dispatch(new RecordMatchSheetCommand(admin, league, matchId, 1, 0, List.of(
-                new PerformanceLine(squad.get(10), 1, 0, 0, 0, 0, 0, false, false, false))));
-        bus.dispatch(new CloseMatchCommand(admin, league, matchId));
-        Listeners.await(jdbc);
+        fixtures.closeWithSheet(peña, matchId, 1, 0, played(squad.get(10), 1));
     }
 
     private void postpone(UUID matchId, int matchday, Instant kickoffAt) {
@@ -261,7 +249,7 @@ class LineupLockTests {
         save(ana, lineupB);
 
         // played on 15 January, between matches 1 and 2, and loaded afterwards
-        UUID played = schedule(3, Instant.parse("2026-01-15T10:00:00Z"));
+        UUID played = fixtures.schedule(peña, 3, Instant.parse("2026-01-15T10:00:00Z"));
         close(played);
 
         assertThat(lockedMatches()).containsExactly(played);
@@ -395,7 +383,7 @@ class LineupLockTests {
     void theJobLocksEveryDueMatchAndSkipsTheOnesAhead() {
         save(ana, lineupA);
         clock.now = KICKOFF_2.minus(Duration.ofHours(2)).plus(MARGIN);
-        UUID match3 = schedule(3, KICKOFF_2.plus(Duration.ofDays(7)));
+        UUID match3 = fixtures.schedule(peña, 3, KICKOFF_2.plus(Duration.ofDays(7)));
 
         job.lockDueLineups();
 

@@ -84,6 +84,8 @@ Lo que ya está bien resuelto y conviene mantener:
 
 **T4 · `TestFixtures`.** Bean de test sobre el `CommandBus` para preparar datos sin repetir código: `user(sub)`, `league(admin)` → `CreatedLeague`, `join(user, league)`, `squad(league, posiciones…)`, `schedule(league, jornada, kickoff)`, `closeWithSheet(match, …)`, `settings(league, …)`. Se migran todos los `setUp`.
 
+> Hecho así: `PostgresTestConfig` lo importa, así que está en todo test de Spring sin otro `@Import` ni contextos nuevos. `league(admin)` devuelve un `TestLeague(id, admin, invitationToken)` en lugar de `CreatedLeague`, para que el resto de métodos no pidan el admin: `join(league, users…)`, `player(league, …)`, `squad(league, posiciones…)`, `schedule(league, jornada, [rival,] kickoff)`, `sheet(league, match, …)` y `closeWithSheet(league, match, …)`, que además espera a los listeners de `MatchClosed`. `settings(league, cambio)` pasa por el caso de uso del admin con un `EditableSettings` (los parámetros vigentes como campos públicos), y `played(player, goles)` crea una línea del acta. Se quedan como estaban, a propósito, los tests de API de módulo (`LeagueAccessTests`, `LeagueSettingsProviderTests`, `MatchApiTests`, `MatchRepositoryTests`, `SquadApiTests`), que preparan datos con el repositorio del propio módulo para probarlo aislado y contar sus sentencias, y los `*MigrationTests`, que insertan por SQL para probar el esquema.
+
 **T5 · JaCoCo, solo informe.** `jacoco-maven-plugin` en `mvn verify` (informe HTML en `backend/target/site/jacoco/`), subido como artefacto en `ci.yml`. Sin umbral que rompa el build.
 
 Se mantiene todo en surefire con `mvn verify` (sin separar unitarios e integración, decidido).
@@ -170,7 +172,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | # | Tarea | Salida | Hecho |
 | --- | --- | --- | --- |
 | 1 | T1, T2, T3: un Postgres, `DatabaseCleaner`, `MutableClock`, `Listeners.await()` y `as(...)` compartidos; migrar todas las clases | Suite en verde con 1 contenedor de Postgres y sin `delete from` a mano | ✅ |
-| 2 | T4: `TestFixtures` y migración de los `setUp` | Tests más cortos, misma cobertura | |
+| 2 | T4: `TestFixtures` y migración de los `setUp` | Tests más cortos, misma cobertura | ✅ |
 | 3 | T5: JaCoCo en `verify` y artefacto en CI | Informe de cobertura de partida | |
 | 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | |
 | 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | |

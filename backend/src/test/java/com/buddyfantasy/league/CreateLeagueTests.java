@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
+import com.buddyfantasy.TestFixtures;
 import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
@@ -50,6 +50,9 @@ class CreateLeagueTests {
     CommandBus bus;
 
     @Autowired
+    TestFixtures fixtures;
+
+    @Autowired
     LeagueRepository leagues;
 
     @Autowired
@@ -64,17 +67,13 @@ class CreateLeagueTests {
     @Autowired
     JdbcTemplate jdbc;
 
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
     private int count(String table) {
         return jdbc.queryForObject("select count(*) from " + table, Integer.class);
     }
 
     @Test
     void createsLeagueWithSettingsRulesAndAdminMembership() throws Exception {
-        UUID ana = register("ana");
+        UUID ana = fixtures.user("ana");
 
         mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
                         .contentType(APPLICATION_JSON).content("{\"name\":\"  Peña del domingo \"}"))
@@ -111,7 +110,7 @@ class CreateLeagueTests {
 
     @Test
     void failureWhileSavingMembershipRollsEverythingBack() {
-        UUID ana = register("ana");
+        UUID ana = fixtures.user("ana");
         Mockito.doThrow(new IllegalStateException("boom")).when(memberships).save(Mockito.any());
 
         assertThatThrownBy(() -> bus.dispatch(new CreateLeagueCommand(ana, "A")))
@@ -124,7 +123,7 @@ class CreateLeagueTests {
 
     @Test
     void blankOrTooLongNameIs400() throws Exception {
-        UUID ana = register("ana");
+        UUID ana = fixtures.user("ana");
 
         for (String body : List.of("{\"name\":\"  \"}", "{}", "{\"name\":\"" + "x".repeat(101) + "\"}")) {
             mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
@@ -136,7 +135,7 @@ class CreateLeagueTests {
 
     @Test
     void withoutSessionIs401AndWithoutCsrfIs403() throws Exception {
-        UUID ana = register("ana");
+        UUID ana = fixtures.user("ana");
 
         mvc.perform(post("/api/leagues").with(csrf()).contentType(APPLICATION_JSON).content("{\"name\":\"A\"}"))
                 .andExpect(status().isUnauthorized());

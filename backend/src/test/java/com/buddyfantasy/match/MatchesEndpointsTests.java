@@ -7,14 +7,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.match.application.port.out.MatchRepository;
-import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
-import com.buddyfantasy.match.domain.Venue;
-import com.buddyfantasy.shared.application.CommandBus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +49,7 @@ class MatchesEndpointsTests {
     MockMvc mvc;
 
     @Autowired
-    CommandBus bus;
+    TestFixtures fixtures;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -68,32 +63,22 @@ class MatchesEndpointsTests {
     UUID admin;
     UUID ana;
     UUID outsider;
+    TestLeague peña;
     UUID league;
+    TestLeague other;
     UUID otherLeague;
 
     @BeforeEach
     void setUp() {
-        admin = register("admin");
-        ana = register("ana");
-        outsider = register("outsider");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        outsider = fixtures.user("outsider");
+        peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana);
         // outsider is ADMIN of another league, never a member of "Peña"
-        otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private UUID schedule(UUID leagueId, UUID leagueAdmin, int matchday, String opponent, Instant kickoffAt) {
-        return bus.dispatch(new ScheduleMatchCommand(leagueAdmin, leagueId, matchday, opponent, Venue.HOME,
-                kickoffAt)).value();
-    }
-
-    private UUID schedule(int matchday, Instant kickoffAt) {
-        return schedule(league, admin, matchday, "Rival " + matchday, kickoffAt);
+        other = fixtures.league(outsider, "Otra");
+        otherLeague = other.id();
     }
 
     /**
@@ -216,7 +201,7 @@ class MatchesEndpointsTests {
 
     @Test
     void matchdayAndKickoffAreUniquePerLeague() throws Exception {
-        schedule(1, KICKOFF);
+        fixtures.schedule(peña, 1, KICKOFF);
 
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Otro", "HOME", "2026-01-18T10:00:00Z")))
@@ -235,7 +220,7 @@ class MatchesEndpointsTests {
 
     @Test
     void concurrentDuplicatesAreStill409AndLeaveNoAuditEntry() throws Exception {
-        schedule(1, KICKOFF);
+        fixtures.schedule(peña, 1, KICKOFF);
         // simulate a race: the pre-checks pass, the unique indexes reject the insert
         doReturn(false).when(matches).existsMatchday(any(), any());
         doReturn(false).when(matches).existsKickoff(any(), any());
@@ -254,10 +239,10 @@ class MatchesEndpointsTests {
     @Test
     void membersSeeTheCalendarByMatchday() throws Exception {
         // matchday 2 was postponed after matchday 3: the calendar still follows the matchday
-        schedule(2, KICKOFF.plusSeconds(14 * 86400));
-        schedule(3, KICKOFF.plusSeconds(7 * 86400));
-        schedule(1, KICKOFF);
-        schedule(otherLeague, outsider, 4, "De otra liga", KICKOFF);
+        fixtures.schedule(peña, 2, KICKOFF.plusSeconds(14 * 86400));
+        fixtures.schedule(peña, 3, KICKOFF.plusSeconds(7 * 86400));
+        fixtures.schedule(peña, 1, KICKOFF);
+        fixtures.schedule(other, 4, "De otra liga", KICKOFF);
 
         mvc.perform(get("/api/leagues/{id}/matches", league).with(as(ana)))
                 .andExpect(status().isOk())
@@ -271,10 +256,10 @@ class MatchesEndpointsTests {
 
     @Test
     void managersSeeResultsInTheCalendarOnlyOnceTheMatchIsClosed() throws Exception {
-        UUID played = schedule(1, KICKOFF);
+        UUID played = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(played, 2, 1, UUID.randomUUID(), 2);
         close(played);
-        UUID draft = schedule(2, KICKOFF.plusSeconds(7 * 86400));
+        UUID draft = fixtures.schedule(peña, 2, KICKOFF.plusSeconds(7 * 86400));
         recordDraftSheet(draft, 3, 0, UUID.randomUUID(), 3);
 
         mvc.perform(get("/api/leagues/{id}/matches", league).with(as(ana)))
@@ -291,7 +276,7 @@ class MatchesEndpointsTests {
 
     @Test
     void managersSeeTheSheetOnlyOnceTheMatchIsClosedAndNeverTheWarnings() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         UUID player = UUID.randomUUID();
         // two goals for, but the only scorer has one
         recordDraftSheet(match, 2, 0, player, 1);
@@ -322,7 +307,7 @@ class MatchesEndpointsTests {
 
     @Test
     void nonMembersCannotListOrSeeMatches() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         mvc.perform(get("/api/leagues/{id}/matches", league).with(as(outsider))).andExpect(status().isForbidden());
         mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(outsider)))
@@ -331,7 +316,7 @@ class MatchesEndpointsTests {
 
     @Test
     void matchesAreIsolatedBetweenLeagues() throws Exception {
-        UUID foreign = schedule(otherLeague, outsider, 1, "De otra liga", KICKOFF);
+        UUID foreign = fixtures.schedule(other, 1, "De otra liga", KICKOFF);
 
         // a member of "Peña" asking for another league's match through "Peña"'s route
         mvc.perform(get("/api/leagues/{id}/matches/{m}", league, foreign).with(as(admin)))
@@ -342,7 +327,7 @@ class MatchesEndpointsTests {
 
     @Test
     void adminEditsOpponentAndVenueAndTheChangeIsAudited() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "  Os Ninguéns  ", "AWAY", "2026-01-11T10:00:00Z")))
@@ -363,7 +348,7 @@ class MatchesEndpointsTests {
 
     @Test
     void postponingAMatchPublishesMatchRescheduledAndIsAudited() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-25T11:30:00Z")))
@@ -388,7 +373,7 @@ class MatchesEndpointsTests {
 
     @Test
     void anUpdateWithoutChangesLeavesNoAuditEntry() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Rival 1 ", "HOME", "2026-01-11T10:00:00Z")))
@@ -400,8 +385,8 @@ class MatchesEndpointsTests {
 
     @Test
     void anUpdateKeepsMatchdayAndKickoffUniquePerLeague() throws Exception {
-        UUID match = schedule(1, KICKOFF);
-        schedule(2, KICKOFF.plusSeconds(7 * 86400));
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
+        fixtures.schedule(peña, 2, KICKOFF.plusSeconds(7 * 86400));
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-11T10:00:00Z")))
@@ -421,8 +406,8 @@ class MatchesEndpointsTests {
 
     @Test
     void concurrentClashesOnUpdateAreStill409AndLeaveNoAuditEntry() throws Exception {
-        UUID match = schedule(1, KICKOFF);
-        schedule(2, KICKOFF.plusSeconds(7 * 86400));
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
+        fixtures.schedule(peña, 2, KICKOFF.plusSeconds(7 * 86400));
         // simulate a race: the pre-checks pass, the unique indexes reject the update
         doReturn(false).when(matches).existsMatchday(any(), any());
         doReturn(false).when(matches).existsKickoff(any(), any());
@@ -440,7 +425,7 @@ class MatchesEndpointsTests {
 
     @Test
     void aClosedMatchKeepsItsMatchdayAndKickoffButItsDetailsCanChange() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
         close(match);
 
@@ -466,7 +451,7 @@ class MatchesEndpointsTests {
 
     @Test
     void invalidUpdatesAre400() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         for (String request : List.of(
                 body(0, "Rival", "HOME", "2026-01-11T10:00:00Z"),
@@ -483,7 +468,7 @@ class MatchesEndpointsTests {
 
     @Test
     void adminDeletesAScheduledMatchAndItsHistoryIsKept() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
 
         mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf()))
@@ -505,12 +490,12 @@ class MatchesEndpointsTests {
             assertThat(e.matchday()).isEqualTo(1);
         });
         // the matchday and the kickoff are free again
-        schedule(1, KICKOFF);
+        fixtures.schedule(peña, 1, KICKOFF);
     }
 
     @Test
     void aClosedMatchIsNeverDeleted() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
         close(match);
 
@@ -524,7 +509,7 @@ class MatchesEndpointsTests {
 
     @Test
     void onlyTheLeagueAdminCanUpdateOrDelete() throws Exception {
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String request = body(2, "Otro", "AWAY", "2026-01-18T10:00:00Z");
 
         // a manager of the league and the admin of another league
@@ -545,7 +530,7 @@ class MatchesEndpointsTests {
 
     @Test
     void matchesCannotBeUpdatedOrDeletedThroughAnotherLeague() throws Exception {
-        UUID foreign = schedule(otherLeague, outsider, 1, "De otra liga", KICKOFF);
+        UUID foreign = fixtures.schedule(other, 1, "De otra liga", KICKOFF);
 
         // the admin of "Peña" using their own league's route with another league's match
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, foreign).with(as(admin)).with(csrf())
@@ -563,7 +548,7 @@ class MatchesEndpointsTests {
     @Test
     void securityWithoutSessionOrCsrf() throws Exception {
 
-        UUID match = schedule(1, KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String request = body(2, "Otro", "HOME", "2026-01-18T10:00:00Z");
 
         mvc.perform(get("/api/leagues/{id}/matches", league)).andExpect(status().isUnauthorized());

@@ -1,17 +1,7 @@
 package com.buddyfantasy;
 
-import java.time.Instant;
 import java.util.UUID;
 
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.LeagueRole;
-import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
-import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
-import com.buddyfantasy.league.application.port.out.LeagueRepository;
-import com.buddyfantasy.league.application.port.out.MembershipRepository;
-import com.buddyfantasy.league.domain.League;
-import com.buddyfantasy.league.domain.Membership;
-import com.buddyfantasy.shared.application.CommandBus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,39 +19,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PostgresTestConfig.class)
 class MeEndpointsTests {
 
-    static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
-
     @Autowired
     MockMvc mvc;
 
     @Autowired
-    CommandBus bus;
-
-    @Autowired
-    LeagueRepository leagues;
-
-    @Autowired
-    LeagueDefaultsRepository defaults;
-
-    @Autowired
-    LeagueLimitsRepository limits;
-
-    @Autowired
-    MembershipRepository memberships;
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, "http://pic/" + sub)).value();
-    }
-
-    private void join(String leagueName, UUID userId, LeagueRole role) {
-        League league = League.create(leagueName, NOW, defaults.settings(), defaults.scoringRules(), limits.get());
-        leagues.save(league);
-        memberships.save(Membership.join(league.id(), userId, role, NOW));
-    }
+    TestFixtures fixtures;
 
     @Test
     void meReturnsTheAuthenticatedUser() throws Exception {
-        UUID id = register("ana");
+        UUID id = fixtures.user("ana");
 
         mvc.perform(get("/api/me").with(as(id)))
                 .andExpect(status().isOk())
@@ -78,11 +44,11 @@ class MeEndpointsTests {
 
     @Test
     void myLeaguesReturnsOnlyTheUsersLeaguesWithTheirRole() throws Exception {
-        UUID ana = register("ana");
-        UUID bob = register("bob");
-        join("Alpha", ana, LeagueRole.ADMIN);
-        join("Beta", ana, LeagueRole.MANAGER);
-        join("Gamma", bob, LeagueRole.ADMIN);
+        UUID ana = fixtures.user("ana");
+        UUID bob = fixtures.user("bob");
+        fixtures.league(ana, "Alpha");
+        fixtures.join(fixtures.league(bob, "Beta"), ana);
+        fixtures.league(bob, "Gamma");
 
         mvc.perform(get("/api/me/leagues").with(as(ana)))
                 .andExpect(status().isOk())
@@ -95,7 +61,7 @@ class MeEndpointsTests {
 
     @Test
     void myLeaguesIsEmptyWithoutMemberships() throws Exception {
-        UUID ana = register("ana");
+        UUID ana = fixtures.user("ana");
 
         mvc.perform(get("/api/me/leagues").with(as(ana)))
                 .andExpect(status().isOk())

@@ -1,25 +1,19 @@
 package com.buddyfantasy.match;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.datadefinition.Position;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
 import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceLine;
-import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
-import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,38 +42,32 @@ class MatchAuditEndpointsTests {
     @Autowired
     CommandBus bus;
 
+    @Autowired
+    TestFixtures fixtures;
+
     UUID admin;
     UUID ana;
     UUID outsider;
+    TestLeague peña;
     UUID league;
+    TestLeague other;
     UUID otherLeague;
     UUID forward;
     UUID keeper;
 
     @BeforeEach
     void setUp() {
-        admin = register("admin");
-        ana = register("ana");
-        outsider = register("outsider");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        outsider = fixtures.user("outsider");
+        peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana);
         // outsider is ADMIN of another league, never a member of "Peña"
-        otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
-        forward = player("Iago", Position.FORWARD);
-        keeper = player("Xoán", Position.GOALKEEPER);
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private UUID player(String name, Position position) {
-        return bus.dispatch(new RegisterPlayerCommand(admin, league, name, null, position, BigDecimal.TEN)).value();
-    }
-
-    private UUID schedule(UUID leagueId, UUID leagueAdmin) {
-        return bus.dispatch(new ScheduleMatchCommand(leagueAdmin, leagueId, 1, "Rival", Venue.HOME, KICKOFF)).value();
+        other = fixtures.league(outsider, "Otra");
+        otherLeague = other.id();
+        forward = fixtures.player(peña, "Iago", null, Position.FORWARD);
+        keeper = fixtures.player(peña, "Xoán", null, Position.GOALKEEPER);
     }
 
     private static PerformanceLine line(UUID playerId, int goals, int penaltiesSaved) {
@@ -87,12 +75,12 @@ class MatchAuditEndpointsTests {
     }
 
     private void recordSheet(UUID match, int goalsFor, PerformanceLine... lines) {
-        bus.dispatch(new RecordMatchSheetCommand(admin, league, match, goalsFor, 0, List.of(lines)));
+        fixtures.sheet(peña, match, goalsFor, 0, lines);
     }
 
     @Test
     void adminSeesEveryChangeNewestFirstWithItsBeforeAndAfter() throws Exception {
-        UUID match = schedule(league, admin);
+        UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
         bus.dispatch(new UpdateMatchCommand(admin, league, match, 1, "Os Ninguéns", Venue.AWAY, KICKOFF));
         bus.dispatch(new UpdateMatchCommand(admin, league, match, 2, "Os Ninguéns", Venue.AWAY,
                 KICKOFF.plusSeconds(3600)));
@@ -136,7 +124,7 @@ class MatchAuditEndpointsTests {
 
     @Test
     void changesWithoutEffectAreNotInTheHistory() throws Exception {
-        UUID match = schedule(league, admin);
+        UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
         bus.dispatch(new UpdateMatchCommand(admin, league, match, 1, "Rival", Venue.HOME, KICKOFF));
         recordSheet(match, 1, line(forward, 1, 0));
         recordSheet(match, 1, line(forward, 1, 0));
@@ -149,7 +137,7 @@ class MatchAuditEndpointsTests {
 
     @Test
     void theHistoryOfADeletedMatchIsKept() throws Exception {
-        UUID match = schedule(league, admin);
+        UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
         recordSheet(match, 1, line(forward, 1, 0));
         bus.dispatch(new DeleteMatchCommand(admin, league, match));
 
@@ -163,7 +151,7 @@ class MatchAuditEndpointsTests {
 
     @Test
     void onlyTheLeagueAdminSeesTheHistory() throws Exception {
-        UUID match = schedule(league, admin);
+        UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
 
         // a manager of the league and the admin of another league
         for (UUID user : List.of(ana, outsider)) {
@@ -174,7 +162,7 @@ class MatchAuditEndpointsTests {
 
     @Test
     void unknownMatchesAndMatchesOfAnotherLeagueAre404() throws Exception {
-        UUID foreign = schedule(otherLeague, outsider);
+        UUID foreign = fixtures.schedule(other, 1, "Rival", KICKOFF);
 
         mvc.perform(get("/api/leagues/{id}/matches/{m}/audit", league, UUID.randomUUID()).with(as(admin)))
                 .andExpect(status().isNotFound());
@@ -187,7 +175,7 @@ class MatchAuditEndpointsTests {
 
     @Test
     void theHistoryRequiresASession() throws Exception {
-        UUID match = schedule(league, admin);
+        UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
 
         mvc.perform(get("/api/leagues/{id}/matches/{m}/audit", league, match)).andExpect(status().isUnauthorized());
     }

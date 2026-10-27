@@ -8,15 +8,10 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import com.buddyfantasy.PostgresTestConfig;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.datadefinition.Position;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
-import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
-import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import com.buddyfantasy.squad.application.usecases.updateplayer.UpdatePlayerCommand;
 import com.jayway.jsonpath.JsonPath;
@@ -60,6 +55,9 @@ class MatchSheetEndpointsTests {
     CommandBus bus;
 
     @Autowired
+    TestFixtures fixtures;
+
+    @Autowired
     JdbcTemplate jdbc;
 
     @Autowired
@@ -68,7 +66,9 @@ class MatchSheetEndpointsTests {
     UUID admin;
     UUID ana;
     UUID outsider;
+    TestLeague peña;
     UUID league;
+    TestLeague other;
     UUID otherLeague;
     UUID forward;
     UUID defender;
@@ -77,36 +77,19 @@ class MatchSheetEndpointsTests {
 
     @BeforeEach
     void setUp() {
-        admin = register("admin");
-        ana = register("ana");
-        outsider = register("outsider");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        outsider = fixtures.user("outsider");
+        peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana);
         // outsider is ADMIN of another league, never a member of "Peña"
-        otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
-        forward = player(league, admin, "Iago", Position.FORWARD);
-        defender = player(league, admin, "Brais", Position.DEFENDER);
-        keeper = player(league, admin, "Xoán", Position.GOALKEEPER);
-        foreignPlayer = player(otherLeague, outsider, "Alleo", Position.FORWARD);
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private UUID player(UUID leagueId, UUID leagueAdmin, String name, Position position) {
-        return bus.dispatch(new RegisterPlayerCommand(leagueAdmin, leagueId, name, null, position, BigDecimal.TEN))
-                .value();
-    }
-
-    private UUID schedule(UUID leagueId, UUID leagueAdmin, int matchday, Instant kickoffAt) {
-        return bus.dispatch(new ScheduleMatchCommand(leagueAdmin, leagueId, matchday, "Rival " + matchday,
-                Venue.HOME, kickoffAt)).value();
-    }
-
-    private UUID schedule(Instant kickoffAt) {
-        return schedule(league, admin, 1, kickoffAt);
+        other = fixtures.league(outsider, "Otra");
+        otherLeague = other.id();
+        forward = fixtures.player(peña, "Iago", null, Position.FORWARD);
+        defender = fixtures.player(peña, "Brais", null, Position.DEFENDER);
+        keeper = fixtures.player(peña, "Xoán", null, Position.GOALKEEPER);
+        foreignPlayer = fixtures.player(other, "Alleo", null, Position.FORWARD);
     }
 
     private static String sheet(Integer goalsFor, Integer goalsAgainst, String... lines) {
@@ -142,7 +125,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void adminRecordsADraftSheetWithThePositionsFromTheSquad() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         putSheet(admin, match, sheet(2, 1,
                 line(forward, "\"goals\": 1, \"penaltyGoals\": 1, \"assists\": 0, \"yellowCard\": true, \"redCard\": true"),
@@ -184,7 +167,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void aDraftMayHaveNoResultOrNoPlayersYet() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         putSheet(admin, match, sheet(null, null, line(forward, "\"goals\": 1")))
                 .andExpect(status().isOk())
@@ -201,7 +184,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void warningsDoNotBlockSaving() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         // goals plus penalty goals count against goals for
         putSheet(admin, match, sheet(3, 0, line(forward, "\"goals\": 2, \"penaltyGoals\": 1")))
@@ -218,7 +201,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void theSameSheetAgainLeavesNoAuditEntry() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"), line(defender, "")));
 
         // same lines in another order
@@ -231,7 +214,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void invalidSheetsAre400() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String[] tooMany = IntStream.range(0, 31).mapToObj(i -> line(UUID.randomUUID(), "")).toArray(String[]::new);
 
         for (String request : List.of(
@@ -261,7 +244,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void aRetiredPlayerCannotBeAddedButStaysIfAlreadyInTheSheet() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
         bus.dispatch(new RetirePlayerCommand(admin, league, forward));
         bus.dispatch(new RetirePlayerCommand(admin, league, defender));
@@ -278,7 +261,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void thePositionIsTakenWhenThePlayerIsAddedAndKeptAfterwards() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
         bus.dispatch(new UpdatePlayerCommand(admin, league, forward, "Iago", null, Position.DEFENDER, BigDecimal.TEN));
 
@@ -296,7 +279,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void adminClosesAMatchAndMatchClosedCarriesTheWholeSheet() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(2, 1, line(forward, "\"goals\": 2, \"yellowCard\": true"),
                 line(keeper, "\"penaltiesSaved\": 1"))).andExpect(status().isOk());
 
@@ -328,7 +311,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void closingTwiceKeepsTheFirstCloseAndPublishesOnce() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1")));
         String closedAt = JsonPath.read(close(admin, match).andReturn().getResponse().getContentAsString(),
                 "$.closedAt");
@@ -344,7 +327,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void aMatchCannotBeClosedBeforeKickoff() throws Exception {
-        UUID match = schedule(FAR_FUTURE);
+        UUID match = fixtures.schedule(peña, 1, FAR_FUTURE);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
 
         close(admin, match).andExpect(status().isConflict());
@@ -357,7 +340,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void aMatchCannotBeClosedWithoutResultOrPlayers() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
         close(admin, match).andExpect(status().isConflict());
         putSheet(admin, match, sheet(1, 0)).andExpect(status().isOk());
@@ -371,7 +354,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void managersSeeTheSheetOnlyOnceTheAdminClosesTheMatch() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(2, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
 
         mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(ana)))
@@ -394,7 +377,7 @@ class MatchSheetEndpointsTests {
     }
 
     private UUID closedMatch(String sheet) throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet).andExpect(status().isOk());
         close(admin, match).andExpect(status().isOk());
         return match;
@@ -496,7 +479,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void onlyTheLeagueAdminRecordsTheSheetAndClosesTheMatch() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String request = sheet(1, 0, line(forward, "\"goals\": 1"));
 
         // a manager of the league and the admin of another league
@@ -516,7 +499,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void sheetsCannotBeRecordedOrClosedThroughAnotherLeague() throws Exception {
-        UUID foreign = schedule(otherLeague, outsider, 1, KICKOFF);
+        UUID foreign = fixtures.schedule(other, 1, KICKOFF);
         mvc.perform(put("/api/leagues/{id}/matches/{m}/sheet", otherLeague, foreign).with(as(outsider)).with(csrf())
                 .contentType(APPLICATION_JSON).content(sheet(1, 0, line(foreignPlayer, "\"goals\": 1"))))
                 .andExpect(status().isOk());
@@ -533,7 +516,7 @@ class MatchSheetEndpointsTests {
 
     @Test
     void securityWithoutSessionOrCsrf() throws Exception {
-        UUID match = schedule(KICKOFF);
+        UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String request = sheet(1, 0, line(forward, "\"goals\": 1"));
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}/sheet", league, match).with(csrf())

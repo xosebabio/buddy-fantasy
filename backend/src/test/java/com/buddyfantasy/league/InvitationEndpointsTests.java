@@ -4,10 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.shared.application.CommandBus;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +35,7 @@ class InvitationEndpointsTests {
     MockMvc mvc;
 
     @Autowired
-    CommandBus bus;
+    TestFixtures fixtures;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -53,16 +51,12 @@ class InvitationEndpointsTests {
 
     @BeforeEach
     void setUp() {
-        admin = register("admin");
-        ana = register("ana");
-        bob = register("bob");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        token = created.invitationToken();
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", sub, null)).value();
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        bob = fixtures.user("bob");
+        TestLeague peña = fixtures.league(admin);
+        league = peña.id();
+        token = peña.invitationToken();
     }
 
     private ResultActions join(UUID user, String t) throws Exception {
@@ -151,7 +145,7 @@ class InvitationEndpointsTests {
     @Test
     void onlyTheAdminOfTheLeagueManagesTheInvitation() throws Exception {
         join(ana, token).andExpect(status().isOk());
-        UUID otherLeague = bus.dispatch(new CreateLeagueCommand(bob, "Otra")).id().value();
+        UUID otherLeague = fixtures.league(bob, "Otra").id();
 
         for (UUID user : List.of(ana, bob)) {
             mvc.perform(post("/api/leagues/{id}/invitation", league).with(as(user)).with(csrf()))

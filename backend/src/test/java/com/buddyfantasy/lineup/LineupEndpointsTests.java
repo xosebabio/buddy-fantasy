@@ -8,20 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.buddyfantasy.MutableClock;
 import com.buddyfantasy.PostgresTestConfig;
-import com.buddyfantasy.datadefinition.Position;
-import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
-import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
-import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
+import com.buddyfantasy.TestFixtures;
+import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLineupsCommand;
-import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
-import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
-import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +27,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.buddyfantasy.TestUsers.as;
+import static com.buddyfantasy.datadefinition.Position.DEFENDER;
+import static com.buddyfantasy.datadefinition.Position.FORWARD;
+import static com.buddyfantasy.datadefinition.Position.GOALKEEPER;
+import static com.buddyfantasy.datadefinition.Position.MIDFIELDER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -62,6 +59,9 @@ class LineupEndpointsTests {
     CommandBus bus;
 
     @Autowired
+    TestFixtures fixtures;
+
+    @Autowired
     JdbcTemplate jdbc;
 
     @Autowired
@@ -70,6 +70,7 @@ class LineupEndpointsTests {
     UUID admin;
     UUID ana;
     UUID outsider;
+    TestLeague peña;
     UUID league;
     /** 12 active players of 10 M: 2 goalkeepers, 4 defenders, 4 midfielders and 2 forwards, in this order. */
     List<UUID> squad;
@@ -77,6 +78,7 @@ class LineupEndpointsTests {
     List<UUID> lineupA;
     UUID expensive;
     UUID foreign;
+    TestLeague other;
     UUID otherLeague;
     UUID match1;
     UUID match2;
@@ -84,40 +86,32 @@ class LineupEndpointsTests {
     @BeforeEach
     void setUp() {
         clock.now = NOW;
-        admin = register("admin");
-        ana = register("ana");
-        outsider = register("outsider");
-        CreatedLeague created = bus.dispatch(new CreateLeagueCommand(admin, "Peña"));
-        league = created.id().value();
-        bus.dispatch(new JoinLeagueCommand(ana, created.invitationToken()));
-        jdbc.update("""
-                update league_settings
-                set lineup_size = 7, lineup_lock_hours = 2, lineup_max_changes = 2, lineup_formation_enabled = false,
-                    lineup_budget_enabled = true, lineup_budget = 100
-                where league_id = ?""", league);
+        admin = fixtures.user("admin");
+        ana = fixtures.user("ana");
+        outsider = fixtures.user("outsider");
+        peña = fixtures.league(admin);
+        league = peña.id();
+        fixtures.join(peña, ana);
+        fixtures.settings(peña, settings -> {
+            settings.lineupSize = 7;
+            settings.lineupLockHours = 2;
+            settings.lineupMaxChanges = 2;
+            settings.lineupFormationEnabled = false;
+            settings.lineupBudgetEnabled = true;
+            settings.lineupBudget = new BigDecimal("100");
+        });
         // outsider is ADMIN of another league, never a member of "Peña"
-        otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
+        other = fixtures.league(outsider, "Otra");
+        otherLeague = other.id();
 
-        squad = new ArrayList<>();
-        Stream.of(Position.GOALKEEPER, Position.GOALKEEPER, Position.DEFENDER, Position.DEFENDER,
-                        Position.DEFENDER, Position.DEFENDER, Position.MIDFIELDER, Position.MIDFIELDER,
-                        Position.MIDFIELDER, Position.MIDFIELDER, Position.FORWARD, Position.FORWARD)
-                .forEach(position -> squad.add(player(league, admin, position, "10")));
+        squad = fixtures.squad(peña, GOALKEEPER, GOALKEEPER, DEFENDER, DEFENDER, DEFENDER, DEFENDER, MIDFIELDER,
+                MIDFIELDER, MIDFIELDER, MIDFIELDER, FORWARD, FORWARD);
         lineupA = List.copyOf(squad.subList(0, 7));
-        expensive = player(league, admin, Position.FORWARD, "50");
-        foreign = player(otherLeague, outsider, Position.FORWARD, "10");
+        expensive = fixtures.player(peña, "Player", null, FORWARD, new BigDecimal("50"));
+        foreign = fixtures.player(other, FORWARD);
 
-        match1 = bus.dispatch(new ScheduleMatchCommand(admin, league, 1, "Rival", Venue.HOME, KICKOFF_1)).value();
-        match2 = bus.dispatch(new ScheduleMatchCommand(admin, league, 2, "Rival", Venue.AWAY, KICKOFF_2)).value();
-    }
-
-    private UUID register(String sub) {
-        return bus.dispatch(new RegisterOrLoginUserCommand(sub, sub + "@x.com", "Name " + sub, null)).value();
-    }
-
-    private UUID player(UUID leagueId, UUID leagueAdmin, Position position, String value) {
-        return bus.dispatch(new RegisterPlayerCommand(leagueAdmin, leagueId, "Player", null, position,
-                new BigDecimal(value))).value();
+        match1 = fixtures.schedule(peña, 1, KICKOFF_1);
+        match2 = fixtures.schedule(peña, 2, KICKOFF_2);
     }
 
     private ResultActions save(UUID userId, List<UUID> playerIds) throws Exception {
@@ -240,7 +234,7 @@ class LineupEndpointsTests {
 
     @Test
     void theFormationMinimumsApplyWhenEnabled() throws Exception {
-        jdbc.update("update league_settings set lineup_formation_enabled = true where league_id = ?", league);
+        fixtures.settings(peña, settings -> settings.lineupFormationEnabled = true);
 
         // defenders and midfielders only
         save(ana, squad.subList(2, 9))
@@ -452,8 +446,7 @@ class LineupEndpointsTests {
         save(ana, lineupA).andExpect(status().isOk());
         clock.now = LOCK_1.plus(Duration.ofMinutes(1));
         lock(match1);
-        UUID otherMatch = bus.dispatch(new ScheduleMatchCommand(outsider, otherLeague, 1, "Rival", Venue.HOME,
-                KICKOFF_2)).value();
+        UUID otherMatch = fixtures.schedule(other, 1, KICKOFF_2);
 
         lockedLineups(outsider, league, match1).andExpect(status().isForbidden());
         // the outsider's own league does not reach the match of "Peña", nor "Peña" the match of the other league
