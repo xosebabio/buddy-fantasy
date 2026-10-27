@@ -25,6 +25,7 @@
     <archunit.version>1.4.1</archunit.version>
     <awssdk.version>2.55.6</awssdk.version>
     <jacoco.version>0.8.14</jacoco.version>
+    <datasource-proxy.version>1.11.0</datasource-proxy.version>
     <!-- RNF-05: the tests run outside UTC, so an implicit conversion to the JVM's zone breaks them. Surefire uses
          this property as its argLine, and JaCoCo's prepare-agent prepends its agent to it. -->
     <argLine>-Duser.timezone=Europe/Madrid</argLine>
@@ -186,6 +187,13 @@
       <groupId>com.tngtech.archunit</groupId>
       <artifactId>archunit-junit5</artifactId>
       <version>${archunit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- counts every SQL statement, JdbcTemplate's included (RNF-09): SqlStatements -->
+    <dependency>
+      <groupId>net.ttddyy</groupId>
+      <artifactId>datasource-proxy</artifactId>
+      <version>${datasource-proxy.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -51,7 +51,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RNF-03 Plazos y jobs | ✅ | `LineupLockTests`, `SchedulerLockTests`, `SchedulingArchitectureTests`, `EventResubmissionTests` | |
 | RNF-04 Auditoría | ✅ | `MatchAuditEndpointsTests`, `MatchMigrationTests` | |
 | RNF-05 Zona horaria | ✅ | `TimeZoneTests`; toda la suite con la JVM y Postgres en `Europe/Madrid` | |
-| RNF-09 Rendimiento | 🟡 | Conteo de sentencias en `MatchApiTests`, `SquadApiTests`, `LeagueSettingsProviderTests`, `MatchRepositoryTests` | No en los **endpoints de las pantallas principales** (partidos, jugadores, miembros, alineaciones bloqueadas) ni con volumen realista. Hibernate no cuenta las consultas de `JdbcTemplate`. |
+| RNF-09 Rendimiento | ✅ | `ScreenStatementsTests` (todas las sentencias de las pantallas principales, con volumen de temporada), y conteo de Hibernate en `MatchApiTests`, `SquadApiTests`, `LeagueSettingsProviderTests`, `MatchRepositoryTests` | Sin aserciones de tiempo, a propósito. |
 | RNF-10 RGPD | — | | Borrado de cuenta no implementado. |
 | RNF-11 Calidad | 🟡 | Plazos de alineación ✅ | Puntuación, valoración y mercado llegan con sus módulos. Sin medida de cobertura. |
 | Contrato de errores | ✅ | `ApiErrorsTests`, `ApiExceptionHandlerTests` | |
@@ -155,6 +155,8 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 
 **G9 · Rendimiento de pantallas (RNF-09).** Contador de **todas** las sentencias SQL con `datasource-proxy` (dependencia nueva de test; Hibernate no ve `JdbcTemplate`). Con volumen realista (20 miembros, 25 jugadores, 30 partidos, alineaciones bloqueadas de 20 managers), el número de sentencias es constante y no crece con N en: `GET /api/me/leagues`, `/players`, `/matches`, `/matches/{id}`, `/members`, `/lineup`, `/lineups/{matchId}`. Sin aserciones de tiempo (serían intermitentes).
 
+> Hecho así: `datasource-proxy` 1.11.0 (`datasource-proxy.version` en el `pom.xml`). `SqlStatements.during(acción)` devuelve las sentencias que la acción ejecuta en el hilo del test, una por ejecución (un *batch* cuenta una), por JPA, `JdbcClient` o `JdbcTemplate`; las de otros hilos, como los listeners asíncronos, no cuentan. `PostgresTestConfig` registra el `BeanPostProcessor` que envuelve el `DataSource`, así que vale en todo test de Spring sin contextos nuevos. `ScreenStatementsTests` mide cada pantalla en una liga pequeña (2 miembros, 7 jugadores, 2 partidos, uno jugado con 1 línea) y otra vez con una temporada (20 miembros, 25 jugadores, 30 partidos, alineaciones bloqueadas de 20 managers, un partido con 14 líneas y dos correcciones, Ana en 4 ligas y con varias versiones de su alineación), y exige el mismo número de sentencias; el mensaje de fallo lista las sentencias de cada una. Además de las pantallas de la lista, cubre la auditoría del partido. Recuentos de partida, iguales en los dos tamaños: `me/leagues` 1, `players` 2, `matches` 2, `matches/{id}` 2, auditoría 2, `members` 3, `lineup` 6, `lineups/{matchId}` 2. No destapó ningún N+1. Comprobado pidiendo el perfil de cada miembro por separado en `ListLeagueMembersHandler`: falla con 5 sentencias frente a 23.
+
 **G10 · Flujo completo de una jornada.** Un único test solo por HTTP y con el job a mano: el admin crea la liga, el manager se une por enlace, plantilla, calendario, ambos guardan alineación, el reloj avanza, el job bloquea, acta, cierre, alineaciones bloqueadas visibles para todos, corrección y auditoría. Es la base que ampliarán `rating`, `scoring` y `market` (§4.3).
 
 **G11 · Migraciones inmutables.** Test que compara el checksum de cada migración aplicada (`flyway_schema_history`) con un fichero versionado `backend/src/test/resources/db/migration-checksums.txt`. Editar `V1`–`V11` hace fallar el test; una migración nueva se añade al fichero en el mismo cambio.
@@ -208,9 +210,9 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | ✅ |
 | 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada |✅ |
 | 11 | G8: zona horaria | RNF-05 cubierto | ✅ |
-| 12 | G9: sentencias por pantalla con `datasource-proxy` | RNF-09 vigilado | |
+| 12 | G9: sentencias por pantalla con `datasource-proxy` | RNF-09 vigilado | ✅ |
 | 13 | G10: flujo completo de una jornada | Prueba de humo de la Fase 1 | |
-| 14 | `AGENTS.md`: sección *Tests* (ayudas compartidas, `DatabaseCleaner`, `TestFixtures`, checksums), *Comandos* (informe de JaCoCo, `EVENTS_RESUBMIT_JOB_CRON` y la suite en `Europe/Madrid`) e *Invariantes técnicas* (listeners idempotentes) | Convenciones documentadas | |
+| 14 | `AGENTS.md`: sección *Tests* (ayudas compartidas, `DatabaseCleaner`, `TestFixtures`, checksums, `SqlStatements`), *Comandos* (informe de JaCoCo, `EVENTS_RESUBMIT_JOB_CRON` y la suite en `Europe/Madrid`) e *Invariantes técnicas* (listeners idempotentes) | Convenciones documentadas | |
 
 Cada paso deja la suite en verde. Si un test nuevo destapa un fallo (por ejemplo un `500` en G2 o G3, o una conversión de zona en G8), el arreglo va en el mismo paso.
 

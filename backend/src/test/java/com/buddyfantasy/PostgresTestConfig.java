@@ -1,5 +1,6 @@
 package com.buddyfantasy;
 
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  * The test database: a single Postgres started once per JVM and shared by every Spring context, so Flyway migrates it
  * once and the other contexts only validate. {@link DatabaseCleaner} empties it before each test, and
  * {@link TestFixtures}, imported here so every Spring test has it, fills it. {@link RecordedEvents} is imported here
- * for the same reason.
+ * for the same reason, and the data source is wrapped so that {@link SqlStatements} counts its statements.
  *
  * <p>Postgres runs in {@link #TIME_ZONE}, as the JVM of the tests ({@code argLine} in the {@code pom.xml}), so
  * that every instant must travel as such: {@link TimeZoneTests}.
@@ -33,6 +34,12 @@ public class PostgresTestConfig {
 
     static {
         POSTGRES.start();
+    }
+
+    /** Static: a post-processor must not need this configuration's instance. */
+    @Bean
+    static BeanPostProcessor sqlStatementsDataSourceProxy() {
+        return SqlStatements.proxyDataSources();
     }
 
     @Bean
