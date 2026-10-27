@@ -102,10 +102,12 @@ Los roles son **por liga**, no globales. Un usuario puede ser administrador de u
 
 ### Alineaciones
 
-- N jugadores (por defecto 7), formación por posiciones opcional.
+- N jugadores (por defecto 7), formación por posiciones opcional: mínimo de jugadores por posición configurable por liga (por defecto 1 portero y 1 por línea).
+- Varios managers pueden alinear al mismo jugador (sin exclusividad). En el futuro será un parámetro de la liga.
 - Editable hasta X horas antes del partido (por defecto 2 h); máximo Y cambios por jornada (por defecto 2).
 - Si el manager no la toca, se arrastra la de la jornada anterior.
-- Presupuesto máximo de la alineación según el valor vigente de los jugadores (activado por defecto, 100 M; el admin puede desactivarlo).
+- Presupuesto máximo de la alineación según el valor vigente de los jugadores (activado por defecto, 100 M; el admin puede desactivarlo). Se comprueba al guardar y al bloquear; si al bloquear lo supera, esa jornada no puntúa.
+- Los cambios se cuentan por diferencia final contra la alineación bloqueada del partido anterior; sustituir a un jugador dado de baja es gratis.
 
 ### Valor de mercado
 
@@ -176,7 +178,6 @@ Lint: pendiente.
 No las resuelvas por tu cuenta. Si una tarea depende de alguna, pregunta o deja la opción configurable:
 
 - Formato de valoración por defecto y conversión de la media a puntos (redondeo incluido).
-- ¿Dos managers pueden alinear al mismo jugador? (Probablemente sí, al haber un solo equipo.)
 - ¿Mínimo de votos para que cuente la valoración?
 
 ## Roadmap

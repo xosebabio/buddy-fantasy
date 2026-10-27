@@ -217,10 +217,10 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 ## Decisiones abiertas
 
-- [ ] ¿El administrador puede ser también manager en su propia liga? Tiene acceso a datos antes que nadie.
+- [x] ¿El administrador puede ser también manager en su propia liga? Tiene acceso a datos antes que nadie. Sí: el administrador siempre juega como manager en su liga (decidido).
 - [ ] ¿Picas o nota decimal por defecto? ¿Cómo se convierte la media en puntos? Propuesta: cada pica vale 1 punto, como en Biwenger.
-- [ ] ¿Pueden dos managers alinear al mismo jugador? En una liga de un solo equipo parece imprescindible que sí.
-- [x] Papel del valor del jugador: límite de presupuesto de la alineación (RF-29), con el valor vigente al guardar y al bloquear (decidido).
+- [x] ¿Pueden dos managers alinear al mismo jugador? En una liga de un solo equipo parece imprescindible que sí. Sí, sin exclusividad (decidido); más adelante será un parámetro de la liga.
+- [x] Papel del valor del jugador: límite de presupuesto de la alineación (RF-29), con el valor vigente al guardar y al bloquear (decidido). Si al bloquear supera el presupuesto, la alineación no puntúa esa jornada.
 - [ ] ¿Valoraciones con un mínimo de votos para contar, para evitar que una sola nota decida?
 - [x] Login: solo Google (decidido en v1).
 
