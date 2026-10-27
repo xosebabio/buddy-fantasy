@@ -26,19 +26,19 @@ class PlayerPerformanceTests {
     }
 
     @Test
-    void acceptsCountersWithinRange() {
+    void acceptsCountersWithinStorageRange() {
         assertThatCode(() -> counters(0, 0, 0, 0, 0, 0)).doesNotThrowAnyException();
-        assertThatCode(() -> counters(99, 99, 99, 99, 99, 99)).doesNotThrowAnyException();
+        assertThatCode(() -> counters(32767, 32767, 32767, 32767, 32767, 32767)).doesNotThrowAnyException();
     }
 
     @Test
-    void rejectsCountersOutOfRange() {
+    void rejectsCountersOutOfStorageRange() {
         assertThatThrownBy(() -> counters(-1, 0, 0, 0, 0, 0)).isInstanceOf(DomainValidationException.class);
-        assertThatThrownBy(() -> counters(0, 100, 0, 0, 0, 0)).isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> counters(0, 32768, 0, 0, 0, 0)).isInstanceOf(DomainValidationException.class);
         assertThatThrownBy(() -> counters(0, 0, -1, 0, 0, 0)).isInstanceOf(DomainValidationException.class);
-        assertThatThrownBy(() -> counters(0, 0, 0, 100, 0, 0)).isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> counters(0, 0, 0, 32768, 0, 0)).isInstanceOf(DomainValidationException.class);
         assertThatThrownBy(() -> counters(0, 0, 0, 0, -1, 0)).isInstanceOf(DomainValidationException.class);
-        assertThatThrownBy(() -> counters(0, 0, 0, 0, 0, 100)).isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> counters(0, 0, 0, 0, 0, 32768)).isInstanceOf(DomainValidationException.class);
     }
 
     @Test

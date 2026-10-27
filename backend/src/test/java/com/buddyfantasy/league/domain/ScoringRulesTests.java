@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.datadefinition.ScoringAction;
+import com.buddyfantasy.league.adapter.out.config.TestLeagueDefaults;
 import org.junit.jupiter.api.Test;
 
 import static com.buddyfantasy.datadefinition.Position.*;
@@ -14,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ScoringRulesTests {
 
-    private final ScoringRules defaults = ScoringRules.defaults();
+    private final ScoringRules defaults = TestLeagueDefaults.scoringRules();
 
     @Test
     void goalDependsOnPosition() {

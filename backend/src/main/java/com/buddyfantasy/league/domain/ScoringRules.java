@@ -7,7 +7,10 @@ import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.shared.domain.DomainValidationException;
 
-/** Points per action and position. Always complete: every action has a value for every position. */
+/**
+ * Points per action and position. Always complete: every action has a value for every position. A new league is
+ * seeded from {@code league.defaults.scoring-rules} (see {@code LeagueDefaultsRepository}).
+ */
 public record ScoringRules(Map<ScoringAction, Map<Position, Integer>> points) {
 
     public ScoringRules {
@@ -32,28 +35,5 @@ public record ScoringRules(Map<ScoringAction, Map<Position, Integer>> points) {
 
     public int pointsFor(ScoringAction action, Position position) {
         return points.get(action).get(position);
-    }
-
-    public static ScoringRules defaults() {
-        EnumMap<ScoringAction, Map<Position, Integer>> table = new EnumMap<>(ScoringAction.class);
-        table.put(ScoringAction.GOAL, byPosition(6, 5, 4, 3));
-        table.put(ScoringAction.PENALTY_GOAL, uniform(3));
-        table.put(ScoringAction.PENALTY_SAVED, uniform(3));
-        table.put(ScoringAction.PENALTY_MISSED, uniform(-2));
-        table.put(ScoringAction.ASSIST, uniform(1));
-        table.put(ScoringAction.OWN_GOAL, uniform(-3));
-        table.put(ScoringAction.YELLOW_CARD, uniform(-1));
-        table.put(ScoringAction.DOUBLE_YELLOW, uniform(-3));
-        table.put(ScoringAction.RED_CARD, uniform(-5));
-        return new ScoringRules(table);
-    }
-
-    private static Map<Position, Integer> byPosition(int goalkeeper, int defender, int midfielder, int forward) {
-        return Map.of(Position.GOALKEEPER, goalkeeper, Position.DEFENDER, defender,
-                Position.MIDFIELDER, midfielder, Position.FORWARD, forward);
-    }
-
-    private static Map<Position, Integer> uniform(int value) {
-        return byPosition(value, value, value, value);
     }
 }

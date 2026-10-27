@@ -39,6 +39,6 @@ class S3StorageConfig {
     ImageStorage imageStorage(S3Client imageS3Client, S3Presigner imageS3Presigner,
                                           S3StorageProperties properties, Clock clock) {
         return new S3ImageStorage(imageS3Client, imageS3Presigner, properties.bucket(), properties.publicBaseUrl(),
-                clock);
+                properties.uploadTtl(), clock);
     }
 }

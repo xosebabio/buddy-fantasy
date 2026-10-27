@@ -5,6 +5,8 @@ import java.time.Instant;
 
 import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.league.application.port.out.InvitationRepository;
+import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
+import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.Invitation;
@@ -19,20 +21,25 @@ class CreateLeagueHandler implements CommandHandler<CreateLeagueCommand, Created
     private final LeagueRepository leagues;
     private final MembershipRepository memberships;
     private final InvitationRepository invitations;
+    private final LeagueDefaultsRepository defaults;
+    private final LeagueLimitsRepository limits;
     private final Clock clock;
 
-    CreateLeagueHandler(LeagueRepository leagues, MembershipRepository memberships,
-                        InvitationRepository invitations, Clock clock) {
+    CreateLeagueHandler(LeagueRepository leagues, MembershipRepository memberships, InvitationRepository invitations,
+                        LeagueDefaultsRepository defaults, LeagueLimitsRepository limits, Clock clock) {
         this.leagues = leagues;
         this.memberships = memberships;
         this.invitations = invitations;
+        this.defaults = defaults;
+        this.limits = limits;
         this.clock = clock;
     }
 
     @Override
     public CreatedLeague handle(CreateLeagueCommand command) {
         Instant now = clock.instant();
-        League league = League.create(command.name().strip(), now);
+        League league = League.create(command.name().strip(), now, defaults.settings(), defaults.scoringRules(),
+                limits.get());
         leagues.save(league);
         memberships.save(Membership.join(league.id(), command.creatorId(), LeagueRole.ADMIN, now));
         Invitation.Issued invitation = Invitation.issue(league.id(), now);

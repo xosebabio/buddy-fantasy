@@ -2,11 +2,14 @@ package com.buddyfantasy.match.domain;
 
 import com.buddyfantasy.shared.domain.DomainValidationException;
 
-/** Matchday number, unique per league (enforced by the database). A label: chronological order is the kickoff. */
+/**
+ * Matchday number, unique per league (enforced by the database). A label: chronological order is the kickoff. Only
+ * the storage range is checked here; the allowed minimum is {@link MatchLimits}.
+ */
 public record Matchday(int value) {
 
-    public static final int MIN = 1;
-    /** Fits {@code SMALLINT}. */
+    /** Fits a non-negative {@code SMALLINT}. */
+    public static final int MIN = 0;
     public static final int MAX = Short.MAX_VALUE;
 
     public Matchday {

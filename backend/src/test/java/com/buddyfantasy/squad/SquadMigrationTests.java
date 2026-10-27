@@ -16,7 +16,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** V7: constraints of {@code squad_player}, including the partial unique index on active shirt numbers. */
+/**
+ * V7: constraints of {@code squad_player}, including the partial unique index on active shirt numbers. V10 leaves
+ * business limits (name length, shirt number range) to {@code squad.limits}.
+ */
 @SpringBootTest
 @Import(PostgresTestConfig.class)
 class SquadMigrationTests {
@@ -70,10 +73,19 @@ class SquadMigrationTests {
     }
 
     @Test
+    void nameIsNotLimitedByTheColumn() {
+        UUID player = insert(UUID.randomUUID(), null);
+
+        assertThatCode(() -> jdbc.update("update squad_player set name = ? where id = ?", "x".repeat(500), player))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     void rejectsInvalidShirtNumberPositionAndValue() {
         UUID league = UUID.randomUUID();
 
-        assertThatThrownBy(() -> insert(league, 100)).isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insert(league, -1)).isInstanceOf(DataIntegrityViolationException.class);
+        assertThatCode(() -> insert(league, 100)).doesNotThrowAnyException();
         assertThatThrownBy(() -> insert(league, 1, "COACH", "10.00"))
                 .isInstanceOf(DataIntegrityViolationException.class);
         assertThatThrownBy(() -> insert(league, 2, "FORWARD", "0"))

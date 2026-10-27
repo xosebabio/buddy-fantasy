@@ -30,13 +30,67 @@ spring:
         schema-initialization:
           enabled: false # la tabla event_publication la crea Flyway (V1__baseline.sql)
 
+league:
+  # Límites de negocio: se comprueban en cada escritura, nunca al leer lo ya guardado. La BD no los repite.
+  limits:
+    name-max-length: 100
+    lineup-lock-hours-max: 168 # el job de bloqueo de alineaciones mira este horizonte hacia delante
+  # Valores con los que nace cada liga nueva (RF-07). El admin los cambia después por liga; cambiarlos aquí no
+  # toca las ligas existentes. Se validan al arrancar: un valor inválido impide arrancar. Importes en millones.
+  defaults:
+    rating:
+      window-hours: 24
+      format: SPADES # SPADES (picas 0-4) o DECIMAL (nota 0-10)
+      points-per-unit: 1
+      # default-rating: sin definir = sin nota por defecto para jugadores sin valoraciones
+    lineup:
+      size: 7
+      lock-hours: 2 # como mucho league.limits.lineup-lock-hours-max
+      max-changes: 2
+      formation-enabled: false
+      min-goalkeepers: 1
+      min-defenders: 1
+      min-midfielders: 1
+      min-forwards: 1
+      budget-enabled: true
+      budget: 100
+    market:
+      k: 0.05
+      max-change-pct: 10
+      min-value: 1
+    # Puntos por acción y posición: tabla completa, 9 acciones x 4 posiciones.
+    scoring-rules:
+      goal: { goalkeeper: 6, defender: 5, midfielder: 4, forward: 3 }
+      penalty-goal: { goalkeeper: 3, defender: 3, midfielder: 3, forward: 3 } # en lugar del gol normal
+      penalty-saved: { goalkeeper: 3, defender: 3, midfielder: 3, forward: 3 }
+      penalty-missed: { goalkeeper: -2, defender: -2, midfielder: -2, forward: -2 }
+      assist: { goalkeeper: 1, defender: 1, midfielder: 1, forward: 1 }
+      own-goal: { goalkeeper: -3, defender: -3, midfielder: -3, forward: -3 }
+      yellow-card: { goalkeeper: -1, defender: -1, midfielder: -1, forward: -1 }
+      double-yellow: { goalkeeper: -3, defender: -3, midfielder: -3, forward: -3 } # en total, no suma las amarillas
+      red-card: { goalkeeper: -5, defender: -5, midfielder: -5, forward: -5 }
+
 squad:
+  limits:
+    name-max-length: 100
+    shirt-number-min: 0
+    shirt-number-max: 99
+    photo-max-size: 512KB # el navegador la reduce a un avatar WebP de ~400 px
   photos:
     s3:
       bucket: ${S3_BUCKET:buddy-fantasy-photos}
       region: ${S3_REGION:eu-west-1}
       endpoint: ${S3_ENDPOINT:} # solo en local (SeaweedFS: http://localhost:8333); vacío en AWS
       public-base-url: ${PHOTOS_BASE_URL:http://localhost:8333/buddy-fantasy-photos} # CloudFront en producción
+      upload-ttl: 5m # validez de la URL prefirmada de subida
+
+match:
+  limits:
+    opponent-max-length: 100
+    matchday-min: 1
+    goals-max: 99 # por equipo en el resultado
+    stat-count-max: 99 # por jugador y estadística (goles, asistencias…)
+    sheet-players-max: 30 # jugadores en el acta
 
 server:
   forward-headers-strategy: framework # redirect_uri correcto detrás de Caddy

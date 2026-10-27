@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
+import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
@@ -39,6 +41,12 @@ class LeagueSettingsProviderTests {
     LeagueRepository leagues;
 
     @Autowired
+    LeagueDefaultsRepository defaults;
+
+    @Autowired
+    LeagueLimitsRepository limits;
+
+    @Autowired
     JdbcTemplate jdbc;
 
     @Autowired
@@ -54,18 +62,18 @@ class LeagueSettingsProviderTests {
     }
 
     private League league(String name) {
-        League league = League.create(name, NOW);
+        League league = League.create(name, NOW, defaults.settings(), defaults.scoringRules(), limits.get());
         leagues.save(league);
         return league;
     }
 
     private League leagueWithFormation() {
         League league = league("Formation");
-        LeagueSettings d = LeagueSettings.defaults();
+        LeagueSettings d = defaults.settings();
         LeagueSettings settings = new LeagueSettings(d.ratingWindowHours(), d.ratingFormat(),
                 d.ratingPointsPerUnit(), d.defaultRating(), 24, 3, 9, true, 1, 3, 2, 0, false,
                 new BigDecimal("80"), d.marketK(), d.marketMaxChangePct(), d.marketMinValue());
-        League updated = league.withSettings(settings, league.scoringRules());
+        League updated = league.withSettings(settings, league.scoringRules(), limits.get());
         leagues.save(updated);
         return updated;
     }

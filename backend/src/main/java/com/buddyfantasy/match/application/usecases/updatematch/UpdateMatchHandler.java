@@ -6,11 +6,13 @@ import java.time.Instant;
 import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.match.application.port.out.MatchAuditEntry;
 import com.buddyfantasy.match.application.port.out.MatchAuditLog;
+import com.buddyfantasy.match.application.port.out.MatchLimitsRepository;
 import com.buddyfantasy.match.application.port.out.MatchRepository;
 import com.buddyfantasy.match.application.port.out.MatchSnapshot;
 import com.buddyfantasy.match.domain.Match;
 import com.buddyfantasy.match.domain.MatchAuditAction;
 import com.buddyfantasy.match.domain.MatchId;
+import com.buddyfantasy.match.domain.MatchLimits;
 import com.buddyfantasy.match.domain.Matchday;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.ConflictException;
@@ -28,14 +30,16 @@ class UpdateMatchHandler implements CommandHandler<UpdateMatchCommand, Void> {
     private final LeagueAccess access;
     private final MatchRepository matches;
     private final MatchAuditLog audit;
+    private final MatchLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     UpdateMatchHandler(LeagueAccess access, MatchRepository matches, MatchAuditLog audit,
-                       ApplicationEventPublisher events, Clock clock) {
+                       MatchLimitsRepository limits, ApplicationEventPublisher events, Clock clock) {
         this.access = access;
         this.matches = matches;
         this.audit = audit;
+        this.limits = limits;
         this.events = events;
         this.clock = clock;
     }
@@ -48,8 +52,9 @@ class UpdateMatchHandler implements CommandHandler<UpdateMatchCommand, Void> {
                         + command.leagueId()));
         Instant now = clock.instant();
         MatchSnapshot before = MatchSnapshot.of(match);
-        match.updateDetails(command.opponent().strip(), command.venue());
-        match.reschedule(new Matchday(command.matchday()), command.kickoffAt(), now);
+        MatchLimits matchLimits = limits.get();
+        match.updateDetails(command.opponent().strip(), command.venue(), matchLimits);
+        match.reschedule(new Matchday(command.matchday()), command.kickoffAt(), now, matchLimits);
         MatchSnapshot after = MatchSnapshot.of(match);
         if (after.equals(before)) {
             return null;

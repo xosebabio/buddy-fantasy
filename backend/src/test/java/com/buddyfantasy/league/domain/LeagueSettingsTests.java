@@ -3,6 +3,7 @@ package com.buddyfantasy.league.domain;
 import java.math.BigDecimal;
 import java.util.function.UnaryOperator;
 
+import com.buddyfantasy.league.adapter.out.config.TestLeagueDefaults;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LeagueSettingsTests {
 
-    private final LeagueSettings defaults = LeagueSettings.defaults();
+    private final LeagueSettings defaults = TestLeagueDefaults.settings();
 
     @Test
     void defaultsMatchRequirements() {
@@ -42,9 +43,9 @@ class LeagueSettingsTests {
     }
 
     @Test
-    void lockHoursAreCappedAtOneWeek() {
-        assertThat(lineup(defaults, 168, 7, false, 1, 1, 1, 1).lineupLockHours()).isEqualTo(168);
-        assertInvalid(s -> lineup(s, 169, 7, false, 1, 1, 1, 1));
+    void lockHoursMustNotBeNegative() {
+        // the upper bound is configurable: LeagueLimits
+        assertThat(lineup(defaults, 169, 7, false, 1, 1, 1, 1).lineupLockHours()).isEqualTo(169);
         assertInvalid(s -> lineup(s, -1, 7, false, 1, 1, 1, 1));
     }
 

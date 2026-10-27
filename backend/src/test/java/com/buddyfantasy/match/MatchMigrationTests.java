@@ -17,7 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** V8: constraints of the match tables, unique matchday and kickoff per league, and an audit log without FK. */
+/**
+ * V8: constraints of the match tables, unique matchday and kickoff per league, and an audit log without FK. V10
+ * leaves business limits (opponent length, max stats, matchday minimum) to {@code match.limits}.
+ */
 @SpringBootTest
 @Import(PostgresTestConfig.class)
 class MatchMigrationTests {
@@ -61,8 +64,9 @@ class MatchMigrationTests {
     void rejectsInvalidMatchdayVenueAndStatus() {
         UUID match = insertMatch();
 
-        assertThatThrownBy(() -> insertMatch(UUID.randomUUID(), 0, KICKOFF))
+        assertThatThrownBy(() -> insertMatch(UUID.randomUUID(), -1, KICKOFF))
                 .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatCode(() -> insertMatch(UUID.randomUUID(), 0, KICKOFF)).doesNotThrowAnyException();
         assertThatThrownBy(() -> jdbc.update("update match_match set venue = 'NEUTRAL' where id = ?", match))
                 .isInstanceOf(DataIntegrityViolationException.class);
         assertThatThrownBy(() -> jdbc.update("update match_match set status = 'CANCELLED' where id = ?", match))
@@ -107,13 +111,18 @@ class MatchMigrationTests {
     }
 
     @Test
-    void rejectsCountersOutOfRangeAndUnknownPositions() {
+    void rejectsNegativeCountersAndUnknownPositions() {
         UUID match = insertMatch();
 
-        assertThatThrownBy(() -> jdbc.update("""
+        for (String counter : new String[] {"goals", "penalty_goals", "penalties_saved", "penalties_missed",
+                "assists", "own_goals"}) {
+            assertThatThrownBy(() -> jdbc.update("insert into match_player_performance (match_id, player_id, "
+                    + "position, " + counter + ") values (?, ?, 'FORWARD', -1)", match, UUID.randomUUID()))
+                    .as(counter).isInstanceOf(DataIntegrityViolationException.class);
+        }
+        assertThatCode(() -> jdbc.update("""
                 insert into match_player_performance (match_id, player_id, position, goals)
-                values (?, ?, 'FORWARD', 100)""", match, UUID.randomUUID()))
-                .isInstanceOf(DataIntegrityViolationException.class);
+                values (?, ?, 'FORWARD', 100)""", match, UUID.randomUUID())).doesNotThrowAnyException();
         assertThatThrownBy(() -> jdbc.update("""
                 insert into match_player_performance (match_id, player_id, position, own_goals)
                 values (?, ?, 'FORWARD', -1)""", match, UUID.randomUUID()))
@@ -139,6 +148,14 @@ class MatchMigrationTests {
                 Integer.class, match)).isZero();
         assertThat(jdbc.queryForObject("select count(*) from match_audit_entry where match_id = ?",
                 Integer.class, match)).isOne();
+    }
+
+    @Test
+    void opponentIsNotLimitedByTheColumn() {
+        UUID match = insertMatch();
+
+        assertThatCode(() -> jdbc.update("update match_match set opponent = ? where id = ?", "x".repeat(500), match))
+                .doesNotThrowAnyException();
     }
 
     @Test

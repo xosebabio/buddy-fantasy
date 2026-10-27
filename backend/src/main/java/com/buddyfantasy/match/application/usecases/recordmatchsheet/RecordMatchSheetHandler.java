@@ -12,11 +12,13 @@ import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.match.application.port.out.MatchAuditEntry;
 import com.buddyfantasy.match.application.port.out.MatchAuditLog;
+import com.buddyfantasy.match.application.port.out.MatchLimitsRepository;
 import com.buddyfantasy.match.application.port.out.MatchRepository;
 import com.buddyfantasy.match.application.port.out.MatchSnapshot;
 import com.buddyfantasy.match.domain.Match;
 import com.buddyfantasy.match.domain.MatchAuditAction;
 import com.buddyfantasy.match.domain.MatchId;
+import com.buddyfantasy.match.domain.MatchLimits;
 import com.buddyfantasy.match.domain.MatchResult;
 import com.buddyfantasy.match.domain.MatchSheet;
 import com.buddyfantasy.match.domain.MatchSheetWarning;
@@ -41,15 +43,17 @@ class RecordMatchSheetHandler implements CommandHandler<RecordMatchSheetCommand,
     private final MatchRepository matches;
     private final SquadApi squad;
     private final MatchAuditLog audit;
+    private final MatchLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     RecordMatchSheetHandler(LeagueAccess access, MatchRepository matches, SquadApi squad, MatchAuditLog audit,
-                            ApplicationEventPublisher events, Clock clock) {
+                            MatchLimitsRepository limits, ApplicationEventPublisher events, Clock clock) {
         this.access = access;
         this.matches = matches;
         this.squad = squad;
         this.audit = audit;
+        this.limits = limits;
         this.events = events;
         this.clock = clock;
     }
@@ -60,10 +64,11 @@ class RecordMatchSheetHandler implements CommandHandler<RecordMatchSheetCommand,
         Match match = matches.findByLeagueIdAndId(command.leagueId(), new MatchId(command.matchId()))
                 .orElseThrow(() -> new NotFoundException("Match " + command.matchId() + " not in league "
                         + command.leagueId()));
-        MatchSheet sheet = new MatchSheet(result(command), performances(command, match));
+        MatchLimits matchLimits = limits.get();
+        MatchSheet sheet = new MatchSheet(result(command), performances(command, match, matchLimits));
         Instant now = clock.instant();
         MatchSnapshot before = MatchSnapshot.of(match);
-        match.recordSheet(sheet, now);
+        match.recordSheet(sheet, now, matchLimits);
         MatchSnapshot after = MatchSnapshot.of(match);
         if (!after.equals(before)) {
             matches.save(match);
@@ -85,10 +90,12 @@ class RecordMatchSheetHandler implements CommandHandler<RecordMatchSheetCommand,
         return new MatchResult(command.goalsFor(), command.goalsAgainst());
     }
 
-    private List<PlayerPerformance> performances(RecordMatchSheetCommand command, Match match) {
+    private List<PlayerPerformance> performances(RecordMatchSheetCommand command, Match match, MatchLimits limits) {
         if (command.performances() == null) {
             throw new DomainValidationException("Performances are required");
         }
+        // before asking squad for the players, so an oversized sheet costs nothing
+        limits.requireSheetSize(command.performances().size());
         if (command.performances().isEmpty()) {
             return List.of();
         }

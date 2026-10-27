@@ -6,6 +6,7 @@ import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
+import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.ShirtNumber;
@@ -17,13 +18,15 @@ class RegisterPlayerHandler implements CommandHandler<RegisterPlayerCommand, Pla
 
     private final LeagueAccess access;
     private final PlayerRepository players;
+    private final SquadLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
-    RegisterPlayerHandler(LeagueAccess access, PlayerRepository players, ApplicationEventPublisher events,
-                          Clock clock) {
+    RegisterPlayerHandler(LeagueAccess access, PlayerRepository players, SquadLimitsRepository limits,
+                          ApplicationEventPublisher events, Clock clock) {
         this.access = access;
         this.players = players;
+        this.limits = limits;
         this.events = events;
         this.clock = clock;
     }
@@ -36,7 +39,7 @@ class RegisterPlayerHandler implements CommandHandler<RegisterPlayerCommand, Pla
             throw new ConflictException("Shirt number already taken by an active player");
         }
         Player player = Player.register(command.leagueId(), command.name().strip(), shirtNumber, command.position(),
-                command.initialValue(), clock.instant());
+                command.initialValue(), clock.instant(), limits.get());
         players.save(player);
         player.pullEvents().forEach(events::publishEvent);
         return player.id();

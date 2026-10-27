@@ -1,5 +1,6 @@
 package com.buddyfantasy.league;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -7,12 +8,13 @@ import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
+import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
+import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
-import com.buddyfantasy.league.domain.ScoringRules;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +56,12 @@ class CreateLeagueTests {
 
     @Autowired
     LeagueRepository leagues;
+
+    @Autowired
+    LeagueDefaultsRepository defaults;
+
+    @Autowired
+    LeagueLimitsRepository limits;
 
     @MockitoSpyBean
     MembershipRepository memberships;
@@ -109,22 +117,16 @@ class CreateLeagueTests {
 
     @Test
     void persistedLeagueRoundTripsWithDefaults() {
-        League league = League.create("A", NOW);
+        League league = League.create("A", NOW, defaults.settings(), defaults.scoringRules(), limits.get());
         leagues.save(league);
 
         League loaded = leagues.findById(league.id().value()).orElseThrow();
 
-        assertThat(loaded.scoringRules()).isEqualTo(ScoringRules.defaults());
-        LeagueSettings defaults = LeagueSettings.defaults();
+        assertThat(loaded.scoringRules()).isEqualTo(defaults.scoringRules());
+        LeagueSettings expected = defaults.settings();
         LeagueSettings settings = loaded.settings();
-        assertThat(settings.ratingWindowHours()).isEqualTo(defaults.ratingWindowHours());
-        assertThat(settings.ratingFormat()).isEqualTo(defaults.ratingFormat());
-        assertThat(settings.defaultRating()).isNull();
-        assertThat(settings.lineupSize()).isEqualTo(defaults.lineupSize());
-        assertThat(settings.lineupBudget()).isEqualByComparingTo(defaults.lineupBudget());
-        assertThat(settings.marketK()).isEqualByComparingTo(defaults.marketK());
-        assertThat(settings.marketMaxChangePct()).isEqualByComparingTo(defaults.marketMaxChangePct());
-        assertThat(settings.marketMinValue()).isEqualByComparingTo(defaults.marketMinValue());
+        assertThat(settings).usingRecursiveComparison().withComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+                .isEqualTo(expected);
     }
 
     @Test

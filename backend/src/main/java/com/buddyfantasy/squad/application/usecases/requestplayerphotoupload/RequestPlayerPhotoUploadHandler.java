@@ -6,6 +6,7 @@ import com.buddyfantasy.shared.domain.NotFoundException;
 import com.buddyfantasy.squad.application.port.out.ImageStorage;
 import com.buddyfantasy.squad.application.port.out.ImageUpload;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
+import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.PlayerPhotoFormat;
@@ -18,11 +19,14 @@ class RequestPlayerPhotoUploadHandler implements CommandHandler<RequestPlayerPho
     private final LeagueAccess access;
     private final PlayerRepository players;
     private final ImageStorage images;
+    private final SquadLimitsRepository limits;
 
-    RequestPlayerPhotoUploadHandler(LeagueAccess access, PlayerRepository players, ImageStorage images) {
+    RequestPlayerPhotoUploadHandler(LeagueAccess access, PlayerRepository players, ImageStorage images,
+                                    SquadLimitsRepository limits) {
         this.access = access;
         this.players = players;
         this.images = images;
+        this.limits = limits;
     }
 
     @Override
@@ -31,7 +35,7 @@ class RequestPlayerPhotoUploadHandler implements CommandHandler<RequestPlayerPho
         Player player = players.findByLeagueIdAndId(command.leagueId(), new PlayerId(command.playerId()))
                 .orElseThrow(() -> new NotFoundException("Player not found"));
         player.requireActive();
-        PlayerPhotoFormat.requireAcceptable(command.contentType(), command.sizeBytes());
+        PlayerPhotoFormat.requireAcceptable(command.contentType(), command.sizeBytes(), limits.get());
         PlayerPhotoKey key = PlayerPhotoKey.generate(command.leagueId(), player.id());
         return images.createUpload(key.value(), PlayerPhotoFormat.CONTENT_TYPE, command.sizeBytes());
     }

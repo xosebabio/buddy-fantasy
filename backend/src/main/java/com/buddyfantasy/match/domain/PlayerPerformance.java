@@ -10,6 +10,7 @@ import com.buddyfantasy.shared.domain.DomainValidationException;
  * A player who played the match and their stats (RF-13, RF-14). {@code playerId} is a logical reference to the
  * squad module and {@code position} the snapshot taken when they were added to the sheet. A yellow card and a
  * straight red add up; a double yellow is the only sending-off and already includes the yellow, so it excludes both.
+ * Only the storage range of each count is checked here; the allowed maximum is {@link MatchLimits}.
  */
 public record PlayerPerformance(
         UUID playerId,
@@ -24,7 +25,8 @@ public record PlayerPerformance(
         boolean doubleYellow,
         boolean redCard) {
 
-    public static final int MAX_COUNT = 99;
+    /** Fits {@code SMALLINT}. */
+    public static final int MAX_STORED_COUNT = Short.MAX_VALUE;
 
     public PlayerPerformance {
         if (playerId == null) {
@@ -50,8 +52,8 @@ public record PlayerPerformance(
     }
 
     private static void requireCount(String name, int value) {
-        if (value < 0 || value > MAX_COUNT) {
-            throw new DomainValidationException("Number of " + name + " must be 0-" + MAX_COUNT);
+        if (value < 0 || value > MAX_STORED_COUNT) {
+            throw new DomainValidationException("Number of " + name + " must be 0-" + MAX_STORED_COUNT);
         }
     }
 }

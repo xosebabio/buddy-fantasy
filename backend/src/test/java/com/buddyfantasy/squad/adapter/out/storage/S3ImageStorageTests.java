@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -48,6 +49,7 @@ class S3ImageStorageTests {
             .waitingFor(Wait.forHttp("/healthz").forPort(8333));
 
     static final HttpClient HTTP = HttpClient.newHttpClient();
+    static final Duration UPLOAD_TTL = Duration.ofMinutes(3);
 
     static S3Client s3;
     static S3Presigner presigner;
@@ -59,11 +61,11 @@ class S3ImageStorageTests {
         System.setProperty("aws.accessKeyId", ACCESS_KEY);
         System.setProperty("aws.secretAccessKey", SECRET_KEY);
         S3StorageProperties properties = new S3StorageProperties(BUCKET, "eu-west-1",
-                "http://" + SEAWEEDFS.getHost() + ":" + SEAWEEDFS.getMappedPort(8333), "https://cdn.test/");
+                "http://" + SEAWEEDFS.getHost() + ":" + SEAWEEDFS.getMappedPort(8333), "https://cdn.test/", UPLOAD_TTL);
         S3StorageConfig config = new S3StorageConfig();
         s3 = config.imageS3Client(properties);
         presigner = config.imageS3Presigner(properties);
-        storage = new S3ImageStorage(s3, presigner, BUCKET, properties.publicBaseUrl(),
+        storage = new S3ImageStorage(s3, presigner, BUCKET, properties.publicBaseUrl(), properties.uploadTtl(),
                 Clock.fixed(NOW, ZoneOffset.UTC));
         s3.createBucket(request -> request.bucket(BUCKET));
     }
@@ -93,7 +95,7 @@ class S3ImageStorageTests {
         ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
 
         assertThat(upload.key()).isEqualTo(key);
-        assertThat(upload.expiresAt()).isEqualTo(NOW.plus(S3ImageStorage.UPLOAD_TTL));
+        assertThat(upload.expiresAt()).isEqualTo(NOW.plus(UPLOAD_TTL));
         // the SDK lowercases signed header names; HTTP header names are case-insensitive
         assertThat(upload.headers()).containsOnly(
                 Map.entry("content-type", "image/jpeg"),

@@ -21,7 +21,6 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 /** S3 adapter (AWS in production, SeaweedFS locally). Images are served by CloudFront, never from the bucket. */
 class S3ImageStorage implements ImageStorage {
 
-    static final Duration UPLOAD_TTL = Duration.ofMinutes(5);
     /** Keys are immutable, so browsers and CloudFront may cache an image for a year. */
     static final String CACHE_CONTROL = "public, max-age=31536000, immutable";
     /** Signed too, but set by the browser itself ({@code fetch} forbids them), so they are not handed to the client. */
@@ -31,22 +30,25 @@ class S3ImageStorage implements ImageStorage {
     private final S3Presigner presigner;
     private final String bucket;
     private final String publicBaseUrl;
+    private final Duration uploadTtl;
     private final Clock clock;
 
-    S3ImageStorage(S3Client s3, S3Presigner presigner, String bucket, String publicBaseUrl, Clock clock) {
+    S3ImageStorage(S3Client s3, S3Presigner presigner, String bucket, String publicBaseUrl, Duration uploadTtl,
+                   Clock clock) {
         this.s3 = s3;
         this.presigner = presigner;
         this.bucket = bucket;
         this.publicBaseUrl = publicBaseUrl.endsWith("/")
                 ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
                 : publicBaseUrl;
+        this.uploadTtl = uploadTtl;
         this.clock = clock;
     }
 
     @Override
     public ImageUpload createUpload(String key, String contentType, long sizeBytes) {
         PresignedPutObjectRequest presigned = presigner.presignPutObject(presign -> presign
-                .signatureDuration(UPLOAD_TTL)
+                .signatureDuration(uploadTtl)
                 .putObjectRequest(put -> put.bucket(bucket).key(key)
                         .contentType(contentType)
                         .contentLength(sizeBytes)
@@ -54,7 +56,7 @@ class S3ImageStorage implements ImageStorage {
         Map<String, String> headers = presigned.signedHeaders().entrySet().stream()
                 .filter(header -> !IMPLICIT_HEADERS.contains(header.getKey().toLowerCase()))
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, header -> String.join(",", header.getValue())));
-        return new ImageUpload(presigned.url().toString(), headers, key, clock.instant().plus(UPLOAD_TTL));
+        return new ImageUpload(presigned.url().toString(), headers, key, clock.instant().plus(uploadTtl));
     }
 
     @Override

@@ -17,7 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** V9: per-position lineup minimums default to 1 and lineup_lock_hours is capped at one week. */
+/**
+ * V9: per-position lineup minimums default to 1. V10 leaves business limits (name length, maximum lock hours) to
+ * {@code league.limits}.
+ */
 @SpringBootTest
 @Import(PostgresTestConfig.class)
 class LeagueMigrationTests {
@@ -66,12 +69,20 @@ class LeagueMigrationTests {
     }
 
     @Test
-    void lockHoursAreCappedAtOneWeek() {
+    void lockHoursAreOnlyNonNegative() {
         UUID league = insertLeagueWithSettings();
 
-        assertThatThrownBy(() -> jdbc.update("update league_settings set lineup_lock_hours = 169 where league_id = ?",
-                league)).isInstanceOf(DataIntegrityViolationException.class);
-        assertThatCode(() -> jdbc.update("update league_settings set lineup_lock_hours = 168 where league_id = ?",
+        assertThatCode(() -> jdbc.update("update league_settings set lineup_lock_hours = 169 where league_id = ?",
                 league)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> jdbc.update("update league_settings set lineup_lock_hours = -1 where league_id = ?",
+                league)).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void nameIsNotLimitedByTheColumn() {
+        UUID league = insertLeagueWithSettings();
+
+        assertThatCode(() -> jdbc.update("update league_league set name = ? where id = ?", "x".repeat(500), league))
+                .doesNotThrowAnyException();
     }
 }

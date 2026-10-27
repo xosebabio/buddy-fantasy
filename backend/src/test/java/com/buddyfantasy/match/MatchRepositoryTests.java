@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.datadefinition.Position;
+import com.buddyfantasy.match.application.port.out.MatchLimitsRepository;
 import com.buddyfantasy.match.application.port.out.MatchRepository;
 import com.buddyfantasy.match.domain.Match;
 import com.buddyfantasy.match.domain.MatchResult;
@@ -43,6 +44,9 @@ class MatchRepositoryTests {
     MatchRepository matches;
 
     @Autowired
+    MatchLimitsRepository limits;
+
+    @Autowired
     TransactionTemplate transaction;
 
     @Autowired
@@ -61,7 +65,8 @@ class MatchRepositoryTests {
     }
 
     private Match scheduled() {
-        Match match = Match.schedule(LEAGUE, new Matchday(3), "Os Ninguéns", Venue.AWAY, KICKOFF, CREATED);
+        Match match = Match.schedule(LEAGUE, new Matchday(3), "Os Ninguéns", Venue.AWAY, KICKOFF, CREATED,
+                limits.get());
         matches.save(match);
         return match;
     }
@@ -81,7 +86,7 @@ class MatchRepositoryTests {
         MatchSheet sheet = new MatchSheet(new MatchResult(3, 1), List.of(
                 line(UUID.randomUUID(), Position.FORWARD, 2),
                 new PlayerPerformance(UUID.randomUUID(), Position.GOALKEEPER, 0, 0, 1, 0, 0, 1, false, true, false)));
-        match.recordSheet(sheet, CREATED);
+        match.recordSheet(sheet, CREATED, limits.get());
         match.close(KICKOFF.plusSeconds(7200));
         matches.save(match);
 
@@ -111,7 +116,7 @@ class MatchRepositoryTests {
         UUID kept = UUID.randomUUID();
         UUID dropped = UUID.randomUUID();
         match.recordSheet(new MatchSheet(new MatchResult(1, 0), List.of(
-                line(kept, Position.FORWARD, 1), line(dropped, Position.DEFENDER, 0))), CREATED);
+                line(kept, Position.FORWARD, 1), line(dropped, Position.DEFENDER, 0))), CREATED, limits.get());
         matches.save(match);
 
         // as a handler does: load and save the aggregate within one transaction
@@ -119,7 +124,7 @@ class MatchRepositoryTests {
                 line(kept, Position.FORWARD, 2), line(UUID.randomUUID(), Position.MIDFIELDER, 0)));
         transaction.executeWithoutResult(status -> {
             Match current = load(match);
-            current.recordSheet(corrected, CREATED);
+            current.recordSheet(corrected, CREATED, limits.get());
             matches.save(current);
         });
 
@@ -139,7 +144,7 @@ class MatchRepositoryTests {
         Match match = scheduled();
         match.recordSheet(new MatchSheet(new MatchResult(1, 0), List.of(
                 line(UUID.randomUUID(), Position.FORWARD, 1), line(UUID.randomUUID(), Position.DEFENDER, 0))),
-                CREATED);
+                CREATED, limits.get());
         matches.save(match);
         Statistics statistics = statistics();
 

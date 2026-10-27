@@ -5,6 +5,7 @@ import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.NotFoundException;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
+import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.ShirtNumber;
@@ -19,10 +20,12 @@ class UpdatePlayerHandler implements CommandHandler<UpdatePlayerCommand, Void> {
 
     private final LeagueAccess access;
     private final PlayerRepository players;
+    private final SquadLimitsRepository limits;
 
-    UpdatePlayerHandler(LeagueAccess access, PlayerRepository players) {
+    UpdatePlayerHandler(LeagueAccess access, PlayerRepository players, SquadLimitsRepository limits) {
         this.access = access;
         this.players = players;
+        this.limits = limits;
     }
 
     @Override
@@ -36,7 +39,7 @@ class UpdatePlayerHandler implements CommandHandler<UpdatePlayerCommand, Void> {
                 && players.existsActiveShirtNumber(command.leagueId(), shirtNumber)) {
             throw new ConflictException("Shirt number already taken by an active player");
         }
-        player.update(command.name().strip(), shirtNumber, command.position(), command.initialValue());
+        player.update(command.name().strip(), shirtNumber, command.position(), command.initialValue(), limits.get());
         players.save(player);
         return null;
     }

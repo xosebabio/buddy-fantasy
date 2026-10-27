@@ -7,6 +7,7 @@ import com.buddyfantasy.shared.domain.NotFoundException;
 import com.buddyfantasy.squad.application.ImageCleanup;
 import com.buddyfantasy.squad.application.port.out.ImageStorage;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
+import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.application.port.out.StoredImage;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
@@ -21,13 +22,15 @@ class ConfirmPlayerPhotoHandler implements CommandHandler<ConfirmPlayerPhotoComm
     private final PlayerRepository players;
     private final ImageStorage images;
     private final ImageCleanup cleanup;
+    private final SquadLimitsRepository limits;
 
     ConfirmPlayerPhotoHandler(LeagueAccess access, PlayerRepository players, ImageStorage images,
-                              ImageCleanup cleanup) {
+                              ImageCleanup cleanup, SquadLimitsRepository limits) {
         this.access = access;
         this.players = players;
         this.images = images;
         this.cleanup = cleanup;
+        this.limits = limits;
     }
 
     @Override
@@ -46,7 +49,7 @@ class ConfirmPlayerPhotoHandler implements CommandHandler<ConfirmPlayerPhotoComm
         }
         StoredImage stored = images.find(key.value())
                 .orElseThrow(() -> new DomainValidationException("No photo was uploaded under that key"));
-        PlayerPhotoFormat.requireAcceptable(stored.contentType(), stored.sizeBytes());
+        PlayerPhotoFormat.requireAcceptable(stored.contentType(), stored.sizeBytes(), limits.get());
         PlayerPhotoKey previous = player.photoKey();
         player.changePhoto(key);
         players.save(player);

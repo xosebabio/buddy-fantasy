@@ -23,7 +23,6 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 public class Player extends AggregateRoot {
 
-    public static final int MAX_NAME_LENGTH = 100;
     /** Matches {@code NUMERIC(10, 2)}: values in millions with up to 8 integer digits and 2 decimals. */
     private static final int VALUE_SCALE = 2;
     private static final int VALUE_INTEGER_DIGITS = 8;
@@ -40,8 +39,8 @@ public class Player extends AggregateRoot {
 
     /** Players start without a photo: it is uploaded and confirmed as a separate step ({@link #changePhoto}). */
     public static Player register(UUID leagueId, String name, ShirtNumber shirtNumber, Position position,
-            BigDecimal initialValue, Instant now) {
-        validate(name, position, initialValue);
+            BigDecimal initialValue, Instant now, SquadLimits limits) {
+        validate(name, shirtNumber, position, initialValue, limits);
         Player player = new Player(PlayerId.generate(), leagueId, name, shirtNumber, position, initialValue,
                 null, now, null);
         player.register(new PlayerRegistered(leagueId, player.id.value(), initialValue, now));
@@ -49,9 +48,10 @@ public class Player extends AggregateRoot {
     }
 
     /** Replaces every editable field except the photo. A retired player can no longer be edited. */
-    public void update(String newName, ShirtNumber newShirtNumber, Position newPosition, BigDecimal newInitialValue) {
+    public void update(String newName, ShirtNumber newShirtNumber, Position newPosition, BigDecimal newInitialValue,
+            SquadLimits limits) {
         requireActive();
-        validate(newName, newPosition, newInitialValue);
+        validate(newName, newShirtNumber, newPosition, newInitialValue, limits);
         name = newName;
         shirtNumber = newShirtNumber;
         position = newPosition;
@@ -94,10 +94,10 @@ public class Player extends AggregateRoot {
         }
     }
 
-    private static void validate(String name, Position position, BigDecimal initialValue) {
-        if (name == null || name.isBlank() || name.length() > MAX_NAME_LENGTH) {
-            throw new DomainValidationException("Player name must be 1-" + MAX_NAME_LENGTH + " characters");
-        }
+    private static void validate(String name, ShirtNumber shirtNumber, Position position, BigDecimal initialValue,
+            SquadLimits limits) {
+        limits.requireValidName(name);
+        limits.requireValid(shirtNumber);
         if (position == null) {
             throw new DomainValidationException("Player position is required");
         }

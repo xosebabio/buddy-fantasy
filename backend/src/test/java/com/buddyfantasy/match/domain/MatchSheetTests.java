@@ -36,12 +36,6 @@ class MatchSheetTests {
     }
 
     @Test
-    void acceptsUpToThirtyPlayers() {
-        assertThat(new MatchSheet(null, players(30)).performances()).hasSize(30);
-        assertThatThrownBy(() -> new MatchSheet(null, players(31))).isInstanceOf(DomainValidationException.class);
-    }
-
-    @Test
     void rejectsMissingOrNullPerformances() {
         assertThatThrownBy(() -> new MatchSheet(null, null)).isInstanceOf(DomainValidationException.class);
         List<PlayerPerformance> withNull = new ArrayList<>();
@@ -52,7 +46,7 @@ class MatchSheetTests {
     @Test
     void rejectsGoalsOutOfRange() {
         assertThatThrownBy(() -> new MatchResult(-1, 0)).isInstanceOf(DomainValidationException.class);
-        assertThatThrownBy(() -> new MatchResult(0, 100)).isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> new MatchResult(0, 32768)).isInstanceOf(DomainValidationException.class);
     }
 
     @Test

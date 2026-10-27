@@ -27,7 +27,9 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
 - `league_settings`: añade `lineup_min_goalkeepers`, `lineup_min_defenders`, `lineup_min_midfielders`, `lineup_min_forwards` SMALLINT NOT NULL DEFAULT 1 `CHECK (… >= 0)`.
 - Añade `CHECK (lineup_lock_hours <= 168)`: el bloqueo no puede ser de más de una semana antes del partido. Así el job sabe qué partidos le interesan (§5).
 
-**V10__lineup_create_tables.sql**
+**V10__relax_business_limit_checks.sql** (hecha fuera de este plan): los límites de negocio pasan a configuración. Quita ese `CHECK`; el tope es `league.limits.lineup-lock-hours-max` (168 por defecto), que `League` comprueba al crear la liga y al guardar sus parámetros (`LeagueLimits`).
+
+**V11__lineup_create_tables.sql**
 
 - `lineup_version` (historial de la alineación de trabajo):
   - `id` UUID PK, `league_id` UUID NOT NULL, `user_id` UUID NOT NULL (referencias lógicas, sin FK entre módulos).
@@ -48,7 +50,7 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
 - **`league`:**
   - Nueva API pública `LeagueSettingsProvider` (paquete raíz, prevista en el plan 03): `LineupSettings lineupSettings(UUID leagueId)` y `Map<UUID, LineupSettings> lineupSettings(Collection<UUID> leagueIds)` (para el job, una consulta). Record `LineupSettings(size, lockHours, maxChanges, formationEnabled, minGoalkeepers, minDefenders, minMidfielders, minForwards, budgetEnabled, budget)`.
   - `LeagueAccess` gana `Set<UUID> memberIds(UUID leagueId)`: al bloquear solo cuentan las alineaciones de quien sigue siendo miembro.
-  - `LeagueSettings` añade los cuatro mínimos (por defecto 1), valida `lockHours ≤ 168` y, si la formación está activa, que la suma de mínimos no supere `lineupSize`.
+  - `LeagueSettings` añade los cuatro mínimos (por defecto 1), valida `lockHours ≤ league.limits.lineup-lock-hours-max` (vía `LeagueLimits`) y, si la formación está activa, que la suma de mínimos no supere `lineupSize`.
 - **`squad`:** `SquadPlayer` añade `initialValue`. `lineup` no lo usa directamente: su puerto de salida `PlayerCatalog` devuelve `LineupPlayer(id, position, active, currentValue)`, con un adaptador sobre `SquadApi` que hoy toma `currentValue = initialValue`. El plan de `market` cambia solo ese adaptador.
 - **`match` → nueva API pública `MatchApi`** (paquete raíz, prevista en el plan 05):
   - `List<MatchSchedule> findMatches(UUID leagueId)`: todos los partidos de la liga (unos 30) en una consulta, ordenados por `kickoffAt`.
@@ -91,7 +93,7 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
 
 **Job `LockDueLineupsJob`** (`@Scheduled` cada minuto + `@SchedulerLock`):
 
-1. Pide `MatchApi.findScheduledKickingOffBefore(now + 168 h)` y los parámetros de esas ligas.
+1. Pide `MatchApi.findScheduledKickingOffBefore(now + lineupLockHoursMax)` y los parámetros de esas ligas. `lineupLockHoursMax` es `league.limits.lineup-lock-hours-max`, que `LeagueSettingsProvider` expondrá en esta tarea. Si se baja ese límite por debajo de lo que ya tiene una liga, sus partidos entran tarde en la ventana del job; `MatchClosed` sigue bloqueándolos como red de seguridad.
 2. Bloquea los partidos con `lockAt ≤ now − 1 min` que aún no estén en `lineup_match_lock`.
 
 El margen de un minuto garantiza que un guardado con `saved_at < lockAt` ya está confirmado cuando se lee. Ejecutarlo dos veces no duplica nada.
@@ -110,8 +112,8 @@ Todos exigen sesión (`401`) y CSRF en el `PUT`. Autorización en el handler (`4
 
 | Test | Qué verifica |
 | --- | --- |
-| Migraciones V9 y V10 | Aplican sobre Postgres limpio y `ddl-auto: validate` pasa; los mínimos por defecto valen 1; `lineup_lock_hours > 168` se rechaza. |
-| `LeagueSettings` (unitarios) | Mínimos negativos, suma de mínimos mayor que el tamaño con la formación activa, o `lockHours > 168` → error. |
+| Migraciones V9 y V11 | Aplican sobre Postgres limpio y `ddl-auto: validate` pasa; los mínimos por defecto valen 1. |
+| `LeagueSettings` (unitarios) | Mínimos negativos, suma de mínimos mayor que el tamaño con la formación activa, → error; `lockHours` por encima de `league.limits.lineup-lock-hours-max` → error (`LeagueLimits`). |
 | `LineupTimeline` (unitarios, `Clock` fijo) | Guardado justo antes de `lockAt` cuenta para ese partido; justo en `lockAt`, para el siguiente; sin tocar, se arrastra la del partido anterior (RF-28); con un aplazamiento cambia el `lockAt` y la versión que cuenta; partidos ordenados por `kickoffAt` y no por número de jornada. |
 | `LineupRules` (unitarios) | Tamaño, repetidos, inactivos; mínimos por posición; presupuesto justo en el límite (válido) y por encima (error); cambios por diferencia final (poner y quitar no cuenta), sustituir a un retirado es gratis, sin `baseline` no hay límite, Y+1 cambios → error. |
 | `SaveLineupCommand` | Manager y admin guardan; no miembro → `403`; jugador de otra liga → `400`; guardar lo mismo no crea versión; tras el bloqueo del partido N los cambios cuentan contra la alineación de N. |
@@ -128,7 +130,7 @@ Todos exigen sesión (`401`) y CSRF en el `PUT`. Autorización en el handler (`4
 | --- | --- | --- | --- |
 | 1 | V9, mínimos por posición y tope de `lockHours` en `LeagueSettings` (dominio, persistencia y API de parámetros); `LeagueSettingsProvider` y `memberIds` | Parámetros de formación configurables | ✅ |
 | 2 | `MatchApi` en `match` e `initialValue` en `SquadPlayer`, con sus tests | Calendario y valores consultables | |
-| 3 | V10, `LineupTimeline`, `LineupRules`, `MatchLineupLock` y eventos, con tests unitarios; `allowedDependencies` de `lineup` | Dominio verificado | |
+| 3 | V11, `LineupTimeline`, `LineupRules`, `MatchLineupLock` y eventos, con tests unitarios; `allowedDependencies` de `lineup` | Dominio verificado | |
 | 4 | Persistencia, `PlayerCatalog`, `SaveLineupCommand`, `GetMyLineupQuery` y sus endpoints | RF-24, RF-26, RF-28, RF-29 | |
 | 5 | `LineupLocker`, `LockDueLineupsJob` y listeners de `MatchClosed`, `MatchRescheduled` y `MatchDeleted` | RF-25, RF-27 y `LineupsLocked` | |
 | 6 | `GetLockedLineupsQuery` y visibilidad | Alineaciones bloqueadas visibles | |

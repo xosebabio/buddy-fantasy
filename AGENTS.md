@@ -84,7 +84,7 @@ Los roles son **por liga**, no globales. Un usuario puede ser administrador de u
 
 - El gol de penalti vale +3 **en cualquier posición** (no se suma además el gol normal).
 - La doble amarilla vale −3 **en total**; no se suman las dos amarillas.
-- La tabla es un dato por liga (sembrado con estos valores), nunca constantes en código.
+- La tabla es un dato por liga, sembrado desde `league.defaults.scoring-rules` de `application.yml` con estos valores; nunca constantes en código.
 
 ### Puntos
 
@@ -114,7 +114,7 @@ Los roles son **por liga**, no globales. Un usuario puede ser administrador de u
 - Tras cerrar cada jornada: `Δvalor = k × (puntos − media de la jornada) × valor`, con `k = 0,05` por defecto, tope de ±10 % por jornada y valor mínimo.
 - Guarda el histórico de valores (se pinta en una gráfica).
 
-Todos los parámetros configurables (ventana, formato, bloqueo, cambios, tamaño, k, tope…) se guardan **por liga**. Ver la tabla completa en `docs/requirements.md`.
+Todos los parámetros configurables (ventana, formato, bloqueo, cambios, tamaño, k, tope…) se guardan **por liga**, y una liga nueva nace con los de `league.defaults` (ver *Valores por defecto* en *Convenciones*). Ver la tabla completa en `docs/requirements.md`.
 
 ## Invariantes técnicas
 
@@ -130,6 +130,18 @@ Todos los parámetros configurables (ventana, formato, bloqueo, cambios, tamaño
 
 ## Convenciones
 
+- **Valores por defecto y límites en configuración, nunca en código.** Todo valor por defecto y todo límite de negocio (longitudes máximas, máximos de goles y estadísticas, rangos de dorsal, tope de horas de bloqueo, tamaño máximo de foto…), los que ya existen y los que lleguen con nuevos módulos o parámetros, se hace así:
+  - Se declara en `application.yml` bajo `<módulo>.defaults` o `<módulo>.limits` (por ejemplo `league.defaults`, `match.limits`), con un comentario si no es obvio. Así se puede sobrescribir como cualquier propiedad (variable de entorno, perfil…).
+  - Se enlaza con un record `@ConfigurationProperties("<módulo>.defaults|limits")` en `<módulo>/adapter/out/config/` y se convierte a objetos de dominio (`LeagueSettings`, `ScoringRules`, `<Módulo>Limits`).
+  - El resto del módulo lo lee solo a través de un puerto `<Módulo>DefaultsRepository` o `<Módulo>LimitsRepository` en `application/port/out/` (por ejemplo `LeagueDefaultsRepository`, `MatchLimitsRepository`), implementado por `Properties<Módulo>DefaultsRepository` o `Properties<Módulo>LimitsRepository`. Otros módulos no lo leen: piden lo que necesiten por la API pública del módulo dueño.
+  - El adaptador construye los objetos de dominio al arrancar, así que un valor inválido impide arrancar. Los valores por defecto también se comprueban contra los límites.
+  - Los límites se comprueban en el dominio en **cada escritura** (el handler pasa el `<Módulo>Limits` al aggregate: `Match.schedule(..., limits)`), **nunca al cargar** lo ya guardado: bajar un límite no rompe los datos existentes. No van en anotaciones `@Size`/`@Max` de los DTO web, que exigen constantes.
+  - La BD **no repite los límites de negocio**: solo guarda reglas estructurales (no negativo, enums, `NOT NULL`, unicidad) y columnas sin longitud fija (`VARCHAR` sin tamaño). Así se puede subir un límite sin migración.
+  - Siguen siendo constantes solo las de **formato o almacenamiento**, que no tiene sentido configurar: rango del tipo de columna (`Short.MAX_VALUE` en un `SMALLINT`), precisión de `NUMERIC(10, 2)`, longitud de la clave de foto, tamaño del token de invitación, definición de cada formato (picas 0–4, nota 0–10), porcentajes ≤ 100. Los límites configurables se validan al arrancar contra ellas.
+  - Nada de métodos `defaults()` estáticos ni constantes de valores por defecto o límites de negocio en el dominio o los handlers.
+  - En tests unitarios usa `TestLeagueDefaults`, `TestLeagueLimits`, `TestSquadLimits`, `TestMatchLimits` (o su equivalente en un módulo nuevo, con `TestApplicationYaml`), que leen el `application.yml` real; en tests de Spring, inyecta el repositorio. No copies los valores en los tests salvo para comprobar que coinciden con los requisitos.
+  - Las migraciones no leen esta configuración: un `DEFAULT` de columna solo rellena filas ya existentes.
+  - La configuración técnica de un adaptador (por ejemplo `squad.photos.s3.upload-ttl`) va en su propio record de properties del adaptador, sin repositorio.
 - Los mappers (entidad ↔ dominio, DTO ↔ dominio) son clases con `@lombok.experimental.UtilityClass`, con métodos sin `static` explícito. Una interfaz o clase por archivo, también los repositorios Spring Data.
 - Casos de uso (commands y queries) en `application/usecases/<caso>/`, un paquete por caso de uso con su `Command`/`Query` y su `Handler`.
 - Los commands terminan en `Command` y las queries en `Query` (`RegisterOrLoginUserCommand`, `ListMyLeaguesQuery`); el bus único `CommandBus` expone `dispatch` (commands) y `ask` (queries).
@@ -169,7 +181,7 @@ S3_ENDPOINT=http://localhost:8333 AWS_ACCESS_KEY_ID=buddyfantasy AWS_SECRET_ACCE
   mvn spring-boot:run                                   # arranque local contra los servicios de arriba
 ```
 
-Configuración por variables de entorno (valores por defecto en `backend/src/main/resources/application.yml`): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SWAGGER_UI_ENABLED`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (cliente OAuth de Google Cloud; sin ellas el login no funciona, pero la app arranca), `SESSION_COOKIE_SECURE` (`true` en producción, `false` en local), y para las fotos `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (solo en local; vacía en AWS) y `PHOTOS_BASE_URL` (origen desde el que se sirven: CloudFront en producción, `http://localhost:8333/buddy-fantasy-photos` en local). Las credenciales de S3 salen de la cadena por defecto del AWS SDK (rol IAM en producción, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` en local; las de SeaweedFS están en `deploy/seaweedfs/s3.json` y solo valen en local). Redirect URI en local: `http://localhost:8080/login/oauth2/code/google`.
+Configuración por variables de entorno (valores por defecto en `backend/src/main/resources/application.yml`): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SWAGGER_UI_ENABLED`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (cliente OAuth de Google Cloud; sin ellas el login no funciona, pero la app arranca), `SESSION_COOKIE_SECURE` (`true` en producción, `false` en local), los valores con los que nace una liga en `league.defaults` (por ejemplo `LEAGUE_DEFAULTS_LINEUP_SIZE`), los límites de negocio en `league.limits`, `squad.limits` y `match.limits` (por ejemplo `MATCH_LIMITS_SHEETPLAYERSMAX`), la validez de la URL de subida de fotos en `squad.photos.s3.upload-ttl`, y para las fotos `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (solo en local; vacía en AWS) y `PHOTOS_BASE_URL` (origen desde el que se sirven: CloudFront en producción, `http://localhost:8333/buddy-fantasy-photos` en local). Las credenciales de S3 salen de la cadena por defecto del AWS SDK (rol IAM en producción, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` en local; las de SeaweedFS están en `deploy/seaweedfs/s3.json` y solo valen en local). Redirect URI en local: `http://localhost:8080/login/oauth2/code/google`.
 Docker 29+ exige Testcontainers ≥ 1.21.4 (ya fijado en `pom.xml`). Los handlers de comandos deben ser clases, no lambdas (el bus resuelve el tipo de comando por genéricos).
 Lint: pendiente.
 

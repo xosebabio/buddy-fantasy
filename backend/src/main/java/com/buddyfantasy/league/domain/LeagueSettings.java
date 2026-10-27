@@ -7,7 +7,8 @@ import com.buddyfantasy.shared.domain.DomainValidationException;
 /**
  * Per-league parameters (RF-07). Money values are in millions. {@code defaultRating} is nullable
  * (no default rating for players without votes). The per-position minimums only apply when
- * {@code lineupFormationEnabled} (RF-24).
+ * {@code lineupFormationEnabled} (RF-24). A new league is seeded from {@code league.defaults}
+ * (see {@code LeagueDefaultsRepository}); the configurable upper bounds are in {@link LeagueLimits}.
  */
 public record LeagueSettings(
         int ratingWindowHours,
@@ -28,9 +29,6 @@ public record LeagueSettings(
         BigDecimal marketMaxChangePct,
         BigDecimal marketMinValue) {
 
-    /** Lineups lock at most one week before kickoff, so the lock job only looks one week ahead. */
-    public static final int MAX_LINEUP_LOCK_HOURS = 168;
-
     private static final BigDecimal HUNDRED = new BigDecimal("100");
 
     public LeagueSettings {
@@ -40,8 +38,7 @@ public record LeagueSettings(
         require(defaultRating == null
                         || (defaultRating.signum() >= 0 && defaultRating.compareTo(ratingFormat.maxRating()) <= 0),
                 "defaultRating must be between 0 and " + ratingFormat.maxRating());
-        require(lineupLockHours >= 0 && lineupLockHours <= MAX_LINEUP_LOCK_HOURS,
-                "lineupLockHours must be between 0 and " + MAX_LINEUP_LOCK_HOURS);
+        require(lineupLockHours >= 0, "lineupLockHours must be >= 0");
         require(lineupMaxChanges >= 0, "lineupMaxChanges must be >= 0");
         require(lineupSize >= 1, "lineupSize must be >= 1");
         require(lineupMinGoalkeepers >= 0 && lineupMinDefenders >= 0 && lineupMinMidfielders >= 0
@@ -55,11 +52,6 @@ public record LeagueSettings(
         require(isPositive(marketMaxChangePct) && marketMaxChangePct.compareTo(HUNDRED) <= 0,
                 "marketMaxChangePct must be in (0, 100]");
         require(isPositive(marketMinValue), "marketMinValue must be > 0");
-    }
-
-    public static LeagueSettings defaults() {
-        return new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, null, 2, 2, 7, false, 1, 1, 1, 1, true,
-                new BigDecimal("100"), new BigDecimal("0.05"), new BigDecimal("10"), BigDecimal.ONE);
     }
 
     private static boolean isPositive(BigDecimal value) {

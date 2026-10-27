@@ -13,6 +13,7 @@ import com.buddyfantasy.match.MatchCorrected;
 import com.buddyfantasy.match.MatchDeleted;
 import com.buddyfantasy.match.MatchRescheduled;
 import com.buddyfantasy.match.PlayerPerformanceData;
+import com.buddyfantasy.match.adapter.out.config.TestMatchLimits;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
 import org.junit.jupiter.api.Test;
@@ -27,13 +28,14 @@ class MatchTests {
     static final UUID LEAGUE = UUID.randomUUID();
     static final Instant KICKOFF = Instant.parse("2026-01-11T10:00:00Z");
     static final Instant CREATED = KICKOFF.minus(Duration.ofDays(7));
+    static final MatchLimits LIMITS = TestMatchLimits.get();
 
     static Clock at(Instant instant) {
         return Clock.fixed(instant, ZoneOffset.UTC);
     }
 
     static Match schedule() {
-        return Match.schedule(LEAGUE, new Matchday(5), "Os Ninguéns", Venue.HOME, KICKOFF, CREATED);
+        return Match.schedule(LEAGUE, new Matchday(5), "Os Ninguéns", Venue.HOME, KICKOFF, CREATED, LIMITS);
     }
 
     static PlayerPerformance scorer(UUID playerId, Position position, int goals) {
@@ -47,7 +49,7 @@ class MatchTests {
 
     static Match closed(MatchSheet sheet) {
         Match match = schedule();
-        match.recordSheet(sheet, CREATED);
+        match.recordSheet(sheet, CREATED, LIMITS);
         match.close(at(KICKOFF).instant());
         match.pullEvents();
         return match;
@@ -70,7 +72,8 @@ class MatchTests {
 
     @Test
     void kickoffMayBeInThePast() {
-        Match match = Match.schedule(LEAGUE, new Matchday(1), "Rival", Venue.AWAY, CREATED.minusSeconds(1), CREATED);
+        Match match = Match.schedule(LEAGUE, new Matchday(1), "Rival", Venue.AWAY, CREATED.minusSeconds(1), CREATED,
+                LIMITS);
 
         assertThat(match.kickoffAt()).isBefore(match.createdAt());
     }
@@ -78,41 +81,51 @@ class MatchTests {
     @ParameterizedTest
     @ValueSource(strings = {"", "   "})
     void rejectsBlankOpponent(String opponent) {
-        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), opponent, Venue.HOME, KICKOFF, CREATED))
-                .isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), opponent, Venue.HOME, KICKOFF, CREATED,
+                LIMITS)).isInstanceOf(DomainValidationException.class);
     }
 
     @Test
     void validatesOpponentVenueMatchdayAndKickoff() {
-        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), null, Venue.HOME, KICKOFF, CREATED))
+        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), null, Venue.HOME, KICKOFF, CREATED, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
         assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), "x".repeat(101), Venue.HOME, KICKOFF,
-                CREATED)).isInstanceOf(DomainValidationException.class);
-        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), "Rival", null, KICKOFF, CREATED))
+                CREATED, LIMITS)).isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), "Rival", null, KICKOFF, CREATED, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
-        assertThatThrownBy(() -> Match.schedule(LEAGUE, null, "Rival", Venue.HOME, KICKOFF, CREATED))
+        assertThatThrownBy(() -> Match.schedule(LEAGUE, null, "Rival", Venue.HOME, KICKOFF, CREATED, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
-        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), "Rival", Venue.HOME, null, CREATED))
+        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), "Rival", Venue.HOME, null, CREATED, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
-        assertThat(Match.schedule(LEAGUE, new Matchday(1), "x".repeat(100), Venue.HOME, KICKOFF, CREATED)
+        assertThat(Match.schedule(LEAGUE, new Matchday(1), "x".repeat(100), Venue.HOME, KICKOFF, CREATED, LIMITS)
                 .opponent()).hasSize(100);
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {0, -1, 32768})
-    void rejectsMatchdaysOutOfRange(int value) {
+    @ValueSource(ints = {-1, 32768})
+    void rejectsMatchdaysOutOfStorageRange(int value) {
         assertThatThrownBy(() -> new Matchday(value)).isInstanceOf(DomainValidationException.class);
+    }
+
+    @Test
+    void matchdayBelowTheConfiguredMinimumIsRejected() {
+        assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(0), "Rival", Venue.HOME, KICKOFF, CREATED,
+                LIMITS)).isInstanceOf(DomainValidationException.class);
+        Match match = schedule();
+        assertThatThrownBy(() -> match.reschedule(new Matchday(0), KICKOFF, CREATED, LIMITS))
+                .isInstanceOf(DomainValidationException.class);
     }
 
     @Test
     void updateDetailsIsAllowedOnAClosedMatch() {
         Match match = closed(completeSheet());
 
-        match.updateDetails("Os Outros", Venue.AWAY);
+        match.updateDetails("Os Outros", Venue.AWAY, LIMITS);
 
         assertThat(match.opponent()).isEqualTo("Os Outros");
         assertThat(match.venue()).isEqualTo(Venue.AWAY);
-        assertThatThrownBy(() -> match.updateDetails("", Venue.AWAY)).isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> match.updateDetails("", Venue.AWAY, LIMITS))
+                .isInstanceOf(DomainValidationException.class);
     }
 
     @Test
@@ -120,7 +133,7 @@ class MatchTests {
         Match match = schedule();
         Instant postponed = KICKOFF.plus(Duration.ofDays(14));
 
-        match.reschedule(new Matchday(5), postponed, CREATED);
+        match.reschedule(new Matchday(5), postponed, CREATED, LIMITS);
 
         assertThat(match.kickoffAt()).isEqualTo(postponed);
         assertThat(match.pullEvents()).containsExactly(
@@ -131,7 +144,7 @@ class MatchTests {
     void changingOnlyTheMatchdayAlsoPublishesRescheduled() {
         Match match = schedule();
 
-        match.reschedule(new Matchday(6), KICKOFF, CREATED);
+        match.reschedule(new Matchday(6), KICKOFF, CREATED, LIMITS);
 
         assertThat(match.matchday()).isEqualTo(new Matchday(6));
         assertThat(match.pullEvents()).containsExactly(
@@ -141,9 +154,9 @@ class MatchTests {
     @Test
     void rescheduleWithoutChangesDoesNothingEvenWhenClosed() {
         Match scheduled = schedule();
-        scheduled.reschedule(new Matchday(5), KICKOFF, CREATED);
+        scheduled.reschedule(new Matchday(5), KICKOFF, CREATED, LIMITS);
         Match closed = closed(completeSheet());
-        closed.reschedule(new Matchday(5), KICKOFF, CREATED);
+        closed.reschedule(new Matchday(5), KICKOFF, CREATED, LIMITS);
 
         assertThat(scheduled.pullEvents()).isEmpty();
         assertThat(closed.pullEvents()).isEmpty();
@@ -153,9 +166,9 @@ class MatchTests {
     void closedMatchCannotChangeMatchdayOrKickoff() {
         Match match = closed(completeSheet());
 
-        assertThatThrownBy(() -> match.reschedule(new Matchday(5), KICKOFF.plusSeconds(60), KICKOFF))
+        assertThatThrownBy(() -> match.reschedule(new Matchday(5), KICKOFF.plusSeconds(60), KICKOFF, LIMITS))
                 .isInstanceOf(ConflictException.class);
-        assertThatThrownBy(() -> match.reschedule(new Matchday(6), KICKOFF, KICKOFF))
+        assertThatThrownBy(() -> match.reschedule(new Matchday(6), KICKOFF, KICKOFF, LIMITS))
                 .isInstanceOf(ConflictException.class);
         assertThat(match.matchday()).isEqualTo(new Matchday(5));
         assertThat(match.kickoffAt()).isEqualTo(KICKOFF);
@@ -166,7 +179,7 @@ class MatchTests {
         Match match = schedule();
         MatchSheet draft = new MatchSheet(null, List.of(scorer(UUID.randomUUID(), Position.DEFENDER, 0)));
 
-        match.recordSheet(draft, CREATED);
+        match.recordSheet(draft, CREATED, LIMITS);
 
         assertThat(match.sheet()).isEqualTo(draft);
         assertThat(match.pullEvents()).isEmpty();
@@ -175,7 +188,7 @@ class MatchTests {
     @Test
     void closeBeforeKickoffIsRejected() {
         Match match = schedule();
-        match.recordSheet(completeSheet(), CREATED);
+        match.recordSheet(completeSheet(), CREATED, LIMITS);
 
         assertThatThrownBy(() -> match.close(at(KICKOFF.minusMillis(1)).instant()))
                 .isInstanceOf(ConflictException.class);
@@ -186,7 +199,7 @@ class MatchTests {
     void closeExactlyAtKickoffClosesAndPublishesTheFullSheet() {
         Match match = schedule();
         MatchSheet sheet = completeSheet();
-        match.recordSheet(sheet, CREATED);
+        match.recordSheet(sheet, CREATED, LIMITS);
         Instant now = at(KICKOFF).instant();
 
         match.close(now);
@@ -205,9 +218,9 @@ class MatchTests {
         Match empty = schedule();
         Match withoutResult = schedule();
         withoutResult.recordSheet(new MatchSheet(null, List.of(scorer(UUID.randomUUID(), Position.FORWARD, 0))),
-                CREATED);
+                CREATED, LIMITS);
         Match withoutPlayers = schedule();
-        withoutPlayers.recordSheet(new MatchSheet(new MatchResult(0, 0), List.of()), CREATED);
+        withoutPlayers.recordSheet(new MatchSheet(new MatchResult(0, 0), List.of()), CREATED, LIMITS);
 
         assertThatThrownBy(() -> empty.close(afterKickoff)).isInstanceOf(ConflictException.class);
         assertThatThrownBy(() -> withoutResult.close(afterKickoff)).isInstanceOf(ConflictException.class);
@@ -217,7 +230,7 @@ class MatchTests {
     @Test
     void closingTwicePublishesMatchClosedOnceAndKeepsTheFirstInstant() {
         Match match = schedule();
-        match.recordSheet(completeSheet(), CREATED);
+        match.recordSheet(completeSheet(), CREATED, LIMITS);
         Instant first = at(KICKOFF.plusSeconds(60)).instant();
 
         match.close(first);
@@ -234,7 +247,7 @@ class MatchTests {
                 scorer(UUID.randomUUID(), Position.MIDFIELDER, 2)));
         Instant now = KICKOFF.plus(Duration.ofDays(2));
 
-        match.recordSheet(corrected, now);
+        match.recordSheet(corrected, now, LIMITS);
 
         assertThat(match.sheet()).isEqualTo(corrected);
         assertThat(match.pullEvents()).containsExactly(new MatchCorrected(LEAGUE, match.id().value(), 5,
@@ -246,7 +259,7 @@ class MatchTests {
         MatchSheet sheet = completeSheet();
         Match match = closed(sheet);
 
-        match.recordSheet(new MatchSheet(sheet.result(), sheet.performances().reversed()), KICKOFF);
+        match.recordSheet(new MatchSheet(sheet.result(), sheet.performances().reversed()), KICKOFF, LIMITS);
 
         assertThat(match.pullEvents()).isEmpty();
     }
@@ -256,8 +269,9 @@ class MatchTests {
         Match match = closed(completeSheet());
         MatchSheet before = match.sheet();
 
-        assertThatThrownBy(() -> match.recordSheet(MatchSheet.EMPTY, KICKOFF)).isInstanceOf(ConflictException.class);
-        assertThatThrownBy(() -> match.recordSheet(new MatchSheet(null, before.performances()), KICKOFF))
+        assertThatThrownBy(() -> match.recordSheet(MatchSheet.EMPTY, KICKOFF, LIMITS))
+                .isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> match.recordSheet(new MatchSheet(null, before.performances()), KICKOFF, LIMITS))
                 .isInstanceOf(ConflictException.class);
         assertThat(match.sheet()).isEqualTo(before);
         assertThat(match.pullEvents()).isEmpty();
@@ -265,7 +279,7 @@ class MatchTests {
 
     @Test
     void recordSheetRequiresASheet() {
-        assertThatThrownBy(() -> schedule().recordSheet(null, CREATED))
+        assertThatThrownBy(() -> schedule().recordSheet(null, CREATED, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
     }
 

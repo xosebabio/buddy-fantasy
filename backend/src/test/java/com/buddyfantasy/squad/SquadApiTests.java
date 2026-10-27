@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
+import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
@@ -38,6 +39,9 @@ class SquadApiTests {
     PlayerRepository players;
 
     @Autowired
+    SquadLimitsRepository limits;
+
+    @Autowired
     JdbcTemplate jdbc;
 
     @Autowired
@@ -49,7 +53,7 @@ class SquadApiTests {
     }
 
     private Player player(UUID leagueId, String name, Position position) {
-        Player player = Player.register(leagueId, name, null, position, new BigDecimal("5"), NOW);
+        Player player = Player.register(leagueId, name, null, position, new BigDecimal("5"), NOW, limits.get());
         players.save(player);
         return player;
     }

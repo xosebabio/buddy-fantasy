@@ -6,6 +6,7 @@ import java.time.Instant;
 import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.match.application.port.out.MatchAuditEntry;
 import com.buddyfantasy.match.application.port.out.MatchAuditLog;
+import com.buddyfantasy.match.application.port.out.MatchLimitsRepository;
 import com.buddyfantasy.match.application.port.out.MatchRepository;
 import com.buddyfantasy.match.application.port.out.MatchSnapshot;
 import com.buddyfantasy.match.domain.Match;
@@ -23,14 +24,16 @@ class ScheduleMatchHandler implements CommandHandler<ScheduleMatchCommand, Match
     private final LeagueAccess access;
     private final MatchRepository matches;
     private final MatchAuditLog audit;
+    private final MatchLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     ScheduleMatchHandler(LeagueAccess access, MatchRepository matches, MatchAuditLog audit,
-                         ApplicationEventPublisher events, Clock clock) {
+                         MatchLimitsRepository limits, ApplicationEventPublisher events, Clock clock) {
         this.access = access;
         this.matches = matches;
         this.audit = audit;
+        this.limits = limits;
         this.events = events;
         this.clock = clock;
     }
@@ -40,7 +43,7 @@ class ScheduleMatchHandler implements CommandHandler<ScheduleMatchCommand, Match
         access.requireAdmin(command.userId(), command.leagueId());
         Instant now = clock.instant();
         Match match = Match.schedule(command.leagueId(), new Matchday(command.matchday()), command.opponent().strip(),
-                command.venue(), command.kickoffAt(), now);
+                command.venue(), command.kickoffAt(), now, limits.get());
         if (matches.existsMatchday(command.leagueId(), match.matchday())) {
             throw new ConflictException("Matchday already has a match");
         }

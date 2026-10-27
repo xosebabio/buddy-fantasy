@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
 import com.buddyfantasy.league.LeagueRole;
+import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
+import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.League;
@@ -46,6 +48,12 @@ class MeEndpointsTests {
     LeagueRepository leagues;
 
     @Autowired
+    LeagueDefaultsRepository defaults;
+
+    @Autowired
+    LeagueLimitsRepository limits;
+
+    @Autowired
     MembershipRepository memberships;
 
     @Autowired
@@ -71,7 +79,7 @@ class MeEndpointsTests {
     }
 
     private void join(String leagueName, UUID userId, LeagueRole role) {
-        League league = League.create(leagueName, NOW);
+        League league = League.create(leagueName, NOW, defaults.settings(), defaults.scoringRules(), limits.get());
         leagues.save(league);
         memberships.save(Membership.join(league.id(), userId, role, NOW));
     }

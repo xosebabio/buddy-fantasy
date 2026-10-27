@@ -13,19 +13,16 @@ import com.buddyfantasy.shared.domain.DomainValidationException;
 /**
  * Result plus who played and their stats (RF-13, RF-14), always saved as a whole. While the match is scheduled it
  * may be a draft: {@code result} is {@code null} until known and there may be no participants yet. Performances are
- * kept sorted by player id, so two sheets with the same lines are equal whatever order they were sent in.
+ * kept sorted by player id, so two sheets with the same lines are equal whatever order they were sent in. The
+ * configurable bounds (players, goals, stats) are checked by {@link MatchLimits} when the sheet is recorded.
  */
 public record MatchSheet(MatchResult result, List<PlayerPerformance> performances) {
 
-    public static final int MAX_PERFORMANCES = 30;
     public static final MatchSheet EMPTY = new MatchSheet(null, List.of());
 
     public MatchSheet {
         if (performances == null) {
             throw new DomainValidationException("Performances are required");
-        }
-        if (performances.size() > MAX_PERFORMANCES) {
-            throw new DomainValidationException("A match sheet has at most " + MAX_PERFORMANCES + " players");
         }
         Set<UUID> players = new HashSet<>();
         for (PlayerPerformance performance : performances) {
