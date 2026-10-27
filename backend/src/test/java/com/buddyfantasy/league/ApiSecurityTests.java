@@ -34,7 +34,12 @@ class ApiSecurityTests {
 
     private static final Set<HttpMethod> MUTATING = Set.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH);
 
-    private record Endpoint(HttpMethod method, String path) {
+    private record Endpoint(HttpMethod method, String pattern) {
+
+        /** The pattern with every path variable replaced by a random id. */
+        String path() {
+            return pattern.replaceAll("\\{[^}]+}", UUID.randomUUID().toString());
+        }
     }
 
     @Autowired
@@ -51,9 +56,8 @@ class ApiSecurityTests {
                 if (!pattern.startsWith("/api/")) {
                     continue;
                 }
-                String path = pattern.replaceAll("\\{[^}]+}", UUID.randomUUID().toString());
                 for (var method : info.getMethodsCondition().getMethods()) {
-                    endpoints.add(new Endpoint(HttpMethod.valueOf(method.name()), path));
+                    endpoints.add(new Endpoint(HttpMethod.valueOf(method.name()), pattern));
                 }
             }
         }
@@ -63,6 +67,19 @@ class ApiSecurityTests {
     @Test
     void scanFindsAllApiEndpoints() {
         assertThat(apiEndpoints()).hasSizeGreaterThanOrEqualTo(21);
+    }
+
+    @Test
+    void scanCoversTheSquadEndpoints() {
+        assertThat(apiEndpoints()).contains(
+                new Endpoint(HttpMethod.POST, "/api/leagues/{id}/players"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/players"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/players/{playerId}"),
+                new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/players/{playerId}"),
+                new Endpoint(HttpMethod.DELETE, "/api/leagues/{id}/players/{playerId}"),
+                new Endpoint(HttpMethod.POST, "/api/leagues/{id}/players/{playerId}/photo/upload"),
+                new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/players/{playerId}/photo"),
+                new Endpoint(HttpMethod.DELETE, "/api/leagues/{id}/players/{playerId}/photo"));
     }
 
     @Test
