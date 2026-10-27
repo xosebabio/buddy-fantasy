@@ -135,6 +135,7 @@ Todos los parámetros configurables (ventana, formato, bloqueo, cambios, tamaño
 - Migraciones Flyway versionadas (`V<n>__descripcion.sql`). **Nunca edites una migración ya aplicada**: crea una nueva.
 - Referencia los requisitos por su código (`RF-xx`, `RNF-xx`) en commits, PRs y comentarios cuando aplique.
 - Commits en formato Conventional Commits (`feat:`, `fix:`, `chore:`…).
+- **No hagas commits (ni push) salvo que el usuario lo pida explícitamente.** Deja los cambios en el árbol de trabajo para que los revise.
 - Frontend mobile first: diseña primero para pantalla de móvil.
 
 ## Tests
