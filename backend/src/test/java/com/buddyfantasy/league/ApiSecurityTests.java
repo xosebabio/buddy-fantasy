@@ -66,7 +66,15 @@ class ApiSecurityTests {
 
     @Test
     void scanFindsAllApiEndpoints() {
-        assertThat(apiEndpoints()).hasSizeGreaterThanOrEqualTo(21);
+        assertThat(apiEndpoints()).hasSizeGreaterThanOrEqualTo(24);
+    }
+
+    @Test
+    void scanCoversTheMatchEndpoints() {
+        assertThat(apiEndpoints()).contains(
+                new Endpoint(HttpMethod.POST, "/api/leagues/{id}/matches"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/matches"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/matches/{matchId}"));
     }
 
     @Test
