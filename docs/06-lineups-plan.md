@@ -134,7 +134,7 @@ Todos exigen sesión (`401`) y CSRF en el `PUT`. Autorización en el handler (`4
 | 3 | V11, `LineupTimeline`, `LineupRules`, `MatchLineupLock` y eventos, con tests unitarios; `allowedDependencies` de `lineup` | Dominio verificado | ✅ |
 | 4 | Persistencia, `PlayerCatalog`, `SaveLineupCommand`, `GetMyLineupQuery` y sus endpoints | RF-24, RF-26, RF-28, RF-29 | ✅ |
 | 5 | `LineupLocker`, `LockDueLineupsJob` y listeners de `MatchClosed`, `MatchRescheduled` y `MatchDeleted` | RF-25, RF-27 y `LineupsLocked` | ✅ |
-| 6 | `GetLockedLineupsQuery` y visibilidad | Alineaciones bloqueadas visibles | |
+| 6 | `GetLockedLineupsQuery` y visibilidad | Alineaciones bloqueadas visibles | ✅ |
 | 7 | Tests de seguridad y arquitectura; `AGENTS.md` (estado) y marcar el ítem en `requirements.md` | Ítem de Fase 1 cerrado | |
 
 Cada tarea es un commit `feat(lineup): … (RF-24)` en Conventional Commits.

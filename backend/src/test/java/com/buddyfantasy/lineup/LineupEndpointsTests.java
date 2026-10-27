@@ -16,6 +16,7 @@ import com.buddyfantasy.identity.application.usecases.registerorloginuser.Regist
 import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
 import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
 import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
+import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLineupsCommand;
 import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
@@ -79,6 +80,9 @@ class LineupEndpointsTests {
     List<UUID> lineupA;
     UUID expensive;
     UUID foreign;
+    UUID otherLeague;
+    UUID match1;
+    UUID match2;
 
     @BeforeEach
     void setUp() {
@@ -108,7 +112,7 @@ class LineupEndpointsTests {
                     lineup_budget_enabled = true, lineup_budget = 100
                 where league_id = ?""", league);
         // outsider is ADMIN of another league, never a member of "Peña"
-        UUID otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
+        otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
 
         squad = new ArrayList<>();
         Stream.of(Position.GOALKEEPER, Position.GOALKEEPER, Position.DEFENDER, Position.DEFENDER,
@@ -119,8 +123,8 @@ class LineupEndpointsTests {
         expensive = player(league, admin, Position.FORWARD, "50");
         foreign = player(otherLeague, outsider, Position.FORWARD, "10");
 
-        bus.dispatch(new ScheduleMatchCommand(admin, league, 1, "Rival", Venue.HOME, KICKOFF_1));
-        bus.dispatch(new ScheduleMatchCommand(admin, league, 2, "Rival", Venue.AWAY, KICKOFF_2));
+        match1 = bus.dispatch(new ScheduleMatchCommand(admin, league, 1, "Rival", Venue.HOME, KICKOFF_1)).value();
+        match2 = bus.dispatch(new ScheduleMatchCommand(admin, league, 2, "Rival", Venue.AWAY, KICKOFF_2)).value();
     }
 
     private UUID register(String sub) {
@@ -144,6 +148,15 @@ class LineupEndpointsTests {
 
     private ResultActions myLineup(UUID userId) throws Exception {
         return mvc.perform(get("/api/leagues/{id}/lineup", league).with(as(userId)));
+    }
+
+    private ResultActions lockedLineups(UUID userId, UUID leagueId, UUID matchId) throws Exception {
+        return mvc.perform(get("/api/leagues/{id}/lineups/{matchId}", leagueId, matchId).with(as(userId)));
+    }
+
+    /** What the lock job does once the lock time has come. */
+    private void lock(UUID matchId) {
+        bus.dispatch(new LockMatchLineupsCommand(league, matchId));
     }
 
     private static String body(List<UUID> playerIds) {
@@ -381,5 +394,92 @@ class LineupEndpointsTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.targetMatch").doesNotExist())
                 .andExpect(jsonPath("$.changesRemaining").doesNotExist());
+    }
+
+    @Test
+    void onceLockedEveryMemberSeesEveryLineupWithItsValuesAtTheLock() throws Exception {
+        save(ana, lineupA).andExpect(status().isOk());
+        List<UUID> adminLineup = squad.subList(5, 12);
+        save(admin, adminLineup).andExpect(status().isOk());
+        clock.now = LOCK_1.plus(Duration.ofMinutes(1));
+        lock(match1);
+        // values change after the lock: the locked lineups keep theirs
+        jdbc.update("update squad_player set initial_value = 40 where id = ?", lineupA.getFirst());
+
+        for (UUID member : List.of(ana, admin)) {
+            lockedLineups(member, league, match1)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.matchId").value(match1.toString()))
+                    .andExpect(jsonPath("$.matchday").value(1))
+                    .andExpect(jsonPath("$.kickoffAt").value("2026-01-11T10:00:00Z"))
+                    .andExpect(jsonPath("$.lockAt").value("2026-01-11T08:00:00Z"))
+                    .andExpect(jsonPath("$.lockedAt").value("2026-01-11T08:01:00Z"))
+                    .andExpect(jsonPath("$.lineups[*].userId", containsInAnyOrder(ana.toString(), admin.toString())))
+                    .andExpect(jsonPath("$.lineups[?(@.userId == '" + ana + "')].players[*].id",
+                            containsInAnyOrder(ids(lineupA))))
+                    .andExpect(jsonPath("$.lineups[?(@.userId == '" + admin + "')].players[*].id",
+                            containsInAnyOrder(ids(adminLineup))))
+                    .andExpect(jsonPath("$.lineups[?(@.userId == '" + ana + "')].players[?(@.id == '"
+                            + lineupA.getFirst() + "')].value").value(10.0))
+                    .andExpect(jsonPath("$.lineups[?(@.userId == '" + ana + "')].totalValue").value(70.0))
+                    .andExpect(jsonPath("$.lineups[?(@.userId == '" + ana + "')].budget").value(100.0))
+                    .andExpect(jsonPath("$.lineups[?(@.userId == '" + ana + "')].overBudget").value(false))
+                    .andExpect(jsonPath("$.lineups[*].versionId").doesNotExist());
+        }
+        // the working lineup, by contrast, reflects the current value
+        myLineup(ana).andExpect(jsonPath("$.totalValue").value(100.0));
+    }
+
+    @Test
+    void membersWithoutALineupBeforeTheLockAreNotInIt() throws Exception {
+        save(ana, lineupA).andExpect(status().isOk());
+        clock.now = LOCK_1;
+        // saved after the lock: counts for matchday 2
+        save(admin, lineupA).andExpect(status().isOk());
+        clock.now = LOCK_1.plus(Duration.ofMinutes(1));
+        lock(match1);
+
+        lockedLineups(admin, league, match1)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lineups[*].userId", containsInAnyOrder(ana.toString())));
+    }
+
+    @Test
+    void aLineupOverBudgetAtTheLockIsShownAsSuch() throws Exception {
+        save(ana, lineupA).andExpect(status().isOk());
+        jdbc.update("update squad_player set initial_value = 41 where id = ?", lineupA.getFirst());
+        clock.now = LOCK_1.plus(Duration.ofMinutes(1));
+        lock(match1);
+
+        lockedLineups(admin, league, match1)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lineups[0].totalValue").value(101.0))
+                .andExpect(jsonPath("$.lineups[0].overBudget").value(true));
+    }
+
+    @Test
+    void lineupsAreNotVisibleUntilTheMatchIsLocked() throws Exception {
+        save(ana, lineupA).andExpect(status().isOk());
+
+        lockedLineups(admin, league, match1).andExpect(status().isConflict());
+        // the lock time has come but the job has not locked it yet
+        clock.now = LOCK_1;
+        lockedLineups(admin, league, match1).andExpect(status().isConflict());
+        lockedLineups(admin, league, match2).andExpect(status().isConflict());
+    }
+
+    @Test
+    void lockedLineupsAreOnlyVisibleWithinTheirLeague() throws Exception {
+        save(ana, lineupA).andExpect(status().isOk());
+        clock.now = LOCK_1.plus(Duration.ofMinutes(1));
+        lock(match1);
+        UUID otherMatch = bus.dispatch(new ScheduleMatchCommand(outsider, otherLeague, 1, "Rival", Venue.HOME,
+                KICKOFF_2)).value();
+
+        lockedLineups(outsider, league, match1).andExpect(status().isForbidden());
+        // the outsider's own league does not reach the match of "Peña", nor "Peña" the match of the other league
+        lockedLineups(outsider, otherLeague, match1).andExpect(status().isNotFound());
+        lockedLineups(ana, league, otherMatch).andExpect(status().isNotFound());
+        lockedLineups(ana, league, UUID.randomUUID()).andExpect(status().isNotFound());
     }
 }
