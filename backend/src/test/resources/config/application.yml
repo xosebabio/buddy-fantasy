@@ -1,0 +1,4 @@
+# Loaded on top of src/main/resources/application.yml in every test (classpath:/config/ wins over classpath:/).
+lineup:
+  lock-job:
+    cron: "-" # the tests run the job by hand with their own clock

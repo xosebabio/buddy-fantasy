@@ -1,11 +1,8 @@
 package com.buddyfantasy.lineup;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
@@ -54,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /** Saving and reading one's working lineup (RF-24, RF-26, RF-28, RF-29) with a controllable server clock. */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({PostgresTestConfig.class, LineupEndpointsTests.MutableClockConfig.class})
+@Import({PostgresTestConfig.class, MutableClock.Config.class})
 class LineupEndpointsTests {
 
     static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
@@ -62,35 +56,6 @@ class LineupEndpointsTests {
     /** 2 h before {@link #KICKOFF_1}: the league locks lineups 2 h before kickoff. */
     static final Instant LOCK_1 = Instant.parse("2026-01-11T08:00:00Z");
     static final Instant KICKOFF_2 = Instant.parse("2026-01-18T10:00:00Z");
-
-    static class MutableClock extends Clock {
-        Instant now = NOW;
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return now;
-        }
-    }
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class MutableClockConfig {
-
-        @Bean
-        @Primary
-        MutableClock testClock() {
-            return new MutableClock();
-        }
-    }
 
     @Autowired
     MockMvc mvc;

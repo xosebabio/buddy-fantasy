@@ -1,8 +1,11 @@
 package com.buddyfantasy.lineup.adapter.out.persistence;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,31 +33,37 @@ class JdbcLineupVersionRepository implements LineupVersionRepository {
 
     @Override
     public List<LineupVersion> findByLeagueIdAndUserId(UUID leagueId, UUID userId) {
-        List<VersionPlayerRow> rows = jdbc.sql("""
-                        select v.id, v.saved_at, p.player_id
+        return toVersions(leagueId, jdbc.sql("""
+                        select v.id, v.user_id, v.saved_at, p.player_id
                         from lineup_version v
                         left join lineup_version_player p on p.version_id = v.id
                         where v.league_id = :leagueId and v.user_id = :userId
                         order by v.saved_at, v.id""")
                 .param("leagueId", leagueId)
                 .param("userId", userId)
-                .query((rs, i) -> new VersionPlayerRow(rs.getObject("id", UUID.class),
-                        rs.getObject("saved_at", OffsetDateTime.class).toInstant(),
-                        rs.getObject("player_id", UUID.class)))
-                .list();
-        Map<UUID, Instant> savedAt = new LinkedHashMap<>();
-        Map<UUID, Set<UUID>> playerIds = new LinkedHashMap<>();
-        for (VersionPlayerRow row : rows) {
-            savedAt.put(row.versionId(), row.savedAt());
-            Set<UUID> players = playerIds.computeIfAbsent(row.versionId(), id -> new HashSet<>());
-            if (row.playerId() != null) {
-                players.add(row.playerId());
-            }
+                .query(JdbcLineupVersionRepository::toRow)
+                .list());
+    }
+
+    @Override
+    public List<LineupVersion> findLastSavedBefore(UUID leagueId, Collection<UUID> userIds, Instant before) {
+        if (userIds.isEmpty()) {
+            return List.of();
         }
-        return savedAt.entrySet().stream()
-                .map(entry -> new LineupVersion(entry.getKey(), leagueId, userId, entry.getValue(),
-                        playerIds.get(entry.getKey())))
-                .toList();
+        // same tie-break as findByLeagueIdAndUserId + LineupTimeline: the greatest id among equal instants
+        return toVersions(leagueId, jdbc.sql("""
+                        select v.id, v.user_id, v.saved_at, p.player_id
+                        from (select distinct on (user_id) id, user_id, saved_at
+                              from lineup_version
+                              where league_id = :leagueId and user_id in (:userIds) and saved_at < :before
+                              order by user_id, saved_at desc, id desc) v
+                        left join lineup_version_player p on p.version_id = v.id
+                        order by v.user_id""")
+                .param("leagueId", leagueId)
+                .param("userIds", userIds)
+                .param("before", OffsetDateTime.ofInstant(before, ZoneOffset.UTC))
+                .query(JdbcLineupVersionRepository::toRow)
+                .list());
     }
 
     @Override
@@ -71,6 +80,28 @@ class JdbcLineupVersionRepository implements LineupVersionRepository {
                 version.playerIds().stream().map(playerId -> new Object[]{version.id(), playerId}).toList());
     }
 
-    private record VersionPlayerRow(UUID versionId, Instant savedAt, UUID playerId) {
+    /** One row per version and player, in version order; a version without players has a null player. */
+    private static List<LineupVersion> toVersions(UUID leagueId, List<VersionPlayerRow> rows) {
+        Map<UUID, VersionPlayerRow> versions = new LinkedHashMap<>();
+        Map<UUID, Set<UUID>> playerIds = new LinkedHashMap<>();
+        for (VersionPlayerRow row : rows) {
+            versions.putIfAbsent(row.versionId(), row);
+            Set<UUID> players = playerIds.computeIfAbsent(row.versionId(), id -> new HashSet<>());
+            if (row.playerId() != null) {
+                players.add(row.playerId());
+            }
+        }
+        return versions.values().stream()
+                .map(row -> new LineupVersion(row.versionId(), leagueId, row.userId(), row.savedAt(),
+                        playerIds.get(row.versionId())))
+                .toList();
+    }
+
+    private static VersionPlayerRow toRow(ResultSet rs, int rowNum) throws SQLException {
+        return new VersionPlayerRow(rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class),
+                rs.getObject("saved_at", OffsetDateTime.class).toInstant(), rs.getObject("player_id", UUID.class));
+    }
+
+    private record VersionPlayerRow(UUID versionId, UUID userId, Instant savedAt, UUID playerId) {
     }
 }

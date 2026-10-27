@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +55,8 @@ class SaveLineupHandler implements CommandHandler<SaveLineupCommand, MyLineupVie
     @Override
     public MyLineupView handle(SaveLineupCommand command) {
         access.requireMember(command.userId(), command.leagueId());
-        if (command.playerIds() == null || command.playerIds().contains(null)) {
+        // not contains(null): immutable lists throw on it
+        if (command.playerIds() == null || command.playerIds().stream().anyMatch(Objects::isNull)) {
             throw new DomainValidationException("Players are required");
         }
         LineupSettings settings = leagueSettings.lineupSettings(command.leagueId());

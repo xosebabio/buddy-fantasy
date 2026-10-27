@@ -12,4 +12,11 @@ public interface LeagueSettingsProvider {
 
     /** One query for all ids. Unknown leagues are absent from the result. */
     Map<UUID, LineupSettings> lineupSettings(Collection<UUID> leagueIds);
+
+    /**
+     * The configured maximum of {@link LineupSettings#lockHours()} ({@code league.limits.lineup-lock-hours-max}),
+     * checked when a league saves its parameters: how far ahead of kickoff a lineup lock can be. Lowering it does not
+     * change leagues that already have more.
+     */
+    int lineupLockHoursMax();
 }

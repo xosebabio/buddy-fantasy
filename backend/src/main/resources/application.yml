@@ -92,6 +92,12 @@ match:
     stat-count-max: 99 # por jugador y estadística (goles, asistencias…)
     sheet-players-max: 30 # jugadores en el acta
 
+lineup:
+  # Job de bloqueo de alineaciones (RF-25): configuración técnica, no de negocio.
+  lock-job:
+    cron: ${LINEUP_LOCK_JOB_CRON:0 * * * * *} # cada minuto; "-" lo desactiva
+    margin: 1m # solo bloquea partidos con lockAt <= ahora - margin: los guardados de antes ya están confirmados
+
 server:
   forward-headers-strategy: framework # redirect_uri correcto detrás de Caddy
   servlet:

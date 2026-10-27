@@ -48,7 +48,7 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
 ## 3. Relación con otros módulos
 
 - **`league`:**
-  - Nueva API pública `LeagueSettingsProvider` (paquete raíz, prevista en el plan 03): `LineupSettings lineupSettings(UUID leagueId)` y `Map<UUID, LineupSettings> lineupSettings(Collection<UUID> leagueIds)` (para el job, una consulta). Record `LineupSettings(size, lockHours, maxChanges, formationEnabled, minGoalkeepers, minDefenders, minMidfielders, minForwards, budgetEnabled, budget)`.
+  - Nueva API pública `LeagueSettingsProvider` (paquete raíz, prevista en el plan 03): `LineupSettings lineupSettings(UUID leagueId)`, `Map<UUID, LineupSettings> lineupSettings(Collection<UUID> leagueIds)` (para el job, una consulta) e `int lineupLockHoursMax()` (el horizonte del job). Record `LineupSettings(size, lockHours, maxChanges, formationEnabled, minGoalkeepers, minDefenders, minMidfielders, minForwards, budgetEnabled, budget)`.
   - `LeagueAccess` gana `Set<UUID> memberIds(UUID leagueId)`: al bloquear solo cuentan las alineaciones de quien sigue siendo miembro.
   - `LeagueSettings` añade los cuatro mínimos (por defecto 1), valida `lockHours ≤ league.limits.lineup-lock-hours-max` (vía `LeagueLimits`) y, si la formación está activa, que la suma de mínimos no supere `lineupSize`.
 - **`squad`:** `SquadPlayer` añade `initialValue`. `lineup` no lo usa directamente: su puerto de salida `PlayerCatalog` devuelve `LineupPlayer(id, position, active, currentValue)`, con un adaptador sobre `SquadApi` que hoy toma `currentValue = initialValue`. El plan de `market` cambia solo ese adaptador.
@@ -90,14 +90,14 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
 | `GetMyLineupQuery` | query | `requireMember` | Alineación de trabajo, partido objetivo (jornada, `kickoffAt`, `lockAt`), cambios usados y restantes, valor total y presupuesto, y avisos: `OVER_BUDGET` (con los valores vigentes ya no cabe), `RETIRED_PLAYERS` y `SIZE_MISMATCH`. Sin alineación devuelve una vacía. |
 | `GetLockedLineupsQuery` | query | `requireMember` | Alineaciones bloqueadas de un partido, con el valor de cada jugador al bloquear y `overBudget`. Partido sin bloquear → `409`; partido de otra liga → `404`. |
 
-**Bloqueo:** el componente `LineupLocker.lock(leagueId, matchId)` es idempotente. Inserta la fila de `lineup_match_lock` con `ON CONFLICT DO NOTHING` y solo quien la inserta guarda las alineaciones y publica el evento. Por cada miembro actual (`LeagueAccess.memberIds`) toma `lineupFor(match)`; quien no tiene versión antes de `lockAt` no tiene alineación en ese partido. El presupuesto se comprueba con los valores vigentes en ese momento.
+**Bloqueo:** el `LineupLocker` es el comando interno `LockMatchLineupsCommand(leagueId, matchId)` (los jobs y listeners entran por el bus, `01-backend-structure-plan.md` §3.1), idempotente. Inserta la fila de `lineup_match_lock` con `ON CONFLICT DO NOTHING` y solo quien la inserta guarda las alineaciones y publica el evento. Por cada miembro actual (`LeagueAccess.memberIds`) toma `lineupFor(match)`, resuelto en una consulta (`LineupVersionRepository.findLastSavedBefore`); quien no tiene versión antes de `lockAt` no tiene alineación en ese partido. El presupuesto se comprueba con los valores vigentes en ese momento. Los listeners despachan `LockMatchLineupsCommand`, `RescheduleMatchLockCommand` y `DeleteMatchLockCommand`; Spring Modulith los ejecuta de forma asíncrona tras el commit.
 
 **Job `LockDueLineupsJob`** (`@Scheduled` cada minuto + `@SchedulerLock`):
 
-1. Pide `MatchApi.findScheduledKickingOffBefore(now + lineupLockHoursMax)` y los parámetros de esas ligas. `lineupLockHoursMax` es `league.limits.lineup-lock-hours-max`, que `LeagueSettingsProvider` expondrá en esta tarea. Si se baja ese límite por debajo de lo que ya tiene una liga, sus partidos entran tarde en la ventana del job; `MatchClosed` sigue bloqueándolos como red de seguridad.
-2. Bloquea los partidos con `lockAt ≤ now − 1 min` que aún no estén en `lineup_match_lock`.
+1. Pide (`FindMatchesToLockQuery`) `MatchApi.findScheduledKickingOffBefore(now + lineupLockHoursMax)` y los parámetros de esas ligas. `lineupLockHoursMax` es `league.limits.lineup-lock-hours-max`, que `LeagueSettingsProvider` expondrá en esta tarea. Si se baja ese límite por debajo de lo que ya tiene una liga, sus partidos entran tarde en la ventana del job; `MatchClosed` sigue bloqueándolos como red de seguridad.
+2. Bloquea los partidos con `lockAt ≤ now − 1 min` que aún no estén en `lineup_match_lock`, cada uno en su propia transacción (un fallo no frena a los demás y se reintenta en la siguiente ejecución).
 
-El margen de un minuto garantiza que un guardado con `saved_at < lockAt` ya está confirmado cuando se lee. Ejecutarlo dos veces no duplica nada.
+El margen de un minuto garantiza que un guardado con `saved_at < lockAt` ya está confirmado cuando se lee. Ejecutarlo dos veces no duplica nada. Cron y margen son configuración técnica (`lineup.lock-job.cron`, `lineup.lock-job.margin`); en los tests el cron es `-` y el job se ejecuta a mano.
 
 ## 6. API HTTP (`lineup/adapter/in/web`)
 
@@ -133,7 +133,7 @@ Todos exigen sesión (`401`) y CSRF en el `PUT`. Autorización en el handler (`4
 | 2 | `MatchApi` en `match` e `initialValue` en `SquadPlayer`, con sus tests | Calendario y valores consultables | ✅ |
 | 3 | V11, `LineupTimeline`, `LineupRules`, `MatchLineupLock` y eventos, con tests unitarios; `allowedDependencies` de `lineup` | Dominio verificado | ✅ |
 | 4 | Persistencia, `PlayerCatalog`, `SaveLineupCommand`, `GetMyLineupQuery` y sus endpoints | RF-24, RF-26, RF-28, RF-29 | ✅ |
-| 5 | `LineupLocker`, `LockDueLineupsJob` y listeners de `MatchClosed`, `MatchRescheduled` y `MatchDeleted` | RF-25, RF-27 y `LineupsLocked` | |
+| 5 | `LineupLocker`, `LockDueLineupsJob` y listeners de `MatchClosed`, `MatchRescheduled` y `MatchDeleted` | RF-25, RF-27 y `LineupsLocked` | ✅ |
 | 6 | `GetLockedLineupsQuery` y visibilidad | Alineaciones bloqueadas visibles | |
 | 7 | Tests de seguridad y arquitectura; `AGENTS.md` (estado) y marcar el ítem en `requirements.md` | Ítem de Fase 1 cerrado | |
 

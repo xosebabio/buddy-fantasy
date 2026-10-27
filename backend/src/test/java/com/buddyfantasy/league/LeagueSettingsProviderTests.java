@@ -134,6 +134,11 @@ class LeagueSettingsProviderTests {
     }
 
     @Test
+    void exposesTheConfiguredLockHoursMaximum() {
+        assertThat(provider.lineupLockHoursMax()).isEqualTo(limits.get().lineupLockHoursMax());
+    }
+
+    @Test
     void emptyBatchReturnsNothingWithoutQuerying() {
         Statistics statistics = statistics();
 

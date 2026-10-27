@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.buddyfantasy.league.LeagueSettingsProvider;
 import com.buddyfantasy.league.LineupSettings;
+import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.LeagueSettings;
 import com.buddyfantasy.shared.domain.NotFoundException;
@@ -17,9 +18,11 @@ import org.springframework.stereotype.Service;
 class LeagueSettingsProviderService implements LeagueSettingsProvider {
 
     private final LeagueRepository leagues;
+    private final LeagueLimitsRepository limits;
 
-    LeagueSettingsProviderService(LeagueRepository leagues) {
+    LeagueSettingsProviderService(LeagueRepository leagues, LeagueLimitsRepository limits) {
         this.leagues = leagues;
+        this.limits = limits;
     }
 
     @Override
@@ -38,6 +41,11 @@ class LeagueSettingsProviderService implements LeagueSettingsProvider {
         }
         return leagues.findSettingsByIds(leagueIds).entrySet().stream()
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, e -> toLineupSettings(e.getValue())));
+    }
+
+    @Override
+    public int lineupLockHoursMax() {
+        return limits.get().lineupLockHoursMax();
     }
 
     private static LineupSettings toLineupSettings(LeagueSettings s) {
