@@ -1,5 +1,6 @@
 package com.buddyfantasy.squad.adapter.out.persistence;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,6 +14,8 @@ interface SpringDataPlayerRepository extends JpaRepository<PlayerEntity, UUID> {
     List<PlayerEntity> findByLeagueId(UUID leagueId);
 
     List<PlayerEntity> findByLeagueIdAndRetiredAtIsNull(UUID leagueId);
+
+    List<PlayerEntity> findByLeagueIdAndIdIn(UUID leagueId, Collection<UUID> ids);
 
     boolean existsByLeagueIdAndShirtNumberAndRetiredAtIsNull(UUID leagueId, Short shirtNumber);
 }

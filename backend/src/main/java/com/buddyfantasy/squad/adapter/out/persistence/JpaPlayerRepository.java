@@ -1,5 +1,6 @@
 package com.buddyfantasy.squad.adapter.out.persistence;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +36,12 @@ class JpaPlayerRepository implements PlayerRepository {
                 ? jpa.findByLeagueId(leagueId)
                 : jpa.findByLeagueIdAndRetiredAtIsNull(leagueId);
         return entities.stream().map(PlayerMapper::toDomain).toList();
+    }
+
+    @Override
+    public List<Player> findByLeagueIdAndIds(UUID leagueId, Collection<PlayerId> ids) {
+        List<UUID> values = ids.stream().map(PlayerId::value).toList();
+        return jpa.findByLeagueIdAndIdIn(leagueId, values).stream().map(PlayerMapper::toDomain).toList();
     }
 
     @Override

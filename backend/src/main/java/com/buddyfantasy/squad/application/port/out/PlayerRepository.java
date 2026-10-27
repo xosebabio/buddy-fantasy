@@ -1,5 +1,6 @@
 package com.buddyfantasy.squad.application.port.out;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,9 @@ public interface PlayerRepository {
 
     /** Every player of the league in a single query; retired ones only when asked for. */
     List<Player> findByLeagueId(UUID leagueId, boolean includeRetired);
+
+    /** The given players of the league in a single query, retired ones included; ids of other leagues are skipped. */
+    List<Player> findByLeagueIdAndIds(UUID leagueId, Collection<PlayerId> ids);
 
     boolean existsActiveShirtNumber(UUID leagueId, ShirtNumber shirtNumber);
 
