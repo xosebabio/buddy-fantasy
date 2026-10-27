@@ -44,6 +44,18 @@ class LeagueSettingsEntity {
     @Column(name = "lineup_formation_enabled", nullable = false)
     boolean lineupFormationEnabled;
 
+    @Column(name = "lineup_min_goalkeepers", nullable = false)
+    short lineupMinGoalkeepers;
+
+    @Column(name = "lineup_min_defenders", nullable = false)
+    short lineupMinDefenders;
+
+    @Column(name = "lineup_min_midfielders", nullable = false)
+    short lineupMinMidfielders;
+
+    @Column(name = "lineup_min_forwards", nullable = false)
+    short lineupMinForwards;
+
     @Column(name = "lineup_budget_enabled", nullable = false)
     boolean lineupBudgetEnabled;
 
@@ -65,8 +77,9 @@ class LeagueSettingsEntity {
     LeagueSettingsEntity(UUID leagueId, int ratingWindowHours, RatingFormat ratingFormat,
                          BigDecimal ratingPointsPerUnit, BigDecimal defaultRating, int lineupLockHours,
                          int lineupMaxChanges, int lineupSize, boolean lineupFormationEnabled,
-                         boolean lineupBudgetEnabled, BigDecimal lineupBudget, BigDecimal marketK,
-                         BigDecimal marketMaxChangePct, BigDecimal marketMinValue) {
+                         short lineupMinGoalkeepers, short lineupMinDefenders, short lineupMinMidfielders,
+                         short lineupMinForwards, boolean lineupBudgetEnabled, BigDecimal lineupBudget,
+                         BigDecimal marketK, BigDecimal marketMaxChangePct, BigDecimal marketMinValue) {
         this.leagueId = leagueId;
         this.ratingWindowHours = ratingWindowHours;
         this.ratingFormat = ratingFormat;
@@ -76,6 +89,10 @@ class LeagueSettingsEntity {
         this.lineupMaxChanges = lineupMaxChanges;
         this.lineupSize = lineupSize;
         this.lineupFormationEnabled = lineupFormationEnabled;
+        this.lineupMinGoalkeepers = lineupMinGoalkeepers;
+        this.lineupMinDefenders = lineupMinDefenders;
+        this.lineupMinMidfielders = lineupMinMidfielders;
+        this.lineupMinForwards = lineupMinForwards;
         this.lineupBudgetEnabled = lineupBudgetEnabled;
         this.lineupBudget = lineupBudget;
         this.marketK = marketK;

@@ -93,6 +93,21 @@ class LeagueAccessTests {
     }
 
     @Test
+    void memberIdsListsAdminAndManagersOfThatLeagueOnly() {
+        League league = league("A");
+        League other = league("B");
+        UUID admin = UUID.randomUUID();
+        UUID manager = UUID.randomUUID();
+        UUID foreigner = UUID.randomUUID();
+        join(league, admin, LeagueRole.ADMIN);
+        join(league, manager, LeagueRole.MANAGER);
+        join(other, foreigner, LeagueRole.ADMIN);
+
+        assertThat(access.memberIds(league.id().value())).containsExactlyInAnyOrder(admin, manager);
+        assertThat(access.memberIds(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
     void sameUserCanBeAdminInOneLeagueAndManagerInAnother() {
         League a = league("A");
         League b = league("B");

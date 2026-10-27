@@ -1,7 +1,9 @@
 package com.buddyfantasy.league.application;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.league.LeagueRole;
@@ -36,5 +38,12 @@ class LeagueAccessService implements LeagueAccess {
         if (roleOf(userId, leagueId).filter(role -> role == LeagueRole.ADMIN).isEmpty()) {
             throw new AccessDeniedException("Not an admin of league " + leagueId);
         }
+    }
+
+    @Override
+    public Set<UUID> memberIds(UUID leagueId) {
+        return memberships.findByLeagueId(leagueId).stream()
+                .map(Membership::userId)
+                .collect(Collectors.toUnmodifiableSet());
     }
 }

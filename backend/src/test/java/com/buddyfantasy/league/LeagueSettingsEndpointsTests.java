@@ -124,6 +124,12 @@ class LeagueSettingsEndpointsTests {
                 .andExpect(jsonPath("$.ratingWindowHours").value(24))
                 .andExpect(jsonPath("$.ratingFormat").value("SPADES"))
                 .andExpect(jsonPath("$.lineupSize").value(7))
+                .andExpect(jsonPath("$.lineupLockHours").value(2))
+                .andExpect(jsonPath("$.lineupFormationEnabled").value(false))
+                .andExpect(jsonPath("$.lineupMinGoalkeepers").value(1))
+                .andExpect(jsonPath("$.lineupMinDefenders").value(1))
+                .andExpect(jsonPath("$.lineupMinMidfielders").value(1))
+                .andExpect(jsonPath("$.lineupMinForwards").value(1))
                 .andExpect(jsonPath("$.marketK").value(0.05))
                 .andExpect(jsonPath("$.scoringRules.GOAL.GOALKEEPER").value(6))
                 .andExpect(jsonPath("$.scoringRules.PENALTY_GOAL.FORWARD").value(3))
@@ -153,6 +159,23 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    void adminConfiguresFormationMinimumsAndLockHours() throws Exception {
+        ObjectNode body = currentSettings().put("lineupFormationEnabled", true).put("lineupMinGoalkeepers", 1)
+                .put("lineupMinDefenders", 3).put("lineupMinMidfielders", 2).put("lineupMinForwards", 0)
+                .put("lineupLockHours", 168);
+
+        update(admin, body).andExpect(status().isOk());
+
+        mvc.perform(get("/api/leagues/{id}/settings", league).with(as(manager)))
+                .andExpect(jsonPath("$.lineupFormationEnabled").value(true))
+                .andExpect(jsonPath("$.lineupMinGoalkeepers").value(1))
+                .andExpect(jsonPath("$.lineupMinDefenders").value(3))
+                .andExpect(jsonPath("$.lineupMinMidfielders").value(2))
+                .andExpect(jsonPath("$.lineupMinForwards").value(0))
+                .andExpect(jsonPath("$.lineupLockHours").value(168));
+    }
+
+    @Test
     void managerAndAdminOfAnotherLeagueCannotEdit() throws Exception {
         UUID otherLeague = bus.dispatch(new CreateLeagueCommand(outsider, "Otra")).id().value();
         ObjectNode body = currentSettings().put("lineupSize", 11);
@@ -172,6 +195,10 @@ class LeagueSettingsEndpointsTests {
         update(admin, currentSettings().put("marketMaxChangePct", 101)).andExpect(status().isBadRequest());
         update(admin, currentSettings().put("defaultRating", 5)).andExpect(status().isBadRequest()); // SPADES max is 4
         update(admin, currentSettings().put("ratingFormat", "BOGUS")).andExpect(status().isBadRequest());
+        update(admin, currentSettings().put("lineupLockHours", 169)).andExpect(status().isBadRequest());
+        update(admin, currentSettings().put("lineupMinDefenders", -1)).andExpect(status().isBadRequest());
+        update(admin, currentSettings().put("lineupFormationEnabled", true).put("lineupMinMidfielders", 5))
+                .andExpect(status().isBadRequest()); // 1 + 1 + 5 + 1 > 7
         update(admin, currentSettings().putNull("ratingFormat")).andExpect(status().isBadRequest());
         ObjectNode incomplete = currentSettings();
         ((ObjectNode) incomplete.get("scoringRules")).remove("RED_CARD");

@@ -22,6 +22,10 @@ class LeagueSettingsTests {
         assertThat(defaults.lineupMaxChanges()).isEqualTo(2);
         assertThat(defaults.lineupSize()).isEqualTo(7);
         assertThat(defaults.lineupFormationEnabled()).isFalse();
+        assertThat(defaults.lineupMinGoalkeepers()).isEqualTo(1);
+        assertThat(defaults.lineupMinDefenders()).isEqualTo(1);
+        assertThat(defaults.lineupMinMidfielders()).isEqualTo(1);
+        assertThat(defaults.lineupMinForwards()).isEqualTo(1);
         assertThat(defaults.lineupBudgetEnabled()).isTrue();
         assertThat(defaults.lineupBudget()).isEqualByComparingTo("100");
         assertThat(defaults.marketK()).isEqualByComparingTo("0.05");
@@ -38,36 +42,81 @@ class LeagueSettingsTests {
     }
 
     @Test
+    void lockHoursAreCappedAtOneWeek() {
+        assertThat(lineup(defaults, 168, 7, false, 1, 1, 1, 1).lineupLockHours()).isEqualTo(168);
+        assertInvalid(s -> lineup(s, 169, 7, false, 1, 1, 1, 1));
+        assertInvalid(s -> lineup(s, -1, 7, false, 1, 1, 1, 1));
+    }
+
+    @Test
+    void rejectsNegativeMinimumsPerPosition() {
+        assertInvalid(s -> lineup(s, 2, 7, false, -1, 1, 1, 1));
+        assertInvalid(s -> lineup(s, 2, 7, false, 1, -1, 1, 1));
+        assertInvalid(s -> lineup(s, 2, 7, false, 1, 1, -1, 1));
+        assertInvalid(s -> lineup(s, 2, 7, false, 1, 1, 1, -1));
+    }
+
+    @Test
+    void minimumsCannotExceedLineupSizeWhenFormationIsEnabled() {
+        assertThat(lineup(defaults, 2, 7, true, 1, 2, 2, 2).lineupMinDefenders()).isEqualTo(2);
+        assertThat(lineup(defaults, 2, 7, true, 0, 0, 0, 0).lineupFormationEnabled()).isTrue();
+        assertInvalid(s -> lineup(s, 2, 7, true, 1, 3, 2, 2));
+        assertInvalid(s -> lineup(s, 2, 3, true, 1, 1, 1, 1));
+    }
+
+    @Test
+    void minimumsAreKeptButNotCheckedAgainstSizeWhenFormationIsDisabled() {
+        LeagueSettings settings = lineup(defaults, 2, 3, false, 1, 1, 1, 1);
+
+        assertThat(settings.lineupSize()).isEqualTo(3);
+        assertThat(settings.lineupMinForwards()).isEqualTo(1);
+    }
+
+    @Test
     void rejectsDefaultRatingAboveFormatMaximum() {
         assertThatThrownBy(() -> new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, new BigDecimal("5"),
-                2, 2, 7, false, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN, BigDecimal.ONE))
+                2, 2, 7, false, 1, 1, 1, 1, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN,
+                BigDecimal.ONE))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void acceptsDefaultRatingWithinFormatMaximum() {
         LeagueSettings settings = new LeagueSettings(24, RatingFormat.DECIMAL, BigDecimal.ONE, new BigDecimal("5"),
-                2, 2, 7, false, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN, BigDecimal.ONE);
+                2, 2, 7, false, 1, 1, 1, 1, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN,
+                BigDecimal.ONE);
         assertThat(settings.defaultRating()).isEqualByComparingTo("5");
     }
 
     @Test
     void rejectsNonPositiveMoneyAndFactors() {
         assertThatThrownBy(() -> new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, null,
-                2, 2, 7, false, false, BigDecimal.ZERO, new BigDecimal("0.05"), BigDecimal.TEN, BigDecimal.ONE))
+                2, 2, 7, false, 1, 1, 1, 1, false, BigDecimal.ZERO, new BigDecimal("0.05"), BigDecimal.TEN,
+                BigDecimal.ONE))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, null,
-                2, 2, 7, false, false, new BigDecimal("100"), BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE))
+                2, 2, 7, false, 1, 1, 1, 1, false, new BigDecimal("100"), BigDecimal.ZERO, BigDecimal.TEN,
+                BigDecimal.ONE))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, null,
-                2, 2, 7, false, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN, BigDecimal.ZERO))
+                2, 2, 7, false, 1, 1, 1, 1, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN,
+                BigDecimal.ZERO))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     private static LeagueSettings with(LeagueSettings s, int windowHours, int size, String maxChangePct) {
         return new LeagueSettings(windowHours, s.ratingFormat(), s.ratingPointsPerUnit(), s.defaultRating(),
-                s.lineupLockHours(), s.lineupMaxChanges(), size, s.lineupFormationEnabled(), s.lineupBudgetEnabled(),
+                s.lineupLockHours(), s.lineupMaxChanges(), size, s.lineupFormationEnabled(), s.lineupMinGoalkeepers(),
+                s.lineupMinDefenders(), s.lineupMinMidfielders(), s.lineupMinForwards(), s.lineupBudgetEnabled(),
                 s.lineupBudget(), s.marketK(), new BigDecimal(maxChangePct), s.marketMinValue());
+    }
+
+    private static LeagueSettings lineup(LeagueSettings s, int lockHours, int size, boolean formation,
+                                         int goalkeepers, int defenders, int midfielders, int forwards) {
+        return new LeagueSettings(s.ratingWindowHours(), s.ratingFormat(), s.ratingPointsPerUnit(),
+                s.defaultRating(), lockHours, s.lineupMaxChanges(), size, formation, goalkeepers, defenders,
+                midfielders, forwards, s.lineupBudgetEnabled(), s.lineupBudget(), s.marketK(),
+                s.marketMaxChangePct(), s.marketMinValue());
     }
 
     private void assertInvalid(UnaryOperator<LeagueSettings> build) {
