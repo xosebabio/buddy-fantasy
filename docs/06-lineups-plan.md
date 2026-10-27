@@ -145,7 +145,7 @@ Cada tarea es un commit `feat(lineup): … (RF-24)` en Conventional Commits.
 - **Presupuesto y mercado:** cuando `market` mueva los valores tras cada jornada, una alineación arrastrada puede quedar fuera de presupuesto sin que el manager haga nada. La regla es no puntuar (decidido). Conviene que `notification` avise de `OVER_BUDGET` antes del bloqueo.
 - **Cambios con aplazamientos:** si un partido se aplaza a después del siguiente, el orden cronológico cambia y la alineación anterior de referencia puede ser otra. Los guardados ya hechos no se invalidan con efecto retroactivo; el límite se aplica en el siguiente guardado.
 - **Parámetros que cambian a mitad de temporada:** el bloqueo usa los parámetros vigentes al bloquear. Una alineación arrastrada con otro tamaño o sin cumplir la formación se bloquea tal cual (solo se vuelve a comprobar el presupuesto); el aviso `SIZE_MISMATCH` lo indica.
-- **Miembros que salen:** su alineación deja de contar en los partidos que se bloqueen después; las versiones se conservan hasta el borrado de cuenta (Fase 4, RNF-10), que deberá borrarlas.
+- **Miembros que salen:** su alineación deja de contar en los partidos que se bloqueen después; las versiones se conservan hasta el borrado de cuenta (Fase 4, RNF-10), que deberá borrarlas. Si vuelven, empiezan de cero (decisión 9).
 - **Job en un VPS:** `findScheduledKickingOffBefore` recorre los partidos programados de todas las ligas; con pocas ligas es trivial. En cloud con muchas ligas, paginar o indexar por `kickoff_at`.
 - **Rendimiento:** guardar son ~4 consultas (calendario, parámetros, versiones, jugadores) y un insert; consultar la propia alineación, igual. Sin N+1. Cumple RNF-09.
 
@@ -161,5 +161,6 @@ Cerradas:
 6. **Presupuesto al bloquear:** si la alineación supera el presupuesto con el valor vigente al bloquear, no puntúa esa jornada.
 7. **Modelo:** una alineación viva versionada por manager; el bloqueo se materializa por partido y se publica en `LineupsLocked` con todas las alineaciones.
 8. **Visibilidad:** las alineaciones de los demás solo se ven bloqueadas.
+9. **Volver a la liga:** quien sale (expulsado o por su cuenta) y vuelve empieza de cero: sin alineación y sin límite de cambios en la primera. Se ignoran las versiones anteriores a su nuevo `joinedAt`, sin borrarlas. Decidida después de cerrar este plan; se implementa en el paso 10 del plan 07.
 
 No quedan decisiones abiertas para este paso.
