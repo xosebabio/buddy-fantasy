@@ -13,7 +13,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado actual
 
-Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `backend/` (kernel `shared`, `CommandBus`, tests de arquitectura) según `docs/01-backend-structure-plan.md`, con el modelo base y el login de Google (`identity`, `league`) según `docs/02-base-model-and-google-login-plan.md`. Primer ítem de la **Fase 1** hecho (`docs/03-league-invitations-settings-plan.md`): crear liga, invitación por enlace, parámetros y tabla de puntos por liga, y gestión de miembros (RF-05–08), con el módulo `datadefinition`. Aún no hay `frontend/`. Mantén actualizada la sección *Comandos* de este archivo.
+Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `backend/` (kernel `shared`, `CommandBus`, tests de arquitectura) según `docs/01-backend-structure-plan.md`, con el modelo base y el login de Google (`identity`, `league`) según `docs/02-base-model-and-google-login-plan.md`. De la **Fase 1** están hechos dos ítems: crear liga, invitación por enlace, parámetros y tabla de puntos por liga, y gestión de miembros (RF-05–08, `docs/03-league-invitations-settings-plan.md`), con el módulo `datadefinition`; y la plantilla del equipo en el módulo `squad` (RF-09–11, `docs/04-squad-players-plan.md`): alta, edición y baja lógica de jugadores con valor inicial, y foto subida desde el navegador a S3 con URL prefirmada. Aún no hay `frontend/`. Mantén actualizada la sección *Comandos* de este archivo.
 
 ## Stack
 
@@ -25,6 +25,7 @@ Estamos en la **Fase 0 · Fundamentos** del roadmap. Existe el esqueleto de `bac
 | Jobs | `@Scheduled` + ShedLock |
 | Frontend | Angular + `@angular/pwa`, mobile first (Angular Material o PrimeNG, por decidir) |
 | Notificaciones | webpush-java + SMTP (Brevo, Resend…) |
+| Imágenes | S3 + CloudFront (AWS SDK v2, subida por URL prefirmada); SeaweedFS en local y en tests |
 | Infra | Docker Compose (app + Postgres + Caddy), GitHub Actions |
 
 Estructura de repositorio prevista (ajústala aquí si cambia):

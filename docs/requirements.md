@@ -184,7 +184,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 ### Fase 1 · Núcleo jugable
 
 - [x] Crear liga, invitar managers por enlace y configurar parámetros (RF-05 a RF-08)
-- [ ] CRUD de jugadores con valor inicial (RF-09 a RF-11)
+- [x] CRUD de jugadores con valor inicial (RF-09 a RF-11)
 - [ ] Partidos, convocatoria, resultado y estadísticas con su tabla de puntos (RF-12 a RF-16)
 - [ ] Alineaciones: edición, bloqueo X horas antes y límite de cambios (RF-24 a RF-29)
 - [ ] Cálculo de puntos por acción según posición y clasificaciones (RF-30 a RF-33)
