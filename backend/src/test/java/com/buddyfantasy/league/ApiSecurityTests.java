@@ -96,6 +96,14 @@ class ApiSecurityTests {
     }
 
     @Test
+    void scanCoversTheLineupEndpoints() {
+        assertThat(apiEndpoints()).contains(
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/lineup"),
+                new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/lineup"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/lineups/{matchId}"));
+    }
+
+    @Test
     void everyApiEndpointRequiresASession() throws Exception {
         for (Endpoint e : apiEndpoints()) {
             mvc.perform(MockMvcRequestBuilders.request(e.method(), e.path()).with(csrf()))

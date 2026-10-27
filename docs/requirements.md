@@ -186,7 +186,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 - [x] Crear liga, invitar managers por enlace y configurar parámetros (RF-05 a RF-08)
 - [x] CRUD de jugadores con valor inicial (RF-09 a RF-11)
 - [x] Partidos, convocatoria, resultado y estadísticas con su tabla de puntos (RF-12 a RF-16). `match` guarda y publica el acta; el cálculo de puntos de RF-15 llega con *Cálculo de puntos por acción según posición y clasificaciones* (`scoring`)
-- [ ] Alineaciones: edición, bloqueo X horas antes y límite de cambios (RF-24 a RF-29)
+- [x] Alineaciones: edición, bloqueo X horas antes y límite de cambios (RF-24 a RF-29). `lineup` bloquea las alineaciones y publica `LineupsLocked`; los puntos del manager (RF-31), incluido el 0 de una alineación fuera de presupuesto, llegan con *Cálculo de puntos por acción según posición y clasificaciones* (`scoring`)
 - [ ] Cálculo de puntos por acción según posición y clasificaciones (RF-30 a RF-33)
 
 ### Fase 2 · Valoraciones
