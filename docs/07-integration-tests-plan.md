@@ -214,7 +214,9 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 11 | G8: zona horaria | RNF-05 cubierto | ✅ |
 | 12 | G9: sentencias por pantalla con `datasource-proxy` | RNF-09 vigilado | ✅ |
 | 13 | G10: flujo completo de una jornada | Prueba de humo de la Fase 1 | ✅ |
-| 14 | `AGENTS.md`: sección *Tests* (ayudas compartidas, `DatabaseCleaner`, `TestFixtures`, checksums, `SqlStatements`), *Comandos* (informe de JaCoCo, `EVENTS_RESUBMIT_JOB_CRON` y la suite en `Europe/Madrid`) e *Invariantes técnicas* (listeners idempotentes) | Convenciones documentadas | |
+| 14 | `AGENTS.md`: sección *Tests* (ayudas compartidas, `DatabaseCleaner`, `TestFixtures`, checksums, `SqlStatements`), *Comandos* (informe de JaCoCo, `EVENTS_RESUBMIT_JOB_CRON` y la suite en `Europe/Madrid`) e *Invariantes técnicas* (listeners idempotentes) | Convenciones documentadas | ✅ |
+
+Plan completado el 27-oct-2026: **475 tests** en verde con 1 contenedor de Postgres y la JVM en `Europe/Madrid`.
 
 Cada paso deja la suite en verde. Si un test nuevo destapa un fallo (por ejemplo un `500` en G2 o G3, o una conversión de zona en G8), el arreglo va en el mismo paso.
 
