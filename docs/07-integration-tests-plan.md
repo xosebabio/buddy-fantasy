@@ -48,7 +48,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RF-24 – RF-29 Alineaciones | ✅ | `LineupEndpointsTests`, `LineupLockTests` | Parámetros cambiados a mitad, job y cierre a la vez. Un miembro expulsado que vuelve recupera su alineación anterior; debe empezar de cero (D2, G7). |
 | RF-30 – RF-40 | — | | Ver §4.3. |
 | RNF-02 Autorización y CSRF | 🟡 | `ApiSecurityTests` (sesión y CSRF), un test por endpoint para rol y liga | La autorización **por rol y liga** se prueba a mano endpoint a endpoint: un endpoint nuevo puede olvidarla sin que falle nada. Cookies de sesión (`HttpOnly`, `SameSite`, `Secure`) sin test. Endpoints fuera de `/api` (`/actuator/modulith`, `/v3/api-docs`) sin test. |
-| RNF-03 Plazos y jobs | 🟡 | `LineupLockTests` | Nada comprueba que **ShedLock** proteja el job. Un listener que falla deja la publicación de `event_publication` incompleta y **nadie la reintenta** (se arregla en G5, decisión D1). |
+| RNF-03 Plazos y jobs | ✅ | `LineupLockTests`, `SchedulerLockTests`, `SchedulingArchitectureTests`, `EventResubmissionTests` | |
 | RNF-04 Auditoría | ✅ | `MatchAuditEndpointsTests`, `MatchMigrationTests` | |
 | RNF-05 Zona horaria | ❌ | | Ningún test con la JVM o Postgres fuera de UTC, ni de que el JSON devuelva instantes con `Z`. |
 | RNF-09 Rendimiento | 🟡 | Conteo de sentencias en `MatchApiTests`, `SquadApiTests`, `LeagueSettingsProviderTests`, `MatchRepositoryTests` | No en los **endpoints de las pantallas principales** (partidos, jugadores, miembros, alineaciones bloqueadas) ni con volumen realista. Hibernate no cuenta las consultas de `JdbcTemplate`. |
@@ -114,11 +114,15 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 
 **G4 · ShedLock (RNF-03).** Tras ejecutar `LockDueLineupsJob` existe la fila `LockDueLineupsJob` en `shedlock`; con esa fila ocupada (`lock_until` en el futuro, insertada a mano) una ejecución no bloquea nada aunque haya partidos vencidos. Un test de arquitectura (ArchUnit): todo método `@Scheduled` lleva `@SchedulerLock`.
 
+> Hecho así: `SchedulerLockTests` (en el mismo contexto que `LineupLockTests`) comprueba que cada job deja su fila en `shedlock` y que, con la fila de `LockDueLineupsJob` tomada por otra instancia, el job no bloquea un partido vencido (y sí al liberarla). La regla de ArchUnit está en `SchedulingArchitectureTests` y exige además que el método sea público, porque ShedLock bloquea a través de un proxy. Las columnas de `shedlock` son `timestamp` sin zona en UTC (ShedLock escribe `timezone('utc', CURRENT_TIMESTAMP)`): al escribirlas a mano hay que usar `timezone('utc', now())`, no `now()`, o quedan desplazadas por la zona de la sesión (Europe/Madrid en local).
+
 **G5 · Reintento de eventos (RNF-03, decisión D1).** Incluye código de producción además de tests:
 - `spring.modulith.events.republish-outstanding-events-on-restart: true`: al arrancar se reenvían las publicaciones incompletas.
 - `ResubmitIncompleteEventsJob` en `shared/infrastructure`, con `@Scheduled` y `@SchedulerLock`, que llama a `IncompleteEventPublications.resubmitIncompletePublicationsOlderThan(minAge)`. Configuración técnica en su propio record de properties (`shared.events.resubmit-job.cron` y `min-age`, por ejemplo cada 5 min y 5 min de antigüedad, para no reenviar lo que aún se está procesando); `EVENTS_RESUBMIT_JOB_CRON` en el entorno y `-` en los tests, que lo ejecutan a mano.
 - Tests: un listener de test que falla la primera vez deja la publicación incompleta; al ejecutar el job con la publicación ya antigua se completa y el efecto aparece una sola vez; con la publicación reciente no se reenvía; reenviar un evento de `lineup` ya procesado (`MatchClosed`, `MatchRescheduled`, `MatchDeleted`) no duplica nada.
 - Regla para los módulos nuevos (en `AGENTS.md`): **todo listener es idempotente**, porque un evento puede llegar más de una vez.
+
+> Hecho así: `ResubmitIncompleteEventsJob` en `shared/infrastructure`, con `ResubmitIncompleteEventsJobProperties` (`min-age`, 5 min) y el cron en `shared.events.resubmit-job.cron` (`EVENTS_RESUBMIT_JOB_CRON`, cada 5 min). Spring Modulith fecha las publicaciones con el `Clock` del contexto, así que los tests las envejecen con `MutableClock`. En los tests el reenvío al arrancar está apagado: los contextos comparten la BD y un contexto nuevo no es un reinicio. `EventResubmissionTests` usa un listener de test que falla las primeras veces: la publicación queda incompleta, el job la reenvía cuando tiene `min-age` y no antes, se reintenta en cada pasada mientras falle, y el efecto aparece una sola vez. Para `MatchClosed`, `MatchRescheduled` y `MatchDeleted` marca su publicación como incompleta y la reenvía: ninguna tabla cambia (`TableDigests`, extraído de `LeagueAuthorizationTests`) y no se publica ningún `LineupsLocked` ni `LineupsUnlocked` más. Comprobado quitando `@SchedulerLock` a `LockDueLineupsJob` y reenviando con `min-age` cero: fallan los tests. La regla de listeners idempotentes y `EVENTS_RESUBMIT_JOB_CRON` ya están en `AGENTS.md`.
 
 **G6 · Sesión y cookies (RF-01, RF-04).** Con el servidor real (`webEnvironment = RANDOM_PORT`): un login simulado crea la fila en `spring_session`; `POST /api/logout` la borra y caduca la cookie `SESSION`; la cookie es `HttpOnly` y `SameSite=Lax`, y `Secure` con `SESSION_COOKIE_SECURE=true`. Fuera de `/api`: solo `/actuator/health` (y sus *probes*) es público; `/actuator/modulith`, `/actuator/info` y `/v3/api-docs` exigen sesión; Swagger UI está apagado por defecto.
 
@@ -187,7 +191,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | ✅ |
 | 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | ✅ |
 | 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | ✅ |
-| 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual | |
+| 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual |✅ |
 | 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | |
 | 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | |
 | 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada | |
@@ -206,6 +210,7 @@ Cada paso deja la suite en verde. Si un test nuevo destapa un fallo (por ejemplo
 - **Dependencias nuevas de test:** `jacoco-maven-plugin`, `datasource-proxy` y, con `notification`, Mailpit/GreenMail y WireMock.
 - **Reenvío de eventos con varias instancias:** el reenvío al arrancar no lleva ShedLock; si algún día hay más de una instancia, un evento puede procesarse dos veces a la vez. Por eso los listeners deben ser idempotentes también ante ejecuciones simultáneas (los de `lineup` lo son: `saveIfAbsent` y borrados idempotentes). Una publicación que falla siempre se reintenta en cada pasada del job: queda en el log como error hasta que se arregle.
 - **Pasos 7 y 10 tocan código de producción** (D1 y D2), no solo tests: sus commits son `feat`/`fix`, no `test`.
+- **`@RecordApplicationEvents` y listeners asíncronos.** Spring guarda los eventos grabados en un `InheritableThreadLocal`: un hilo del pool asíncrono hereda el registro del test que lo creó y sigue grabando en él. Los eventos que publica un listener de `@ApplicationModuleListener` solo llegan al test actual mientras el pool aún crea hilos nuevos (los 8 primeros), así que dependen del orden de los tests. `EventResubmissionTests` los graba con un `@EventListener` propio; `LineupLockTests` todavía comprueba con `ApplicationEvents` los `LineupsLocked` y `LineupsUnlocked` de los listeners de `MatchClosed` y `MatchRescheduled`, y conviene pasarlo a lo mismo si empieza a fallar de forma intermitente.
 - El informe obsoleto `S3PlayerPhotoStorageTests` de `target/surefire-reports` es de una clase renombrada; desaparece con `mvn clean`.
 
 ## 7. Decisiones

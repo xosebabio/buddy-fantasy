@@ -2,7 +2,15 @@
 lineup:
   lock-job:
     cron: "-" # the tests run the job by hand with their own clock
+shared:
+  events:
+    resubmit-job:
+      cron: "-" # the tests run the job by hand with their own clock
 spring:
+  modulith:
+    events:
+      # the contexts share one database: a new context is not a restart, and must not deliver the events of another
+      republish-outstanding-events-on-restart: false
   datasource:
     hikari:
       minimum-idle: 1 # every cached context has its own pool against the one shared Postgres (PostgresTestConfig)

@@ -49,10 +49,6 @@ class LeagueAuthorizationTests {
 
     static final Instant KICKOFF = Instant.parse("2026-01-11T10:00:00Z");
 
-    /** Tables that change on any request, whatever the endpoint does. */
-    static final List<String> UNTRACKED_TABLES = List.of("flyway_schema_history", "spring_session",
-            "spring_session_attributes");
-
     @Autowired
     MockMvc mvc;
 
@@ -185,20 +181,9 @@ class LeagueAuthorizationTests {
         return answered;
     }
 
-    /** A digest of the rows of every table, to check that the rejected requests wrote nothing. */
+    /** To check that the rejected requests wrote nothing. */
     private Map<String, String> snapshot() {
-        Map<String, String> digests = new LinkedHashMap<>();
-        for (String table : jdbc.queryForList("""
-                select quote_ident(table_name) from information_schema.tables
-                where table_schema = current_schema() and table_type = 'BASE TABLE' order by table_name""",
-                String.class)) {
-            if (!UNTRACKED_TABLES.contains(table)) {
-                digests.put(table, jdbc.queryForObject(
-                        "select coalesce(md5(string_agg(t::text, ',' order by t::text)), '') from " + table + " t",
-                        String.class));
-            }
-        }
-        return digests;
+        return TableDigests.of(jdbc, TableDigests.ALWAYS_CHANGING);
     }
 
     @Test

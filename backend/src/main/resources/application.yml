@@ -29,6 +29,7 @@ spring:
       jdbc:
         schema-initialization:
           enabled: false # la tabla event_publication la crea Flyway (V1__baseline.sql)
+      republish-outstanding-events-on-restart: true # al arrancar, reenvía los eventos cuyo listener falló
 
 league:
   # Límites de negocio: se comprueban en cada escritura, nunca al leer lo ya guardado. La BD no los repite.
@@ -97,6 +98,13 @@ lineup:
   lock-job:
     cron: ${LINEUP_LOCK_JOB_CRON:0 * * * * *} # cada minuto; "-" lo desactiva
     margin: 1m # solo bloquea partidos con lockAt <= ahora - margin: los guardados de antes ya están confirmados
+
+shared:
+  events:
+    # Reenvío de los eventos cuyo listener falló (RNF-03): configuración técnica, no de negocio.
+    resubmit-job:
+      cron: ${EVENTS_RESUBMIT_JOB_CRON:0 */5 * * * *} # cada 5 minutos; "-" lo desactiva
+      min-age: 5m # solo reenvía las publicaciones de hace al menos esto, para no pisar un listener aún en marcha
 
 server:
   forward-headers-strategy: framework # redirect_uri correcto detrás de Caddy
