@@ -25,6 +25,9 @@
     <archunit.version>1.4.1</archunit.version>
     <awssdk.version>2.55.6</awssdk.version>
     <jacoco.version>0.8.14</jacoco.version>
+    <!-- RNF-05: the tests run outside UTC, so an implicit conversion to the JVM's zone breaks them. Surefire uses
+         this property as its argLine, and JaCoCo's prepare-agent prepends its agent to it. -->
+    <argLine>-Duser.timezone=Europe/Madrid</argLine>
   </properties>
 
   <dependencyManagement>

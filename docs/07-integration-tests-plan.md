@@ -50,7 +50,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RNF-02 Autorización y CSRF | ✅ | `ApiSecurityTests` (sesión y CSRF), `LeagueAuthorizationTests` (rol y liga), `SecurityTests` (fuera de `/api`), `SessionTests` (cookies) | |
 | RNF-03 Plazos y jobs | ✅ | `LineupLockTests`, `SchedulerLockTests`, `SchedulingArchitectureTests`, `EventResubmissionTests` | |
 | RNF-04 Auditoría | ✅ | `MatchAuditEndpointsTests`, `MatchMigrationTests` | |
-| RNF-05 Zona horaria | ❌ | | Ningún test con la JVM o Postgres fuera de UTC, ni de que el JSON devuelva instantes con `Z`. |
+| RNF-05 Zona horaria | ✅ | `TimeZoneTests`; toda la suite con la JVM y Postgres en `Europe/Madrid` | |
 | RNF-09 Rendimiento | 🟡 | Conteo de sentencias en `MatchApiTests`, `SquadApiTests`, `LeagueSettingsProviderTests`, `MatchRepositoryTests` | No en los **endpoints de las pantallas principales** (partidos, jugadores, miembros, alineaciones bloqueadas) ni con volumen realista. Hibernate no cuenta las consultas de `JdbcTemplate`. |
 | RNF-10 RGPD | — | | Borrado de cuenta no implementado. |
 | RNF-11 Calidad | 🟡 | Plazos de alineación ✅ | Puntuación, valoración y mercado llegan con sus módulos. Sin medida de cobertura. |
@@ -151,6 +151,8 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 
 **G8 · Zona horaria (RNF-05).** Ejecutar la suite con la JVM en `Europe/Madrid` (`-Duser.timezone` en el `argLine` de surefire) y Postgres con `TZ=Europe/Madrid`, para que cualquier conversión implícita rompa tests. Test de ida y vuelta por la API de un partido en el día del cambio de hora (`2026-03-29T01:30:00Z`): se guarda y se devuelve el mismo instante, con `Z`.
 
+> Hecho así: la propiedad `argLine` del `pom.xml` es `-Duser.timezone=Europe/Madrid`; surefire la usa y el `prepare-agent` de JaCoCo le antepone su agente (también vale con `-Djacoco.skip=true`). `PostgresTestConfig` arranca Postgres con `TZ` y `-c timezone=Europe/Madrid`; la sesión JDBC toma de todos modos la zona de la JVM. `TimeZoneTests` (mismo contexto que `LineupEndpointsTests`) falla si la JVM o la sesión de Postgres dejan de estar en Madrid, para que G8 no se apague sin avisar. Por la API, con los dos cambios de hora de Madrid: un partido el 29 de marzo a las `01:30Z` y dos el 25 de octubre a las `00:30Z` y `01:30Z`, que son las 02:30 locales las dos veces. Cada uno se devuelve igual al crearlo, en su ficha y en el calendario (en orden y a una hora de distancia), Postgres guarda el mismo instante (comparado en segundos desde la época, calculados en SQL) y la auditoría lo guarda con `Z`. Un instante con desfase (`+01:00`) se devuelve en UTC. El bloqueo de alineaciones queda 2 h reales antes del saque aunque el reloj de Madrid avance 3 (`lockAt` en `GET /lineup`, en `lineup_match_lock` y en `GET /lineups/{matchId}`). No destapó fallos: la suite entera (473 tests) pasa en Madrid. Comprobado guardando `lock_at` como `LocalDateTime` en UTC: falla en Madrid y pasa con la JVM en UTC, que es lo que pasaba antes en CI.
+
 **G9 · Rendimiento de pantallas (RNF-09).** Contador de **todas** las sentencias SQL con `datasource-proxy` (dependencia nueva de test; Hibernate no ve `JdbcTemplate`). Con volumen realista (20 miembros, 25 jugadores, 30 partidos, alineaciones bloqueadas de 20 managers), el número de sentencias es constante y no crece con N en: `GET /api/me/leagues`, `/players`, `/matches`, `/matches/{id}`, `/members`, `/lineup`, `/lineups/{matchId}`. Sin aserciones de tiempo (serían intermitentes).
 
 **G10 · Flujo completo de una jornada.** Un único test solo por HTTP y con el job a mano: el admin crea la liga, el manager se une por enlace, plantilla, calendario, ambos guardan alineación, el reloj avanza, el job bloquea, acta, cierre, alineaciones bloqueadas visibles para todos, corrección y auditoría. Es la base que ampliarán `rating`, `scoring` y `market` (§4.3).
@@ -205,10 +207,10 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | ✅ |
 | 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | ✅ |
 | 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada |✅ |
-| 11 | G8: zona horaria | RNF-05 cubierto | |
+| 11 | G8: zona horaria | RNF-05 cubierto | ✅ |
 | 12 | G9: sentencias por pantalla con `datasource-proxy` | RNF-09 vigilado | |
 | 13 | G10: flujo completo de una jornada | Prueba de humo de la Fase 1 | |
-| 14 | `AGENTS.md`: sección *Tests* (ayudas compartidas, `DatabaseCleaner`, `TestFixtures`, checksums), *Comandos* (informe de JaCoCo y `EVENTS_RESUBMIT_JOB_CRON`) e *Invariantes técnicas* (listeners idempotentes) | Convenciones documentadas | |
+| 14 | `AGENTS.md`: sección *Tests* (ayudas compartidas, `DatabaseCleaner`, `TestFixtures`, checksums), *Comandos* (informe de JaCoCo, `EVENTS_RESUBMIT_JOB_CRON` y la suite en `Europe/Madrid`) e *Invariantes técnicas* (listeners idempotentes) | Convenciones documentadas | |
 
 Cada paso deja la suite en verde. Si un test nuevo destapa un fallo (por ejemplo un `500` en G2 o G3, o una conversión de zona en G8), el arreglo va en el mismo paso.
 
@@ -216,7 +218,7 @@ Cada paso deja la suite en verde. Si un test nuevo destapa un fallo (por ejemplo
 
 - **BD compartida entre contextos.** Funciona porque surefire ejecuta en serie. Si algún día se paraleliza, habrá que pasar a una BD por *fork*. T2 debe esperar a los listeners antes de vaciar tablas, o un listener de un test anterior escribirá en la BD del siguiente.
 - **Tests de concurrencia intermitentes.** Se comprueba el estado final, se sincroniza con *latches* y se repite cada caso; nada de `sleep`.
-- **JVM en `Europe/Madrid`** puede destapar fallos existentes: es lo que se busca.
+- **JVM en `Europe/Madrid`** puede destapar fallos existentes: es lo que se busca (en el paso 11 no destapó ninguno). Un test lanzado desde el IDE sin el `argLine` de Maven corre en la zona del equipo, y `TimeZoneTests.theTestsRunOutsideUtc` falla si no es Madrid.
 - **Dependencias nuevas de test:** `jacoco-maven-plugin`, `datasource-proxy` y, con `notification`, Mailpit/GreenMail y WireMock.
 - **Reenvío de eventos con varias instancias:** el reenvío al arrancar no lleva ShedLock; si algún día hay más de una instancia, un evento puede procesarse dos veces a la vez. Por eso los listeners deben ser idempotentes también ante ejecuciones simultáneas (los de `lineup` lo son: `saveIfAbsent` y borrados idempotentes). Una publicación que falla siempre se reintenta en cada pasada del job: queda en el log como error hasta que se arregle.
 - **Pasos 7 y 10 tocan código de producción** (D1 y D2), no solo tests: sus commits son `feat`/`fix`, no `test`.
