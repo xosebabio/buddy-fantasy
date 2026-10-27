@@ -36,6 +36,7 @@ squad:
       bucket: ${S3_BUCKET:buddy-fantasy-photos}
       region: ${S3_REGION:eu-west-1}
       endpoint: ${S3_ENDPOINT:} # solo en local (SeaweedFS: http://localhost:8333); vacío en AWS
+      public-base-url: ${PHOTOS_BASE_URL:http://localhost:8333/buddy-fantasy-photos} # CloudFront en producción
 
 server:
   forward-headers-strategy: framework # redirect_uri correcto detrás de Caddy

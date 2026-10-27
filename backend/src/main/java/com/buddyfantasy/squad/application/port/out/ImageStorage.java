@@ -19,4 +19,7 @@ public interface ImageStorage {
 
     /** Idempotent: deleting a missing key is not an error. */
     void delete(String key);
+
+    /** URL clients load the image from (the CDN in production). Built from the key, never stored. */
+    String publicUrl(String key);
 }

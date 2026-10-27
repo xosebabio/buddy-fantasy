@@ -30,12 +30,16 @@ class S3ImageStorage implements ImageStorage {
     private final S3Client s3;
     private final S3Presigner presigner;
     private final String bucket;
+    private final String publicBaseUrl;
     private final Clock clock;
 
-    S3ImageStorage(S3Client s3, S3Presigner presigner, String bucket, Clock clock) {
+    S3ImageStorage(S3Client s3, S3Presigner presigner, String bucket, String publicBaseUrl, Clock clock) {
         this.s3 = s3;
         this.presigner = presigner;
         this.bucket = bucket;
+        this.publicBaseUrl = publicBaseUrl.endsWith("/")
+                ? publicBaseUrl.substring(0, publicBaseUrl.length() - 1)
+                : publicBaseUrl;
         this.clock = clock;
     }
 
@@ -71,5 +75,10 @@ class S3ImageStorage implements ImageStorage {
     @Override
     public void delete(String key) {
         s3.deleteObject(request -> request.bucket(bucket).key(key));
+    }
+
+    @Override
+    public String publicUrl(String key) {
+        return publicBaseUrl + "/" + key;
     }
 }

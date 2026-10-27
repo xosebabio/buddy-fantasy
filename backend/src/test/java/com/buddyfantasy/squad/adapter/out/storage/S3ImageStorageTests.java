@@ -59,11 +59,12 @@ class S3ImageStorageTests {
         System.setProperty("aws.accessKeyId", ACCESS_KEY);
         System.setProperty("aws.secretAccessKey", SECRET_KEY);
         S3StorageProperties properties = new S3StorageProperties(BUCKET, "eu-west-1",
-                "http://" + SEAWEEDFS.getHost() + ":" + SEAWEEDFS.getMappedPort(8333));
+                "http://" + SEAWEEDFS.getHost() + ":" + SEAWEEDFS.getMappedPort(8333), "https://cdn.test/");
         S3StorageConfig config = new S3StorageConfig();
         s3 = config.imageS3Client(properties);
         presigner = config.imageS3Presigner(properties);
-        storage = new S3ImageStorage(s3, presigner, BUCKET, Clock.fixed(NOW, ZoneOffset.UTC));
+        storage = new S3ImageStorage(s3, presigner, BUCKET, properties.publicBaseUrl(),
+                Clock.fixed(NOW, ZoneOffset.UTC));
         s3.createBucket(request -> request.bucket(BUCKET));
     }
 
@@ -134,6 +135,13 @@ class S3ImageStorageTests {
 
         assertThat(put(upload, Map.of("Content-Type", "image/jpeg"), new byte[1024])).isEqualTo(403);
         assertThat(storage.find(key)).isEmpty();
+    }
+
+    @Test
+    void publicUrlIsTheBaseUrlPlusTheKey() {
+        // the trailing slash of the configured base URL is not duplicated
+        assertThat(storage.publicUrl("leagues/a/players/b/c.webp"))
+                .isEqualTo("https://cdn.test/leagues/a/players/b/c.webp");
     }
 
     @Test

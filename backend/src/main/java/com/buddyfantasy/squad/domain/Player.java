@@ -87,7 +87,8 @@ public class Player extends AggregateRoot {
         return retiredAt != null;
     }
 
-    private void requireActive() {
+    /** Throws {@link ConflictException} (409) if the player is retired. */
+    public void requireActive() {
         if (isRetired()) {
             throw new ConflictException("A retired player cannot be edited");
         }
