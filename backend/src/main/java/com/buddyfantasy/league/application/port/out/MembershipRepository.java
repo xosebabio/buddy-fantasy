@@ -15,5 +15,11 @@ public interface MembershipRepository {
 
     void save(Membership membership);
 
+    /**
+     * Saves the membership unless the user is already a member of its league, also when both saves run at once.
+     * Returns whether it was saved.
+     */
+    boolean saveIfAbsent(Membership membership);
+
     void delete(Membership membership);
 }

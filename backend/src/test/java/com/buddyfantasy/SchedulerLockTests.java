@@ -19,8 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.event.ApplicationEvents;
-import org.springframework.test.context.event.RecordApplicationEvents;
 
 import static com.buddyfantasy.datadefinition.Position.DEFENDER;
 import static com.buddyfantasy.datadefinition.Position.FORWARD;
@@ -35,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupLockTests
 @Import({PostgresTestConfig.class, MutableClock.Config.class})
-@RecordApplicationEvents
 class SchedulerLockTests {
 
     static final Instant KICKOFF = Instant.parse("2026-01-11T10:00:00Z");
@@ -63,7 +60,7 @@ class SchedulerLockTests {
     ResubmitIncompleteEventsJob resubmitJob;
 
     @Autowired
-    ApplicationEvents events;
+    RecordedEvents events;
 
     UUID match;
 

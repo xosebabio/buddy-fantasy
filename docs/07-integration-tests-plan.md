@@ -35,17 +35,17 @@ Lo que ya está bien resuelto y conviene mantener:
 | RF-03 Recuperar contraseña | — | | No aplica: solo Google. |
 | RF-04 Cierre de sesión | 🟡 | `SecurityTests` (`204`) | No se comprueba que la sesión JDBC se borre ni la cookie se invalide. Gestión de sesiones activas no implementada. |
 | RF-05 Crear liga | ✅ | `CreateLeagueTests` (incluido rollback) | |
-| RF-06 Invitación | ✅ | `InvitationEndpointsTests` | Unión simultánea con el mismo enlace sin probar. |
+| RF-06 Invitación | ✅ | `InvitationEndpointsTests`, `ConcurrencyTests` | |
 | RF-07 Parámetros | 🟡 | `LeagueSettingsEndpointsTests`, `LeagueDefaultsTests`, `ConfiguredLimitsTests` | No se prueba el efecto de cambiar parámetros **con la temporada en marcha** sobre alineaciones y bloqueo. |
 | RF-08 Varias ligas | ✅ | `MeEndpointsTests`, `MembersEndpointsTests`, `LeagueAccessTests` | |
-| RF-09, RF-10 Jugadores y valor | ✅ | `PlayersEndpointsTests`, `PlayerPhotoEndpointsTests`, `SquadApiTests` | Carrera de dorsal duplicado (`DataIntegrityViolationException` → `409`) sin probar. |
+| RF-09, RF-10 Jugadores y valor | ✅ | `PlayersEndpointsTests`, `PlayerPhotoEndpointsTests`, `SquadApiTests`, `ConcurrencyTests` | |
 | RF-11 Ficha con historial | 🟡 | `PlayersEndpointsTests` (ficha) | Historial de puntos y valor llega con `scoring` y `market`. |
-| RF-12 Calendario | ✅ | `MatchesEndpointsTests` | Carrera de jornada u hora duplicada sin probar. |
+| RF-12 Calendario | ✅ | `MatchesEndpointsTests`, `ConcurrencyTests` | |
 | RF-13, RF-14 Acta | ✅ | `MatchSheetEndpointsTests` | |
 | RF-15 Puntos por acción | 🟡 | `LeagueSettingsEndpointsTests` (tabla guardada) | El cálculo llega con `scoring`. |
 | RF-16 Corrección | 🟡 | `MatchSheetEndpointsTests` (`MatchCorrected`) | Recálculo pendiente de `scoring` y `rating`. |
 | RF-17 – RF-23 Valoraciones | — | | Ver §4.3. |
-| RF-24 – RF-29 Alineaciones | ✅ | `LineupEndpointsTests`, `LineupLockTests` | Parámetros cambiados a mitad, job y cierre a la vez. Un miembro expulsado que vuelve recupera su alineación anterior; debe empezar de cero (D2, G7). |
+| RF-24 – RF-29 Alineaciones | ✅ | `LineupEndpointsTests`, `LineupLockTests`, `ConcurrencyTests` | Parámetros cambiados a mitad. Un miembro expulsado que vuelve recupera su alineación anterior; debe empezar de cero (D2, G7). |
 | RF-30 – RF-40 | — | | Ver §4.3. |
 | RNF-02 Autorización y CSRF | 🟡 | `ApiSecurityTests` (sesión y CSRF), un test por endpoint para rol y liga | La autorización **por rol y liga** se prueba a mano endpoint a endpoint: un endpoint nuevo puede olvidarla sin que falle nada. Cookies de sesión (`HttpOnly`, `SameSite`, `Secure`) sin test. Endpoints fuera de `/api` (`/actuator/modulith`, `/v3/api-docs`) sin test. |
 | RNF-03 Plazos y jobs | ✅ | `LineupLockTests`, `SchedulerLockTests`, `SchedulingArchitectureTests`, `EventResubmissionTests` | |
@@ -111,6 +111,10 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 - Dos partidos simultáneos con la misma jornada → una `201` y una `409`.
 - Dos uniones simultáneas con el mismo enlace del mismo usuario → una sola membership.
 - El job de bloqueo y el listener de `MatchClosed` a la vez sobre el mismo partido → un bloqueo y un solo `LineupsLocked`.
+
+> Hecho así: `ConcurrencyTests`, con la ayuda `Concurrently` (un hilo por tarea y un *latch* que las suelta a la vez) y 10 rondas por caso. Destapó un `500`: dos uniones simultáneas del mismo usuario pasaban las dos la comprobación previa y la segunda chocaba con `league_membership_unique`. Ahora `JoinLeagueHandler` usa `MembershipRepository.saveIfAbsent` (`insert ... on conflict do nothing`, como `lineup`), y las uniones repetidas responden todas `200` con una sola membership. El dorsal y la jornada ya se traducían a `409` y el bloqueo ya era idempotente. En la carrera del bloqueo compiten el job, el cierre (cuyo listener de `MatchClosed` también bloquea) y un `LockMatchLineupsCommand` directo. Comprobado quitando cada defensa (la traducción del índice del dorsal y de la jornada, y los `on conflict do nothing` de la membership y del bloqueo): cada caso falla ya en la primera ronda.
+>
+> Los eventos de los listeners asíncronos se graban ahora con `RecordedEvents` (un `@EventListener` de test en todos los contextos, que `DatabaseCleaner` vacía), no con `@RecordApplicationEvents`: ver §6. Lo usan `ConcurrencyTests`, `EventResubmissionTests`, `SchedulerLockTests` y `LineupLockTests`.
 
 **G4 · ShedLock (RNF-03).** Tras ejecutar `LockDueLineupsJob` existe la fila `LockDueLineupsJob` en `shedlock`; con esa fila ocupada (`lock_until` en el futuro, insertada a mano) una ejecución no bloquea nada aunque haya partidos vencidos. Un test de arquitectura (ArchUnit): todo método `@Scheduled` lleva `@SchedulerLock`.
 
@@ -192,7 +196,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | ✅ |
 | 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | ✅ |
 | 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual |✅ |
-| 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | |
+| 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | ✅ |
 | 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | |
 | 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada | |
 | 11 | G8: zona horaria | RNF-05 cubierto | |
@@ -210,7 +214,7 @@ Cada paso deja la suite en verde. Si un test nuevo destapa un fallo (por ejemplo
 - **Dependencias nuevas de test:** `jacoco-maven-plugin`, `datasource-proxy` y, con `notification`, Mailpit/GreenMail y WireMock.
 - **Reenvío de eventos con varias instancias:** el reenvío al arrancar no lleva ShedLock; si algún día hay más de una instancia, un evento puede procesarse dos veces a la vez. Por eso los listeners deben ser idempotentes también ante ejecuciones simultáneas (los de `lineup` lo son: `saveIfAbsent` y borrados idempotentes). Una publicación que falla siempre se reintenta en cada pasada del job: queda en el log como error hasta que se arregle.
 - **Pasos 7 y 10 tocan código de producción** (D1 y D2), no solo tests: sus commits son `feat`/`fix`, no `test`.
-- **`@RecordApplicationEvents` y listeners asíncronos.** Spring guarda los eventos grabados en un `InheritableThreadLocal`: un hilo del pool asíncrono hereda el registro del test que lo creó y sigue grabando en él. Los eventos que publica un listener de `@ApplicationModuleListener` solo llegan al test actual mientras el pool aún crea hilos nuevos (los 8 primeros), así que dependen del orden de los tests. `EventResubmissionTests` los graba con un `@EventListener` propio; `LineupLockTests` todavía comprueba con `ApplicationEvents` los `LineupsLocked` y `LineupsUnlocked` de los listeners de `MatchClosed` y `MatchRescheduled`, y conviene pasarlo a lo mismo si empieza a fallar de forma intermitente.
+- **`@RecordApplicationEvents` y listeners asíncronos.** Spring guarda los eventos grabados en un `InheritableThreadLocal`: un hilo del pool asíncrono hereda el registro del test que lo creó y sigue grabando en él. Los eventos que publica un listener de `@ApplicationModuleListener` solo llegan al test actual mientras el pool aún crea hilos nuevos (los 8 primeros), así que dependen del orden de los tests. Para esos eventos se usa `RecordedEvents`; `@RecordApplicationEvents` sigue valiendo para los que se publican en el hilo del test.
 - El informe obsoleto `S3PlayerPhotoStorageTests` de `target/surefire-reports` es de una clase renombrada; desaparece con `mvn clean`.
 
 ## 7. Decisiones

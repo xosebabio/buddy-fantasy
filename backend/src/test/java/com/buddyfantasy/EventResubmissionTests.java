@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -49,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @Import({PostgresTestConfig.class, MutableClock.Config.class, EventResubmissionTests.ProbeLog.class,
-        EventResubmissionTests.FlakyListener.class, EventResubmissionTests.LineupEvents.class})
+        EventResubmissionTests.FlakyListener.class})
 class EventResubmissionTests {
 
     static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
@@ -88,30 +87,6 @@ class EventResubmissionTests {
         }
     }
 
-    /**
-     * The events of the lineup module, recorded on the thread that publishes them. Not {@code @RecordApplicationEvents}:
-     * it records through an inheritable thread local, so a pooled listener thread created during an earlier test keeps
-     * recording into that test.
-     */
-    static class LineupEvents {
-
-        final List<Object> published = new CopyOnWriteArrayList<>();
-
-        @EventListener
-        void on(LineupsLocked event) {
-            published.add(event);
-        }
-
-        @EventListener
-        void on(LineupsUnlocked event) {
-            published.add(event);
-        }
-
-        long count(Class<?> type) {
-            return published.stream().filter(type::isInstance).count();
-        }
-    }
-
     @Autowired
     CommandBus bus;
 
@@ -137,7 +112,7 @@ class EventResubmissionTests {
     LockDueLineupsJob lockJob;
 
     @Autowired
-    LineupEvents events;
+    RecordedEvents events;
 
     @Autowired
     ProbeLog probes;
@@ -151,7 +126,6 @@ class EventResubmissionTests {
         probes.failures.set(0);
         probes.attempts.set(0);
         probes.handled.clear();
-        events.published.clear();
     }
 
     /** Publishes {@code event} in a transaction, as a command handler does. */
@@ -248,7 +222,7 @@ class EventResubmissionTests {
      */
     private void deliverAgain(Class<?> eventType) {
         Map<String, String> before = rows();
-        List<Object> publishedBefore = List.copyOf(events.published);
+        List<Object> publishedBefore = events.all();
         int publications = jdbc.update("update event_publication set completion_date = null where event_type = ?",
                 eventType.getName());
         assertThat(publications).as("publications of " + eventType.getSimpleName()).isPositive();
@@ -258,7 +232,7 @@ class EventResubmissionTests {
         Listeners.await(jdbc);
 
         assertThat(rows()).isEqualTo(before);
-        assertThat(events.published).isEqualTo(publishedBefore);
+        assertThat(events.all()).isEqualTo(publishedBefore);
     }
 
     /** Every row but the publications, whose completion date the delivery sets again. */
@@ -272,7 +246,7 @@ class EventResubmissionTests {
         leagueWithALineup();
         clock.now = KICKOFF_1.plus(Duration.ofHours(2));
         fixtures.closeWithSheet(peña, match1, 1, 0, played(squad.get(5), 1));
-        assertThat(events.count(LineupsLocked.class)).isOne();
+        assertThat(events.stream(LineupsLocked.class)).hasSize(1);
 
         deliverAgain(MatchClosed.class);
     }
@@ -285,7 +259,7 @@ class EventResubmissionTests {
         bus.dispatch(new UpdateMatchCommand(admin, peña.id(), match1, 1, "Rival",
                 Venue.HOME, KICKOFF_1.plus(Duration.ofDays(2))));
         Listeners.await(jdbc);
-        assertThat(events.count(LineupsUnlocked.class)).isOne();
+        assertThat(events.stream(LineupsUnlocked.class)).hasSize(1);
 
         deliverAgain(MatchRescheduled.class);
     }

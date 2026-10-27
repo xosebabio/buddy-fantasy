@@ -30,9 +30,8 @@ class JoinLeagueHandler implements CommandHandler<JoinLeagueCommand, LeagueId> {
         Invitation invitation = invitations.findActiveByTokenHash(Invitation.hash(command.token()))
                 .orElseThrow(() -> new NotFoundException("Invitation not found"));
         LeagueId leagueId = invitation.leagueId();
-        if (memberships.findByLeagueIdAndUserId(leagueId.value(), command.userId()).isEmpty()) {
-            memberships.save(Membership.join(leagueId, command.userId(), LeagueRole.MANAGER, clock.instant()));
-        }
+        // joining twice, even at once (a double tap), keeps the first membership and its role
+        memberships.saveIfAbsent(Membership.join(leagueId, command.userId(), LeagueRole.MANAGER, clock.instant()));
         return leagueId;
     }
 }

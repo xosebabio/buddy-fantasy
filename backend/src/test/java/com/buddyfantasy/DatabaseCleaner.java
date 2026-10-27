@@ -17,6 +17,8 @@ import org.springframework.test.context.support.AbstractTestExecutionListener;
  * included. Two are kept: Flyway's history, and {@code shedlock}, whose locks are released instead: ShedLock remembers
  * the rows it has created and only updates them afterwards, so a deleted row would keep its job from ever locking
  * again.
+ *
+ * <p>It also empties {@link RecordedEvents}, once the listeners of the previous test have published theirs.
  */
 public class DatabaseCleaner extends AbstractTestExecutionListener {
 
@@ -37,6 +39,7 @@ public class DatabaseCleaner extends AbstractTestExecutionListener {
         try {
             Listeners.await(jdbc);
         } finally {
+            testContext.getApplicationContext().getBeanProvider(RecordedEvents.class).ifAvailable(RecordedEvents::clear);
             // also after a listener of a previous test failed, to start clean
             List<String> tables = jdbc.queryForList(nonEmptyTables(jdbc), String.class);
             if (!tables.isEmpty()) {

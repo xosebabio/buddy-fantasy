@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import com.buddyfantasy.Listeners;
 import com.buddyfantasy.MutableClock;
 import com.buddyfantasy.PostgresTestConfig;
+import com.buddyfantasy.RecordedEvents;
 import com.buddyfantasy.TestFixtures;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.league.application.usecases.removemember.RemoveMemberCommand;
@@ -29,8 +30,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.event.ApplicationEvents;
-import org.springframework.test.context.event.RecordApplicationEvents;
 
 import static com.buddyfantasy.TestFixtures.played;
 import static com.buddyfantasy.datadefinition.Position.DEFENDER;
@@ -47,7 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupEndpointsTests
 @Import({PostgresTestConfig.class, MutableClock.Config.class})
-@RecordApplicationEvents
 class LineupLockTests {
 
     static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
@@ -74,7 +72,7 @@ class LineupLockTests {
     LockDueLineupsJob job;
 
     @Autowired
-    ApplicationEvents events;
+    RecordedEvents events;
 
     UUID admin;
     UUID ana;
