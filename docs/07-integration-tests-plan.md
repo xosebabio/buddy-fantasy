@@ -100,6 +100,8 @@ Se mantiene todo en surefire con `mvn verify` (sin separar unitarios e integraci
 
 El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemplo válido* (el cuerpo hace falta para que no responda `400` antes de comprobar permisos). **Si el escaneo encuentra un endpoint que no está en la tabla, falla**: así ningún endpoint nuevo entra sin clasificar.
 
+> Hecho así: `LeagueAuthorizationTests`, con los 27 endpoints de liga en `rules()` (`LeagueRole.MANAGER` = cualquier miembro, `ADMIN` = solo el admin) sobre una liga con un partido, un jugador y un miembro reales para las variables de la ruta. Además comprueba que las peticiones rechazadas no escriben nada: un `md5` de las filas de cada tabla antes y después (salvo `spring_session*` y el historial de Flyway). El escaneo de endpoints es ahora `ApiEndpoints`, compartido con `ApiSecurityTests`. Comprobado quitando a mano `requireAdmin` de `DeleteMatchHandler` y `requireMember` de `GetMyLineupHandler`: fallan los dos tests.
+
 **G2 · Contrato de errores HTTP.** Con un endpoint representativo de cada tipo: JSON mal formado, cuerpo vacío, UUID inválido en la ruta, enum desconocido (`"position": "PORTERO"`), método no soportado → `400`/`405` con `ProblemDetail`; un fallo inesperado (un handler de test que lanza `IllegalStateException`) → `500` sin mensaje interno ni traza. Además, un escaneo: ningún endpoint que muta responde `500` a un cuerpo vacío.
 
 **G3 · Concurrencia con Postgres real.** Con `ExecutorService` y `CountDownLatch`, comprobando el estado final (nunca tiempos), repetido varias veces:
@@ -117,6 +119,8 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
 - Regla para los módulos nuevos (en `AGENTS.md`): **todo listener es idempotente**, porque un evento puede llegar más de una vez.
 
 **G6 · Sesión y cookies (RF-01, RF-04).** Con el servidor real (`webEnvironment = RANDOM_PORT`): un login simulado crea la fila en `spring_session`; `POST /api/logout` la borra y caduca la cookie `SESSION`; la cookie es `HttpOnly` y `SameSite=Lax`, y `Secure` con `SESSION_COOKIE_SECURE=true`. Fuera de `/api`: solo `/actuator/health` (y sus *probes*) es público; `/actuator/modulith`, `/actuator/info` y `/v3/api-docs` exigen sesión; Swagger UI está apagado por defecto.
+
+> La parte fuera de `/api` ya está hecha (paso 4), en `SecurityTests`: recorre los endpoints de actuator expuestos (`PathMappedEndpoints`), así que uno expuesto más adelante queda cubierto sin listarlo. Sin sesión responden `401` a una petición que no es de navegador (un navegador va al login de Google).
 
 **G7 · Parámetros cambiados con la temporada en marcha (RF-07 × RF-24–29).**
 - Subir `lockHours` adelanta el bloqueo de un partido aún no bloqueado; bajarlo lo retrasa.
@@ -176,7 +180,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 1 | T1, T2, T3: un Postgres, `DatabaseCleaner`, `MutableClock`, `Listeners.await()` y `as(...)` compartidos; migrar todas las clases | Suite en verde con 1 contenedor de Postgres y sin `delete from` a mano | ✅ |
 | 2 | T4: `TestFixtures` y migración de los `setUp` | Tests más cortos, misma cobertura | ✅ |
 | 3 | T5: JaCoCo en `verify` y artefacto en CI | Informe de cobertura de partida | ✅ |
-| 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | |
+| 4 | G1 y la parte de endpoints fuera de `/api` de G6: escaneo de autorización por liga y rol | RNF-02 cubierto de forma automática | ✅ |
 | 5 | G2: contrato de errores | Ningún `500` por entrada mal formada | |
 | 6 | G11: checksums de migraciones | Migraciones aplicadas protegidas | |
 | 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual | |

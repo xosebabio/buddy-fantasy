@@ -1,10 +1,10 @@
 package com.buddyfantasy.league;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
+import com.buddyfantasy.ApiEndpoints;
+import com.buddyfantasy.ApiEndpoints.Endpoint;
 import com.buddyfantasy.PostgresTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Walks every {@code /api/**} mapping registered in the app, so endpoints added later are covered automatically:
- * no session → 401, mutation with a session but no CSRF token → 403.
+ * no session → 401, mutation with a session but no CSRF token → 403. The role and league checks are scanned by
+ * {@link com.buddyfantasy.LeagueAuthorizationTests}.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,14 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ApiSecurityTests {
 
     private static final Set<HttpMethod> MUTATING = Set.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH);
-
-    private record Endpoint(HttpMethod method, String pattern) {
-
-        /** The pattern with every path variable replaced by a random id. */
-        String path() {
-            return pattern.replaceAll("\\{[^}]+}", UUID.randomUUID().toString());
-        }
-    }
 
     @Autowired
     MockMvc mvc;
@@ -50,18 +42,7 @@ class ApiSecurityTests {
     RequestMappingHandlerMapping mappings;
 
     private List<Endpoint> apiEndpoints() {
-        List<Endpoint> endpoints = new ArrayList<>();
-        for (RequestMappingInfo info : mappings.getHandlerMethods().keySet()) {
-            for (String pattern : info.getPathPatternsCondition().getPatternValues()) {
-                if (!pattern.startsWith("/api/")) {
-                    continue;
-                }
-                for (var method : info.getMethodsCondition().getMethods()) {
-                    endpoints.add(new Endpoint(HttpMethod.valueOf(method.name()), pattern));
-                }
-            }
-        }
-        return endpoints;
+        return ApiEndpoints.scan(mappings);
     }
 
     @Test
