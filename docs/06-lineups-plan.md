@@ -69,7 +69,7 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), va
 
 - `LineupVersion` (VO): `leagueId`, `userId`, `savedAt` y el conjunto de `playerIds`.
 - `LineupTimeline` (servicio de dominio puro): recibe los partidos de la liga (`MatchSchedule`), `lockHours`, las versiones del manager y `now`, y responde:
-  - `lockAt(match)` = `kickoffAt − lockHours`.
+  - `lockAt(match)` = `kickoffAt − lockHours`, o el `lock_at` con el que se bloqueó si ya está bloqueado.
   - `targetMatch(now)`: primer partido no cerrado con `lockAt > now` (puede no haber).
   - `baseline(now)`: alineación bloqueada del último partido con `lockAt ≤ now`, es decir, la última versión con `savedAt < lockAt` de ese partido (puede no haber).
   - `lineupFor(match)`: la última versión con `savedAt < lockAt(match)`.
@@ -144,7 +144,7 @@ Cada tarea es un commit `feat(lineup): … (RF-24)` en Conventional Commits.
 - **Valor inicial editable:** mientras `market` no exista, el admin puede subir el valor inicial y dejar alineaciones fuera de presupuesto, que al bloquear no puntuarían. `GetMyLineupQuery` lo avisa con `OVER_BUDGET`. El bloqueo de la edición del valor inicial tras la primera jornada cerrada (decisión confirmada 1 del plan 04) sigue pendiente para `market`.
 - **Presupuesto y mercado:** cuando `market` mueva los valores tras cada jornada, una alineación arrastrada puede quedar fuera de presupuesto sin que el manager haga nada. La regla es no puntuar (decidido). Conviene que `notification` avise de `OVER_BUDGET` antes del bloqueo.
 - **Cambios con aplazamientos:** si un partido se aplaza a después del siguiente, el orden cronológico cambia y la alineación anterior de referencia puede ser otra. Los guardados ya hechos no se invalidan con efecto retroactivo; el límite se aplica en el siguiente guardado.
-- **Parámetros que cambian a mitad de temporada:** el bloqueo usa los parámetros vigentes al bloquear. Una alineación arrastrada con otro tamaño o sin cumplir la formación se bloquea tal cual (solo se vuelve a comprobar el presupuesto); el aviso `SIZE_MISMATCH` lo indica.
+- **Parámetros que cambian a mitad de temporada:** el bloqueo usa los parámetros vigentes al bloquear. Una alineación arrastrada con otro tamaño o sin cumplir la formación se bloquea tal cual (solo se vuelve a comprobar el presupuesto); el aviso `SIZE_MISMATCH` lo indica. Un partido ya bloqueado conserva su `lock_at` aunque cambie `lockHours`: el cambio solo mueve los bloqueos pendientes, y la alineación de referencia para contar cambios sigue siendo la bloqueada (corregido en el paso 10 del plan 07).
 - **Miembros que salen:** su alineación deja de contar en los partidos que se bloqueen después; las versiones se conservan hasta el borrado de cuenta (Fase 4, RNF-10), que deberá borrarlas. Si vuelven, empiezan de cero (decisión 9).
 - **Job en un VPS:** `findScheduledKickingOffBefore` recorre los partidos programados de todas las ligas; con pocas ligas es trivial. En cloud con muchas ligas, paginar o indexar por `kickoff_at`.
 - **Rendimiento:** guardar son ~4 consultas (calendario, parámetros, versiones, jugadores) y un insert; consultar la propia alineación, igual. Sin N+1. Cumple RNF-09.
@@ -161,6 +161,6 @@ Cerradas:
 6. **Presupuesto al bloquear:** si la alineación supera el presupuesto con el valor vigente al bloquear, no puntúa esa jornada.
 7. **Modelo:** una alineación viva versionada por manager; el bloqueo se materializa por partido y se publica en `LineupsLocked` con todas las alineaciones.
 8. **Visibilidad:** las alineaciones de los demás solo se ven bloqueadas.
-9. **Volver a la liga:** quien sale (expulsado o por su cuenta) y vuelve empieza de cero: sin alineación y sin límite de cambios en la primera. Se ignoran las versiones anteriores a su nuevo `joinedAt`, sin borrarlas. Decidida después de cerrar este plan; se implementa en el paso 10 del plan 07.
+9. **Volver a la liga:** quien sale (expulsado o por su cuenta) y vuelve empieza de cero: sin alineación y sin límite de cambios en la primera. Se ignoran las versiones anteriores a su nuevo `joinedAt`, sin borrarlas. Decidida después de cerrar este plan; implementada en el paso 10 del plan 07 (`LeagueAccess.memberSince`).
 
 No quedan decisiones abiertas para este paso.

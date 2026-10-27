@@ -36,7 +36,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RF-04 Cierre de sesión | 🟡 | `SecurityTests`, `SessionTests` | Gestión de sesiones activas no implementada. |
 | RF-05 Crear liga | ✅ | `CreateLeagueTests` (incluido rollback) | |
 | RF-06 Invitación | ✅ | `InvitationEndpointsTests`, `ConcurrencyTests` | |
-| RF-07 Parámetros | 🟡 | `LeagueSettingsEndpointsTests`, `LeagueDefaultsTests`, `ConfiguredLimitsTests` | No se prueba el efecto de cambiar parámetros **con la temporada en marcha** sobre alineaciones y bloqueo. |
+| RF-07 Parámetros | ✅ | `LeagueSettingsEndpointsTests`, `LeagueDefaultsTests`, `ConfiguredLimitsTests`, `LineupSeasonChangesTests` (con la temporada en marcha) | |
 | RF-08 Varias ligas | ✅ | `MeEndpointsTests`, `MembersEndpointsTests`, `LeagueAccessTests` | |
 | RF-09, RF-10 Jugadores y valor | ✅ | `PlayersEndpointsTests`, `PlayerPhotoEndpointsTests`, `SquadApiTests`, `ConcurrencyTests` | |
 | RF-11 Ficha con historial | 🟡 | `PlayersEndpointsTests` (ficha) | Historial de puntos y valor llega con `scoring` y `market`. |
@@ -45,7 +45,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RF-15 Puntos por acción | 🟡 | `LeagueSettingsEndpointsTests` (tabla guardada) | El cálculo llega con `scoring`. |
 | RF-16 Corrección | 🟡 | `MatchSheetEndpointsTests` (`MatchCorrected`) | Recálculo pendiente de `scoring` y `rating`. |
 | RF-17 – RF-23 Valoraciones | — | | Ver §4.3. |
-| RF-24 – RF-29 Alineaciones | ✅ | `LineupEndpointsTests`, `LineupLockTests`, `ConcurrencyTests` | Parámetros cambiados a mitad. Un miembro expulsado que vuelve recupera su alineación anterior; debe empezar de cero (D2, G7). |
+| RF-24 – RF-29 Alineaciones | ✅ | `LineupEndpointsTests`, `LineupLockTests`, `LineupSeasonChangesTests`, `ConcurrencyTests` | |
 | RF-30 – RF-40 | — | | Ver §4.3. |
 | RNF-02 Autorización y CSRF | ✅ | `ApiSecurityTests` (sesión y CSRF), `LeagueAuthorizationTests` (rol y liga), `SecurityTests` (fuera de `/api`), `SessionTests` (cookies) | |
 | RNF-03 Plazos y jobs | ✅ | `LineupLockTests`, `SchedulerLockTests`, `SchedulingArchitectureTests`, `EventResubmissionTests` | |
@@ -145,6 +145,10 @@ El test lleva una tabla explícita *endpoint → rol mínimo → cuerpo de ejemp
   - Las versiones antiguas **no se borran**: las referencian las alineaciones bloqueadas de partidos pasados, que siguen siendo historia de esas jornadas.
   - Tests: Ana guarda, es expulsada y vuelve → `GET /lineup` vacío; si no guarda, el siguiente bloqueo la deja fuera; su primera alineación nueva no tiene límite de cambios aunque tuviera una alineación bloqueada antes de irse. Lo mismo si se va ella (`DELETE /members/me`).
 
+> Hecho así: `LineupSeasonChangesTests` (mismo contexto que `LineupEndpointsTests`), por HTTP y con el job a mano. `LeagueAccess` cambia `memberIds` (solo lo usaba el bloqueo) por `memberSince(leagueId)` → `Map<UUID, Instant>` y añade `requireMemberSince(userId, leagueId)`, que comprueba la membership y devuelve su `joinedAt` en la misma consulta. En `lineup`, `LineupVersion.savedSince(memberSince)` decide qué versiones cuentan: `LineupTimeline` recibe el `joinedAt` e ignora las anteriores (alineación vacía y sin referencia para contar cambios), y el bloqueo descarta la última versión antes de `lockAt` si es anterior al `joinedAt` (entonces no hay ninguna posterior). Los casos de D2 van parametrizados con la expulsión y la salida voluntaria; comprobado haciendo que `savedSince` devuelva siempre `true`: fallan los cuatro.
+>
+> Destapó un fallo: `LineupTimeline` recalculaba el `lockAt` de **todos** los partidos con el `lockHours` vigente, también de los ya bloqueados. Bajar `lockHours` tras un bloqueo y antes del saque devolvía el partido bloqueado como objetivo y dejaba al manager sin alineación de referencia (cambios ilimitados); subirlo cambiaba la referencia por otra versión que no era la bloqueada. Ahora el timeline recibe el `lock_at` de los partidos ya bloqueados (`MatchLineupLockRepository.findLockAtsByLeagueId`, una consulta más en `GET` y `PUT /lineup`) y solo los bloqueos pendientes siguen el `lockHours` vigente.
+
 **G8 · Zona horaria (RNF-05).** Ejecutar la suite con la JVM en `Europe/Madrid` (`-Duser.timezone` en el `argLine` de surefire) y Postgres con `TZ=Europe/Madrid`, para que cualquier conversión implícita rompa tests. Test de ida y vuelta por la API de un partido en el día del cambio de hora (`2026-03-29T01:30:00Z`): se guarda y se devuelve el mismo instante, con `Z`.
 
 **G9 · Rendimiento de pantallas (RNF-09).** Contador de **todas** las sentencias SQL con `datasource-proxy` (dependencia nueva de test; Hibernate no ve `JdbcTemplate`). Con volumen realista (20 miembros, 25 jugadores, 30 partidos, alineaciones bloqueadas de 20 managers), el número de sentencias es constante y no crece con N en: `GET /api/me/leagues`, `/players`, `/matches`, `/matches/{id}`, `/members`, `/lineup`, `/lineups/{matchId}`. Sin aserciones de tiempo (serían intermitentes).
@@ -200,7 +204,7 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 | 7 | G4 y G5: ShedLock, `ResubmitIncompleteEventsJob` y reenvío al arrancar, con sus tests | RNF-03 cubierto; ningún evento se pierde por un fallo puntual |✅ |
 | 8 | G3: concurrencia | Carreras resueltas con `409` o sin duplicados | ✅ |
 | 9 | G6: sesión y cookies | RF-01 y RF-04 cubiertos | ✅ |
-| 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada | |
+| 10 | G7: parámetros con la temporada en marcha; `memberSince` en `LeagueAccess` y alineación desde cero al volver a la liga | RF-07 × RF-24–29; decisión D2 aplicada |✅ |
 | 11 | G8: zona horaria | RNF-05 cubierto | |
 | 12 | G9: sentencias por pantalla con `datasource-proxy` | RNF-09 vigilado | |
 | 13 | G10: flujo completo de una jornada | Prueba de humo de la Fase 1 | |

@@ -124,6 +124,16 @@ class JdbcMatchLineupLockRepository implements MatchLineupLockRepository {
     }
 
     @Override
+    public Map<UUID, Instant> findLockAtsByLeagueId(UUID leagueId) {
+        return jdbc.sql("select match_id, lock_at from lineup_match_lock where league_id = :leagueId")
+                .param("leagueId", leagueId)
+                .query((rs, rowNum) -> Map.entry(rs.getObject("match_id", UUID.class),
+                        rs.getObject("lock_at", OffsetDateTime.class).toInstant()))
+                .stream()
+                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
     public void deleteByMatchId(UUID matchId) {
         jdbc.sql("delete from lineup_match_lock where match_id = :matchId")
                 .param("matchId", matchId)

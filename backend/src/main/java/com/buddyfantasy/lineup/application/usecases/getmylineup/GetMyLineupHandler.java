@@ -10,6 +10,7 @@ import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.league.LeagueSettingsProvider;
 import com.buddyfantasy.league.LineupSettings;
 import com.buddyfantasy.lineup.application.port.out.LineupVersionRepository;
+import com.buddyfantasy.lineup.application.port.out.MatchLineupLockRepository;
 import com.buddyfantasy.lineup.application.port.out.PlayerCatalog;
 import com.buddyfantasy.lineup.domain.LineupTimeline;
 import com.buddyfantasy.match.MatchApi;
@@ -24,25 +25,29 @@ class GetMyLineupHandler implements QueryHandler<GetMyLineupQuery, MyLineupView>
     private final LeagueSettingsProvider leagueSettings;
     private final MatchApi matches;
     private final LineupVersionRepository versions;
+    private final MatchLineupLockRepository locks;
     private final PlayerCatalog players;
     private final Clock clock;
 
     GetMyLineupHandler(LeagueAccess access, LeagueSettingsProvider leagueSettings, MatchApi matches,
-                       LineupVersionRepository versions, PlayerCatalog players, Clock clock) {
+                       LineupVersionRepository versions, MatchLineupLockRepository locks,
+                       PlayerCatalog players, Clock clock) {
         this.access = access;
         this.leagueSettings = leagueSettings;
         this.matches = matches;
         this.versions = versions;
+        this.locks = locks;
         this.players = players;
         this.clock = clock;
     }
 
     @Override
     public MyLineupView handle(GetMyLineupQuery query) {
-        access.requireMember(query.userId(), query.leagueId());
+        Instant memberSince = access.requireMemberSince(query.userId(), query.leagueId());
         LineupSettings settings = leagueSettings.lineupSettings(query.leagueId());
         LineupTimeline timeline = new LineupTimeline(matches.findMatches(query.leagueId()), settings.lockHours(),
-                versions.findByLeagueIdAndUserId(query.leagueId(), query.userId()));
+                locks.findLockAtsByLeagueId(query.leagueId()),
+                versions.findByLeagueIdAndUserId(query.leagueId(), query.userId()), memberSince);
         Instant now = clock.instant();
         Set<UUID> playerIds = new HashSet<>();
         timeline.current().ifPresent(version -> playerIds.addAll(version.playerIds()));

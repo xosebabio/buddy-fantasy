@@ -27,8 +27,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Uses the current calendar, parameters and members: only current members' lineups count, each one the last
- * version saved before the lock, with the players' values current now for the budget check (RF-29). Only the
- * transaction that inserts the lock publishes the event.
+ * version saved before the lock and since the member last joined the league, with the players' values current now
+ * for the budget check (RF-29). Only the transaction that inserts the lock publishes the event.
  */
 @Component
 class LockMatchLineupsHandler implements CommandHandler<LockMatchLineupsCommand, Boolean> {
@@ -68,8 +68,12 @@ class LockMatchLineupsHandler implements CommandHandler<LockMatchLineupsCommand,
         }
         LineupSettings settings = leagueSettings.lineupSettings(command.leagueId());
         Instant lockAt = LineupTimeline.lockAt(match.get().kickoffAt(), settings.lockHours());
-        List<LineupVersion> lineups = versions.findLastSavedBefore(command.leagueId(),
-                access.memberIds(command.leagueId()), lockAt);
+        Map<UUID, Instant> members = access.memberSince(command.leagueId());
+        // if the last version before the lock is older than the membership, none was saved since coming back (D2)
+        List<LineupVersion> lineups = versions.findLastSavedBefore(command.leagueId(), members.keySet(), lockAt)
+                .stream()
+                .filter(version -> version.savedSince(members.get(version.userId())))
+                .toList();
         Set<UUID> playerIds = new HashSet<>();
         lineups.forEach(version -> playerIds.addAll(version.playerIds()));
         Map<UUID, LineupPlayer> lineupPlayers = players.findPlayers(command.leagueId(), playerIds);

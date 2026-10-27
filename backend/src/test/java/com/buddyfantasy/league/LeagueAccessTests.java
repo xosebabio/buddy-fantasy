@@ -1,5 +1,6 @@
 package com.buddyfantasy.league;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import org.springframework.security.access.AccessDeniedException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 
 @SpringBootTest
 @Import(PostgresTestConfig.class)
@@ -48,7 +50,11 @@ class LeagueAccessTests {
     }
 
     private void join(League league, UUID userId, LeagueRole role) {
-        memberships.save(Membership.join(league.id(), userId, role, NOW));
+        join(league, userId, role, NOW);
+    }
+
+    private void join(League league, UUID userId, LeagueRole role, Instant now) {
+        memberships.save(Membership.join(league.id(), userId, role, now));
     }
 
     @Test
@@ -59,6 +65,7 @@ class LeagueAccessTests {
 
         assertThat(access.roleOf(admin, league.id().value())).contains(LeagueRole.ADMIN);
         assertThatCode(() -> access.requireMember(admin, league.id().value())).doesNotThrowAnyException();
+        assertThat(access.requireMemberSince(admin, league.id().value())).isEqualTo(NOW);
         assertThatCode(() -> access.requireAdmin(admin, league.id().value())).doesNotThrowAnyException();
     }
 
@@ -70,6 +77,7 @@ class LeagueAccessTests {
 
         assertThat(access.roleOf(manager, league.id().value())).contains(LeagueRole.MANAGER);
         assertThatCode(() -> access.requireMember(manager, league.id().value())).doesNotThrowAnyException();
+        assertThat(access.requireMemberSince(manager, league.id().value())).isEqualTo(NOW);
         assertThatThrownBy(() -> access.requireAdmin(manager, league.id().value()))
                 .isInstanceOf(AccessDeniedException.class);
     }
@@ -82,23 +90,40 @@ class LeagueAccessTests {
         assertThat(access.roleOf(stranger, league.id().value())).isEmpty();
         assertThatThrownBy(() -> access.requireMember(stranger, league.id().value()))
                 .isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> access.requireMemberSince(stranger, league.id().value()))
+                .isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> access.requireAdmin(stranger, league.id().value()))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
-    void memberIdsListsAdminAndManagersOfThatLeagueOnly() {
+    void memberSinceListsAdminAndManagersOfThatLeagueOnlyWithTheirJoinInstant() {
         League league = league("A");
         League other = league("B");
         UUID admin = UUID.randomUUID();
         UUID manager = UUID.randomUUID();
         UUID foreigner = UUID.randomUUID();
+        Instant later = NOW.plus(Duration.ofDays(3));
         join(league, admin, LeagueRole.ADMIN);
-        join(league, manager, LeagueRole.MANAGER);
+        join(league, manager, LeagueRole.MANAGER, later);
         join(other, foreigner, LeagueRole.ADMIN);
 
-        assertThat(access.memberIds(league.id().value())).containsExactlyInAnyOrder(admin, manager);
-        assertThat(access.memberIds(UUID.randomUUID())).isEmpty();
+        assertThat(access.memberSince(league.id().value()))
+                .containsOnly(entry(admin, NOW), entry(manager, later));
+        assertThat(access.memberSince(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    void aMemberWhoLeavesAndJoinsAgainIsAMemberSinceJoiningAgain() {
+        League league = league("A");
+        UUID manager = UUID.randomUUID();
+        join(league, manager, LeagueRole.MANAGER);
+        memberships.delete(memberships.findByLeagueIdAndUserId(league.id().value(), manager).orElseThrow());
+        Instant rejoined = NOW.plus(Duration.ofDays(3));
+        join(league, manager, LeagueRole.MANAGER, rejoined);
+
+        assertThat(access.requireMemberSince(manager, league.id().value())).isEqualTo(rejoined);
+        assertThat(access.memberSince(league.id().value())).containsOnly(entry(manager, rejoined));
     }
 
     @Test

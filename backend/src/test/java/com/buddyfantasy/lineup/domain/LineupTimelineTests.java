@@ -3,6 +3,7 @@ package com.buddyfantasy.lineup.domain;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,6 +23,8 @@ class LineupTimelineTests {
     static final Instant KICKOFF_2 = KICKOFF_1.plus(Duration.ofDays(7));
     static final Instant LOCK_2 = KICKOFF_2.minus(Duration.ofHours(LOCK_HOURS));
     static final Instant KICKOFF_3 = KICKOFF_2.plus(Duration.ofDays(7));
+    /** The manager joined the league before every version of these tests. */
+    static final Instant MEMBER_SINCE = KICKOFF_1.minus(Duration.ofDays(30));
 
     static MatchSchedule match(int matchday, Instant kickoffAt, boolean closed) {
         return new MatchSchedule(UUID.randomUUID(), LEAGUE, matchday, kickoffAt, closed);
@@ -36,7 +39,7 @@ class LineupTimelineTests {
     final MatchSchedule third = match(3, KICKOFF_3, false);
 
     LineupTimeline timeline(List<MatchSchedule> matches, LineupVersion... versions) {
-        return new LineupTimeline(matches, LOCK_HOURS, List.of(versions));
+        return new LineupTimeline(matches, LOCK_HOURS, Map.of(), List.of(versions), MEMBER_SINCE);
     }
 
     @Test
@@ -156,5 +159,49 @@ class LineupTimelineTests {
 
         assertThat(timeline(List.of(first), newer, older).current()).contains(newer);
         assertThat(timeline(List.of(first)).current()).isEmpty();
+    }
+
+    @Test
+    void aManagerWhoLeftAndCameBackStartsFromScratch() {
+        LineupVersion beforeLeaving = version(LOCK_1.minus(Duration.ofDays(1)));
+        Instant rejoined = LOCK_1.plus(Duration.ofHours(1));
+
+        LineupTimeline timeline = new LineupTimeline(List.of(first, second), LOCK_HOURS, Map.of(),
+                List.of(beforeLeaving), rejoined);
+
+        // no working lineup, no lineup for the next match and no baseline: the first new one has no limit
+        assertThat(timeline.current()).isEmpty();
+        assertThat(timeline.lineupFor(second)).isEmpty();
+        assertThat(timeline.baseline(rejoined)).isEmpty();
+    }
+
+    @Test
+    void aVersionSavedRightWhenJoiningCounts() {
+        LineupVersion atJoin = version(MEMBER_SINCE);
+        LineupVersion beforeJoin = version(MEMBER_SINCE.minusMillis(1));
+
+        LineupTimeline timeline = timeline(List.of(first), beforeJoin, atJoin);
+
+        assertThat(timeline.current()).contains(atJoin);
+        assertThat(timeline.lineupFor(first)).contains(atJoin);
+    }
+
+    @Test
+    void aLockedMatchKeepsItsLockWhateverTheCurrentLockHours() {
+        LineupVersion locked = version(LOCK_1.minus(Duration.ofHours(1)));
+        LineupVersion afterTheLock = version(LOCK_1.plus(Duration.ofMinutes(10)));
+        Instant beforeKickoff = LOCK_1.plus(Duration.ofMinutes(30));
+
+        // first was locked 2 h before kickoff; now the league locks 1 h before, and 4 h before
+        for (int lockHours : List.of(1, 4)) {
+            LineupTimeline timeline = new LineupTimeline(List.of(first, second), lockHours,
+                    Map.of(first.id(), LOCK_1), List.of(locked, afterTheLock), MEMBER_SINCE);
+
+            assertThat(timeline.lockAt(first)).isEqualTo(LOCK_1);
+            assertThat(timeline.lineupFor(first)).contains(locked);
+            assertThat(timeline.baseline(beforeKickoff)).contains(locked);
+            assertThat(timeline.targetMatch(beforeKickoff)).contains(second);
+            assertThat(timeline.lockAt(second)).isEqualTo(KICKOFF_2.minus(Duration.ofHours(lockHours)));
+        }
     }
 }

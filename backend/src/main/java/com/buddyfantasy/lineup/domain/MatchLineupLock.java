@@ -39,9 +39,9 @@ public class MatchLineupLock extends AggregateRoot {
     private final List<LockedLineup> lineups;
 
     /**
-     * {@code lineups} are, for each current member who has one, the last version saved before the lock
-     * ({@link LineupTimeline#lineupFor}); {@code players} must contain all their players, retired ones included.
-     * Throws {@link ConflictException} if the lock time has not come yet.
+     * {@code lineups} are, for each current member who has one, the last version saved before the lock during the
+     * current membership ({@link LineupTimeline#lineupFor}); {@code players} must contain all their players, retired
+     * ones included. Throws {@link ConflictException} if the lock time has not come yet.
      */
     public static MatchLineupLock lock(MatchSchedule match, LineupSettings settings,
             Collection<LineupVersion> lineups, Map<UUID, LineupPlayer> players, Instant now) {

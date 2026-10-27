@@ -1,6 +1,8 @@
 package com.buddyfantasy.lineup.application.port.out;
 
+import java.time.Instant;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -21,6 +23,9 @@ public interface MatchLineupLockRepository {
 
     /** Those of {@code matchIds} that are locked, in a single query. */
     Set<UUID> findLockedMatchIds(Collection<UUID> matchIds);
+
+    /** The lock instant of each locked match of the league, keyed by match id, in a single query. */
+    Map<UUID, Instant> findLockAtsByLeagueId(UUID leagueId);
 
     /** Deletes the lock with its lineups; nothing if the match is not locked. */
     void deleteByMatchId(UUID matchId);

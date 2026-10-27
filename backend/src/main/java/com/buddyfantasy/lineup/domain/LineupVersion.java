@@ -20,6 +20,14 @@ public record LineupVersion(UUID id, UUID leagueId, UUID userId, Instant savedAt
         return new LineupVersion(UUID.randomUUID(), leagueId, userId, now, Set.copyOf(playerIds));
     }
 
+    /**
+     * Saved during the manager's current membership, which began at {@code memberSince}. A version saved before it
+     * belongs to a past membership and no longer counts: who leaves the league and comes back starts from scratch.
+     */
+    public boolean savedSince(Instant memberSince) {
+        return !savedAt.isBefore(memberSince);
+    }
+
     /** Same players, in any order. */
     public boolean hasPlayers(Collection<UUID> otherPlayerIds) {
         return playerIds.equals(Set.copyOf(otherPlayerIds));
