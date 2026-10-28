@@ -144,6 +144,7 @@ Todos los parámetros configurables (ventana, formato, bloqueo, cambios, tamaño
   - En tests unitarios usa `TestLeagueDefaults`, `TestLeagueLimits`, `TestSquadLimits`, `TestMatchLimits` (o su equivalente en un módulo nuevo, con `TestApplicationYaml`), que leen el `application.yml` real; en tests de Spring, inyecta el repositorio. No copies los valores en los tests salvo para comprobar que coinciden con los requisitos.
   - Las migraciones no leen esta configuración: un `DEFAULT` de columna solo rellena filas ya existentes.
   - La configuración técnica de un adaptador (por ejemplo `squad.photos.s3.upload-ttl`) va en su propio record de properties del adaptador, sin repositorio.
+- **Estilo funcional primero.** Prioriza streams (`stream().map/filter/collect`, `IntStream`, `Optional`) frente a bucles `for` y `while` convencionales. Usa un bucle solo cuando el stream quede claramente menos legible (por ejemplo, salidas anticipadas con estado mutable o efectos que dependen del orden).
 - Los mappers (entidad ↔ dominio, DTO ↔ dominio) son clases con `@lombok.experimental.UtilityClass`, con métodos sin `static` explícito. Una interfaz o clase por archivo, también los repositorios Spring Data.
 - Casos de uso (commands y queries) en `application/usecases/<caso>/`, un paquete por caso de uso con su `Command`/`Query` y su `Handler`.
 - Los commands terminan en `Command` y las queries en `Query` (`RegisterOrLoginUserCommand`, `ListMyLeaguesQuery`); el bus único `CommandBus` expone `dispatch` (commands) y `ask` (queries).
@@ -167,6 +168,8 @@ Obligatorios (RNF-11) para:
 - Plazos: bloqueo de alineación, límite de cambios, apertura/cierre de la ventana de valoración (usa un `Clock` inyectable, nunca `Instant.now()` directo).
 - Algoritmo de valor de mercado: tope ±10 % y valor mínimo.
 - Idempotencia de recálculos y jobs.
+
+Todo método `@Test` (y `@ParameterizedTest`) lleva un `@DisplayName` con una explicación breve, en inglés, de lo que prueba (por ejemplo `@DisplayName("A penalty goal is worth +3 in any position")`).
 
 Usa Testcontainers con PostgreSQL para tests de integración, no H2. La infraestructura y los escaneos vienen del plan 07 (`docs/07-integration-tests-plan.md`); todo en `backend/src/test/java/com/buddyfantasy/`:
 
