@@ -413,6 +413,7 @@ class MatchSheetEndpointsTests {
             assertThat(e.leagueId()).isEqualTo(league);
             assertThat(e.matchId()).isEqualTo(match);
             assertThat(e.matchday()).isEqualTo(1);
+            assertThat(e.kickoffAt()).isEqualTo(KICKOFF);
             assertThat(e.performances()).containsExactlyInAnyOrder(
                     new PlayerPerformanceData(forward, Position.FORWARD, 1, 0, 0, 0, 1, 0, false, false, false),
                     new PlayerPerformanceData(defender, Position.DEFENDER, 1, 0, 0, 0, 0, 0, true, false, false));

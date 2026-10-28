@@ -55,7 +55,7 @@ Fuera de alcance: frontend, cálculo de puntos y clasificaciones (`scoring`), ve
 - **Dependencias de `match`:** `league`, `squad`, `datadefinition`, `shared`. `squad` **no** puede depender de `match` (sería un ciclo).
 - **Eventos publicados** (paquete raíz de `match`, `shared.domain.DomainEvent`):
   - `MatchClosed(leagueId, matchId, matchday, kickoffAt, performances, occurredAt)`.
-  - `MatchCorrected(leagueId, matchId, matchday, performances, occurredAt)`.
+  - `MatchCorrected(leagueId, matchId, matchday, kickoffAt, performances, occurredAt)` (`kickoffAt` lo añadió el plan 08 para que `scoring` trate igual las dos actas).
   - `MatchRescheduled(leagueId, matchId, matchday, previousKickoffAt, kickoffAt, occurredAt)` y `MatchDeleted(leagueId, matchId, matchday, occurredAt)`: contrato para `lineup` y `notification`, sin consumidores todavía. `lineup` usará `MatchRescheduled` para **desbloquear** las alineaciones de un partido aplazado (decisión 13).
   - `performances` es una lista de records `PlayerPerformanceData` con la posición y todas las estadísticas. **El evento lleva el acta completa** (son ~15 filas): `scoring` y `rating` guardan su propia copia sin consultar a `match`, y aplicar dos veces el mismo evento da el mismo resultado (los listeners son *at-least-once*). Así `match` se podría extraer a servicio sin cambiar el contrato.
 - **`MatchApi`** (próximo partido, fecha de inicio por jornada) la necesitará `lineup` para el bloqueo. Se crea en ese plan, con su primer consumidor, como se hizo con `LeagueSettingsProvider`.

@@ -43,7 +43,7 @@ Lo que ya está bien resuelto y conviene mantener:
 | RF-12 Calendario | ✅ | `MatchesEndpointsTests`, `ConcurrencyTests` | |
 | RF-13, RF-14 Acta | ✅ | `MatchSheetEndpointsTests` | |
 | RF-15 Puntos por acción | 🟡 | `LeagueSettingsEndpointsTests` (tabla guardada) | El cálculo llega con `scoring`. |
-| RF-16 Corrección | 🟡 | `MatchSheetEndpointsTests` (`MatchCorrected`) | Recálculo pendiente de `scoring` y `rating`. |
+| RF-16 Corrección | 🟡 | `MatchSheetEndpointsTests` (`MatchCorrected`), `ScoringFlowTests` y `EventResubmissionTests` (recálculo en `scoring`) | Recálculo pendiente de `rating`. |
 | RF-17 – RF-23 Valoraciones | — | | Ver §4.3. |
 | RF-24 – RF-29 Alineaciones | ✅ | `LineupEndpointsTests`, `LineupLockTests`, `LineupSeasonChangesTests`, `ConcurrencyTests` | |
 | RF-30 – RF-40 | — | | Ver §4.3. |

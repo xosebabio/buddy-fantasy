@@ -15,6 +15,7 @@ import com.buddyfantasy.lineup.LineupsUnlocked;
 import com.buddyfantasy.lineup.adapter.in.scheduler.LockDueLineupsJob;
 import com.buddyfantasy.lineup.application.usecases.savelineup.SaveLineupCommand;
 import com.buddyfantasy.match.MatchClosed;
+import com.buddyfantasy.match.MatchCorrected;
 import com.buddyfantasy.match.MatchDeleted;
 import com.buddyfantasy.match.MatchRescheduled;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
@@ -255,6 +256,22 @@ class EventResubmissionTests {
         assertThat(events.stream(LineupsLocked.class)).hasSize(1);
         assertThat(events.stream(MatchdayScored.class)).hasSize(1);
 
+        deliverAgain(MatchClosed.class);
+    }
+
+    /** A close delivered again after the correction must not bring back the sheet it closed with. */
+    @Test
+    @DisplayName("Delivering MatchCorrected or the close before it again neither recalculates nor undoes it")
+    void deliveringAgainMatchCorrectedOrTheCloseBeforeItNeitherRecalculatesNorUndoesIt() {
+        leagueWithALineup();
+        clock.now = KICKOFF_1.plus(Duration.ofHours(2));
+        fixtures.closeWithSheet(peña, match1, 1, 0, played(squad.get(5), 1));
+        clock.now = clock.now.plus(Duration.ofHours(1));
+        fixtures.sheet(peña, match1, 2, 0, played(squad.get(5), 2));
+        Listeners.await(jdbc);
+        assertThat(events.stream(MatchdayScored.class)).hasSize(2);
+
+        deliverAgain(MatchCorrected.class);
         deliverAgain(MatchClosed.class);
     }
 

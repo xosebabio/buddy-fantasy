@@ -1,6 +1,7 @@
 package com.buddyfantasy.scoring.adapter.in.event;
 
 import com.buddyfantasy.match.MatchClosed;
+import com.buddyfantasy.match.MatchCorrected;
 import com.buddyfantasy.match.MatchDeleted;
 import com.buddyfantasy.match.PlayerPerformanceData;
 import com.buddyfantasy.scoring.application.usecases.applymatchsheet.ApplyMatchSheetCommand;
@@ -26,6 +27,14 @@ class MatchSheetEventsListener {
 
     @ApplicationModuleListener
     void on(MatchClosed event) {
+        bus.dispatch(new ApplyMatchSheetCommand(event.leagueId(), event.matchId(), event.matchday(),
+                event.kickoffAt(), event.performances().stream().map(MatchSheetEventsListener::toPerformance).toList(),
+                event.occurredAt()));
+    }
+
+    /** RF-16: replaces the copy of the sheet and recalculates the match with its frozen table. */
+    @ApplicationModuleListener
+    void on(MatchCorrected event) {
         bus.dispatch(new ApplyMatchSheetCommand(event.leagueId(), event.matchId(), event.matchday(),
                 event.kickoffAt(), event.performances().stream().map(MatchSheetEventsListener::toPerformance).toList(),
                 event.occurredAt()));

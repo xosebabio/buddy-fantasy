@@ -88,7 +88,8 @@ public class Match extends AggregateRoot {
         }
         sheet = newSheet;
         if (isClosed()) {
-            register(new MatchCorrected(leagueId, id.value(), matchday.value(), sheet.performancesData(), now));
+            register(new MatchCorrected(leagueId, id.value(), matchday.value(), kickoffAt, sheet.performancesData(),
+                    now));
         }
     }
 

@@ -269,7 +269,7 @@ class MatchTests {
 
         assertThat(match.sheet()).isEqualTo(corrected);
         assertThat(match.pullEvents()).containsExactly(new MatchCorrected(LEAGUE, match.id().value(), 5,
-                corrected.performancesData(), now));
+                KICKOFF, corrected.performancesData(), now));
     }
 
     @Test

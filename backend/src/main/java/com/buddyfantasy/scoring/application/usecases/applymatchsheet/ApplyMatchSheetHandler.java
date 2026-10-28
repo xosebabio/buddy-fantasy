@@ -9,7 +9,10 @@ import com.buddyfantasy.shared.application.CommandHandler;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-/** The league's table is only read if the match is scored for the first time. */
+/**
+ * The league's table is only read if the match is scored for the first time; a correction reuses the frozen one and
+ * publishes {@code MatchdayScored} again only if it changes some points.
+ */
 @Component
 class ApplyMatchSheetHandler implements CommandHandler<ApplyMatchSheetCommand, Void> {
 

@@ -62,7 +62,7 @@ Fuera de alcance: frontend, valoraciones y su conversión (Fase 2), valor de mer
 - `PlayerPerformance` (VO): copia de una línea del acta (posición, contadores y tarjetas).
 - `ActionScoring` (servicio de dominio puro): `breakdown(performance, table)` → `ActionBreakdown` (puntos por `ScoringAction`, solo las que suman o restan, y su total). Correspondencia fija acción ↔ estadística: `GOAL` ↔ `goals`, `PENALTY_GOAL` ↔ `penaltyGoals`, …, `YELLOW_CARD` ↔ `yellowCard ? 1 : 0`.
 - `MatchScore` (aggregate del partido):
-  - `applySheet(matchday, kickoffAt, performances, occurredAt)`, `applyLineups(lineups, occurredAt)`, `unlock(occurredAt)`: actualizan la copia si el evento es más reciente que el aplicado; si no, no hacen nada. El acta trae también la jornada y el `kickoffAt` definitivos (un aplazamiento que no desbloquea deja el `LineupsLocked` con los antiguos), así que `MatchCorrected` llevará `kickoffAt` en la tarea 4. Un partido ya puntuado ignora `unlock`.
+  - `applySheet(matchday, kickoffAt, performances, occurredAt)`, `applyLineups(lineups, occurredAt)`, `unlock(occurredAt)`: actualizan la copia si el evento es más reciente que el aplicado; si no, no hacen nada. El acta trae también la jornada y el `kickoffAt` definitivos (un aplazamiento que no desbloquea deja el `LineupsLocked` con los antiguos), así que `MatchCorrected` lleva también `kickoffAt`, como `MatchClosed`. Un partido ya puntuado ignora `unlock`.
   - `score(currentTable, now)`: si tiene acta y alineaciones, congela la tabla (un `Supplier`, leído solo la primera vez) si aún no tiene (si ya la tiene, usa la suya), calcula `action_points` y `points` de cada jugador y los puntos de cada manager (0 si `overBudget`), y registra `MatchdayScored` si es la primera vez o si algún punto cambió. Sin acta o sin alineaciones no hace nada.
 - `Standings` (servicio de dominio puro): recibe los puntos por jornada de cada manager y los miembros con su `joinedAt`, suma solo lo de cada miembro actual desde su `joinedAt`, pone a 0 a quien no tenía alineación, ordena por puntos y da la misma posición a los empatados (1, 1, 3).
 - Errores: `NotFoundException` (`404`) para partidos, managers o jugadores de otra liga; `ConflictException` (`409`, código `MATCH_NOT_SCORED`) para la clasificación de un partido de la liga aún sin puntuar.
@@ -122,7 +122,7 @@ Cada test nuevo se comprueba quitando a mano la defensa que prueba.
 | 1 | `ScoringTable` y `LeagueSettingsProvider.scoringRules` en `league`, con su test | Tabla de puntos consultable | ✅ |
 | 2 | V12, `ActionScoring`, `MatchScore`, `Standings` y `MatchdayScored`, con tests unitarios; `allowedDependencies` de `scoring` | Dominio verificado (RF-15, RF-30, RF-31) | ✅ |
 | 3 | Persistencia, commands internos y listeners de `MatchClosed`, `LineupsLocked`, `LineupsUnlocked` y `MatchDeleted`; concurrencia y reenvíos | Puntos calculados al cerrar y bloquear | ✅ |
-| 4 | Recálculo con `MatchCorrected` y tabla congelada | RF-16 en `scoring` | |
+| 4 | Recálculo con `MatchCorrected` y tabla congelada | RF-16 en `scoring` | ✅ |
 | 5 | `GetStandingsQuery`, `GetMatchdayScoresQuery` y sus endpoints | RF-32 | |
 | 6 | `GetManagerHistoryQuery`, `GetPlayerPointsQuery` y sus endpoints | RF-33 y RF-11 | |
 | 7 | `ScreenStatementsTests`, `MatchdayFlowTests`, escaneos; `AGENTS.md` (estado), marcar el ítem en `requirements.md` y la parte de `scoring` del ítem de Fase 4 | Ítem de Fase 1 cerrado | |

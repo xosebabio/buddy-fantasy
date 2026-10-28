@@ -49,8 +49,9 @@ import static org.assertj.core.api.Assertions.entry;
 
 /**
  * Scoring a match from the real events (RF-15, RF-31): the sheet of {@code MatchClosed} and the lineups of
- * {@code LineupsLocked}, in either order, with the league's own table frozen when the match is first scored, and
- * the copy of the lineups dropped when the match is postponed or deleted. The lock job is run by hand and the
+ * {@code LineupsLocked}, in either order, with the league's own table frozen when the match is first scored, the
+ * recalculation after a {@code MatchCorrected} with that table (RF-16), and the copy of the lineups dropped when the
+ * match is postponed or deleted. The lock job is run by hand and the
  * listeners are awaited.
  */
 @SpringBootTest
@@ -244,6 +245,68 @@ class ScoringFlowTests {
         assertThat(managerPoints(match2)).containsOnly(entry(admin, 7));
         assertThat(jdbc.queryForObject("select rules -> 'GOAL' ->> 'FORWARD' from scoring_match where match_id = ?",
                 String.class, match1)).isEqualTo("10");
+    }
+
+    @Test
+    @DisplayName("A correction recalculates the match with its frozen table and publishes MatchdayScored again")
+    void aCorrectionRecalculatesTheMatchWithItsFrozenTableAndPublishesMatchdayScoredAgain() {
+        fixtures.scoringRule(peña, GOAL, 10);
+        fixtures.scoringRule(peña, ASSIST, 2);
+        save(admin, adminLineup);
+        save(ana, anaLineup);
+        close(match1, KICKOFF_1, played(squad.get(5), 1), assisted(squad.get(3), 1), played(squad.get(7), 2));
+        Instant scoredAt = clock.now;
+        fixtures.scoringRule(peña, GOAL, 7);
+
+        // the forward of both lineups scored twice, the midfielder did not play and a defender of both did
+        clock.now = clock.now.plus(Duration.ofDays(1));
+        fixtures.sheet(peña, match1, 3, 0, played(squad.get(5), 2), assisted(squad.get(1), 1),
+                played(squad.get(7), 2));
+        Listeners.await(jdbc);
+
+        assertThat(playerPoints(match1)).containsOnly(
+                entry(squad.get(5), 20), entry(squad.get(1), 2), entry(squad.get(7), 20));
+        assertThat(managerPoints(match1)).containsOnly(entry(admin, 22), entry(ana, 22));
+        assertThat(scoringMatch(match1))
+                .containsEntry("sheet_at", Timestamp.from(clock.now))
+                .containsEntry("scored_at", Timestamp.from(clock.now));
+        assertThat(jdbc.queryForObject("select rules -> 'GOAL' ->> 'FORWARD' from scoring_match where match_id = ?",
+                String.class, match1)).isEqualTo("10");
+        assertThat(scored(match1)).extracting(MatchdayScored::occurredAt).containsExactly(scoredAt, clock.now);
+        assertThat(scored(match1).getLast()).satisfies(event -> {
+            assertThat(event.matchday()).isEqualTo(1);
+            assertThat(event.kickoffAt()).isEqualTo(KICKOFF_1);
+            assertThat(event.players()).containsExactlyInAnyOrder(
+                    new PlayerScoreData(squad.get(5), FORWARD, 20, 0, 20),
+                    new PlayerScoreData(squad.get(1), DEFENDER, 2, 0, 2),
+                    new PlayerScoreData(squad.get(7), FORWARD, 20, 0, 20));
+            assertThat(event.managers()).containsExactlyInAnyOrder(
+                    new ManagerScoreData(admin, 22, false), new ManagerScoreData(ana, 22, false));
+        });
+
+        // the next match is scored with the table edited before the correction
+        close(match2, KICKOFF_2, played(squad.get(5), 1));
+        assertThat(managerPoints(match2)).containsOnly(entry(admin, 7), entry(ana, 0));
+    }
+
+    @Test
+    @DisplayName("A correction that changes no points keeps the score and publishes nothing")
+    void aCorrectionThatChangesNoPointsKeepsTheScoreAndPublishesNothing() {
+        fixtures.scoringRule(peña, GOAL, 10);
+        save(admin, adminLineup);
+        close(match1, KICKOFF_1, played(squad.get(5), 1));
+        Instant scoredAt = clock.now;
+
+        // only the result changes: match publishes MatchCorrected with the same lines
+        clock.now = clock.now.plus(Duration.ofHours(1));
+        fixtures.sheet(peña, match1, 2, 0, played(squad.get(5), 1));
+        Listeners.await(jdbc);
+
+        assertThat(scoringMatch(match1))
+                .containsEntry("sheet_at", Timestamp.from(clock.now))
+                .containsEntry("scored_at", Timestamp.from(scoredAt));
+        assertThat(managerPoints(match1)).containsOnly(entry(admin, 10));
+        assertThat(scored(match1)).hasSize(1);
     }
 
     @Test
