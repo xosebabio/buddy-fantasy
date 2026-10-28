@@ -47,7 +47,7 @@ Monolito modular con Spring Modulith. Un paquete de primer nivel por módulo:
 | `league` | Ligas, membresías, roles por liga, invitaciones, parámetros | RF-05–08 |
 | `squad` | Jugadores del equipo real y su ficha | RF-09–11 |
 | `match` | Partidos, convocatoria, resultado, estadísticas | RF-12–16 |
-| `rating` | Ventana y valoraciones de los managers | RF-17–23 |
+| `rating` | Ventana y valoraciones de los managers | RF-17–23, RF-41 |
 | `lineup` | Alineaciones, bloqueo y límite de cambios | RF-24–29 |
 | `scoring` | Puntos por jugador/manager y clasificaciones | RF-30–33 |
 | `market` | Valor de mercado de los jugadores | RF-34–36 |
@@ -99,7 +99,8 @@ Los roles son **por liga**, no globales. Un usuario puede ser administrador de u
 - Formato por liga: picas 0–4 (por defecto) o nota decimal 0–10.
 - Conversión de la media a puntos, por defecto: picas 0 = −2, 1 = 2, 2 = 6, 3 = 10, 4 = 14 (`4 × media − 2`); nota decimal, 1 punto por punto de nota. Se convierte la media (no cada voto) y el resultado se redondea al entero, mitad hacia arriba. La conversión es un parámetro por liga sembrado desde `league.defaults`; nunca constantes en código.
 - Editables mientras la ventana siga abierta.
-- **Anónimas**: ninguna API devuelve valoraciones individuales de otros usuarios; solo la media.
+- **Anónimas**: ninguna API devuelve valoraciones individuales de otros usuarios, tampoco al admin; solo la media.
+- **Cancelación (RF-41)**: con la ventana abierta, el admin puede cancelar las valoraciones de un manager en un partido: se borran y queda excluido de valorar ese partido (también si aún no había votado). Es definitivo; con la ventana cerrada ya no se puede.
 
 ### Alineaciones
 

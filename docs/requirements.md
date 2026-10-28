@@ -21,6 +21,7 @@ Los roles se asignan **por liga**, no de forma global: un mismo usuario puede ad
 | Dar de alta jugadores y su valor inicial | Sí | No |
 | Crear partidos, resultados y estadísticas | Sí | No |
 | Valorar jugadores tras un partido | Sí, opcional (juega como manager) | Sí, opcional |
+| Cancelar las valoraciones de un manager en un partido | Sí, con la ventana abierta | No |
 | Editar su alineación | Si también juega como manager | Sí |
 | Ver clasificación, puntos y valores | Sí | Sí |
 | Recalcular o corregir una jornada | Sí | No |
@@ -82,6 +83,7 @@ Reglas confirmadas: el gol de penalti vale +3 sea cual sea la posición, y la do
 - RF-21: Las valoraciones individuales son anónimas para el resto; solo se publica la media.
 - RF-22: Al cerrar la ventana, la media de valoraciones se convierte en puntos (ver *Conversión de la valoración a puntos*), se redondea al entero más cercano (mitad hacia arriba) y se suma a los puntos por acciones. No hay reparto porcentual entre ambas partes.
 - RF-23: Si un jugador no recibe ninguna valoración, o recibe menos que el mínimo de votos de la liga, cuenta solo con los puntos por acciones (o con una nota por defecto configurable).
+- RF-41: Mientras la ventana siga abierta, el administrador puede cancelar las valoraciones de un manager en un partido (por ejemplo, si sobrevalora a sus jugadores o vota sin haber visto el partido). Se borran todas sus valoraciones de ese partido y queda excluido de valorarlo; puede cancelarse también a quien aún no ha votado. Es definitivo. El administrador no ve los votos individuales (RF-21 se mantiene); el manager excluido ve que lo está, sin motivo.
 
 #### Conversión de la valoración a puntos
 
@@ -202,7 +204,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 ### Fase 2 · Valoraciones
 
 - [ ] Apertura y cierre de la ventana de valoración con job programado y ShedLock (RF-17)
-- [ ] Pantalla de valoración en picas o nota decimal, editable mientras siga abierta (RF-18 a RF-21)
+- [ ] Pantalla de valoración en picas o nota decimal, editable mientras siga abierta, y cancelación de las valoraciones de un manager por el admin (RF-18 a RF-21, RF-41)
 - [ ] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23). Incluye adaptar los parámetros de `league`: sustituir `ratingPointsPerUnit` por una conversión por formato (picas −2/2/6/10/14, nota 1:1) y añadir el mínimo de votos
 - [ ] Prueba real: una jornada con los amigos y ajuste de los pesos
 
