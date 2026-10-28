@@ -1,9 +1,11 @@
 package com.buddyfantasy.scoring.application.port.out;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.buddyfantasy.scoring.domain.MatchScore;
+import com.buddyfantasy.scoring.domain.MatchdayPoints;
 
 /**
  * scoring's matches with their copies of the sheet and locked lineups and their points. Every write first locks the
@@ -20,6 +22,15 @@ public interface MatchScoreRepository {
 
     /** Locks the match and returns it with its copies and points; empty if scoring has not heard of it. */
     Optional<MatchScore> lock(UUID matchId);
+
+    /** The match with its copies and points, without locking it, for the views; empty if scoring has not heard of it. */
+    Optional<MatchScore> findById(UUID matchId);
+
+    /**
+     * The managers' points in every scored match of the league, in a single query, in chronological order. A scored
+     * match without lineups is there too, with no points.
+     */
+    List<MatchdayPoints> findScoredMatchdayPoints(UUID leagueId);
 
     /** Replaces the stored match, copies and points included, with {@code score}. */
     void save(MatchScore score);

@@ -22,6 +22,7 @@ import com.buddyfantasy.scoring.application.port.out.MatchScoreRepository;
 import com.buddyfantasy.scoring.domain.ManagerLineup;
 import com.buddyfantasy.scoring.domain.ManagerScore;
 import com.buddyfantasy.scoring.domain.MatchScore;
+import com.buddyfantasy.scoring.domain.MatchdayPoints;
 import com.buddyfantasy.scoring.domain.PlayerPerformance;
 import com.buddyfantasy.scoring.domain.PlayerScore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,6 +43,10 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
 
     private static final TypeReference<Map<ScoringAction, Map<Position, Integer>>> RULES = new TypeReference<>() {
     };
+    private static final String SELECT_MATCH = """
+            select match_id, league_id, matchday, kickoff_at, sheet_at, lineups_at, unlocked_at, rules, scored_at
+            from scoring_match
+            where match_id = :matchId""";
 
     private final JdbcClient jdbc;
     private final JdbcTemplate batch;
@@ -70,12 +75,16 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
 
     @Override
     public Optional<MatchScore> lock(UUID matchId) {
-        Optional<MatchRow> match = jdbc.sql("""
-                        select match_id, league_id, matchday, kickoff_at, sheet_at, lineups_at, unlocked_at, rules,
-                               scored_at
-                        from scoring_match
-                        where match_id = :matchId
-                        for update""")
+        return find(SELECT_MATCH + " for update", matchId);
+    }
+
+    @Override
+    public Optional<MatchScore> findById(UUID matchId) {
+        return find(SELECT_MATCH, matchId);
+    }
+
+    private Optional<MatchScore> find(String sql, UUID matchId) {
+        Optional<MatchRow> match = jdbc.sql(sql)
                 .param("matchId", matchId)
                 .query(this::toMatchRow)
                 .optional();
@@ -122,6 +131,29 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
                 scored ? lineups.values().stream()
                         .map(row -> new ManagerScore(row.userId(), row.points(), row.overBudget()))
                         .toList() : List.of());
+    }
+
+    /** A scored match without lineups has a single row with a null user. */
+    @Override
+    public List<MatchdayPoints> findScoredMatchdayPoints(UUID leagueId) {
+        List<ManagerPointsRow> rows = jdbc.sql("""
+                        select m.match_id, m.kickoff_at, l.user_id, l.points
+                        from scoring_match m
+                        left join scoring_lineup l on l.match_id = m.match_id
+                        where m.league_id = :leagueId and m.scored_at is not null
+                        order by m.kickoff_at, m.match_id""")
+                .param("leagueId", leagueId)
+                .query((rs, rowNum) -> new ManagerPointsRow(rs.getObject("match_id", UUID.class),
+                        instant(rs, "kickoff_at"), rs.getObject("user_id", UUID.class), rs.getInt("points")))
+                .list();
+        return rows.stream()
+                .collect(Collectors.groupingBy(ManagerPointsRow::matchId, LinkedHashMap::new, Collectors.toList()))
+                .values().stream()
+                .map(match -> new MatchdayPoints(match.getFirst().matchId(), match.getFirst().kickoffAt(),
+                        match.stream()
+                                .filter(row -> row.userId() != null)
+                                .collect(Collectors.toMap(ManagerPointsRow::userId, ManagerPointsRow::points))))
+                .toList();
     }
 
     @Override
@@ -272,5 +304,8 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
 
     /** {@code points} is only read if the match is scored, when it is not null. */
     private record LineupRow(UUID userId, boolean overBudget, int points, UUID playerId) {
+    }
+
+    private record ManagerPointsRow(UUID matchId, Instant kickoffAt, UUID userId, int points) {
     }
 }

@@ -90,6 +90,14 @@ class ApiSecurityTests {
     }
 
     @Test
+    @DisplayName("The scan covers the scoring endpoints")
+    void scanCoversTheScoringEndpoints() {
+        assertThat(apiEndpoints()).contains(
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/standings"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/standings/{matchId}"));
+    }
+
+    @Test
     @DisplayName("Every API endpoint requires a session")
     void everyApiEndpointRequiresASession() throws Exception {
         for (Endpoint e : apiEndpoints()) {

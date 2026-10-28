@@ -135,6 +135,9 @@ class LeagueAuthorizationTests {
         rules.put(endpoint(PUT, "/api/leagues/{id}/lineup"), member("""
                 {"playerIds": []}"""));
         rules.put(endpoint(GET, "/api/leagues/{id}/lineups/{matchId}"), member());
+        // scoring
+        rules.put(endpoint(GET, "/api/leagues/{id}/standings"), member());
+        rules.put(endpoint(GET, "/api/leagues/{id}/standings/{matchId}"), member());
         return rules;
     }
 

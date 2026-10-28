@@ -147,6 +147,12 @@ public class MatchScore extends AggregateRoot {
                 managers.stream().map(ManagerScore::toData).toList(), now));
     }
 
+    /** The managers' points of the match for {@link Standings}; none while it is not scored. */
+    public MatchdayPoints matchdayPoints() {
+        return new MatchdayPoints(matchId, kickoffAt, managerScores.stream()
+                .collect(Collectors.toMap(ManagerScore::userId, ManagerScore::points)));
+    }
+
     private static boolean isNewer(Instant occurredAt, Instant applied) {
         return applied == null || occurredAt.isAfter(applied);
     }
