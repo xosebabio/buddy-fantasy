@@ -23,10 +23,13 @@ record RatingWindowResponse(
         @Schema(description = "Jugadores que se pueden valorar: los del acta.", example = "11")
         int players,
         @Schema(description = "A cuántos de ellos ha valorado el usuario.", example = "4")
-        int myRatings) {
+        int myRatings,
+        @Schema(description = "Si el administrador canceló las valoraciones del usuario en este partido (RF-41).",
+                example = "false")
+        boolean excluded) {
 
     static RatingWindowResponse from(RatingWindowView view) {
         return new RatingWindowResponse(view.matchId(), view.matchday(), view.kickoffAt(), view.status(),
-                view.closesAt(), view.players(), view.myRatings());
+                view.closesAt(), view.players(), view.myRatings(), view.excluded());
     }
 }

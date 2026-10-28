@@ -10,6 +10,7 @@ import java.util.UUID;
 import com.buddyfantasy.league.RatingSettings;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.rating.PlayerRatingData;
+import com.buddyfantasy.rating.RaterExcluded;
 import com.buddyfantasy.rating.RatingWindowClosed;
 import com.buddyfantasy.rating.RatingsCorrected;
 import com.buddyfantasy.shared.domain.ConflictException;
@@ -24,8 +25,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The rating window of a match: opening with frozen parameters, the deadline on the server's clock, the close and
- * the corrections of the sheet before and after it (RF-16, RF-17, RF-22, RF-23).
+ * The rating window of a match: opening with frozen parameters, the deadline on the server's clock, the close, the
+ * corrections of the sheet before and after it and the admin's exclusions (RF-16, RF-17, RF-22, RF-23, RF-41).
  */
 class RatingWindowTests {
 
@@ -235,6 +236,50 @@ class RatingWindowTests {
 
         assertThat(window.players()).containsExactlyElementsOf(samePlayersOtherPositions);
         assertThat(window.results()).containsOnlyKeys(keeper, striker);
+        assertThat(window.pullEvents()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Excluding a member with the window open publishes RaterExcluded and returns the exclusion to save")
+    void excludingAMemberWithTheWindowOpenPublishesRaterExcluded() {
+        RatingWindow window = open(DEFAULTS);
+        UUID manager = UUID.randomUUID();
+        UUID admin = UUID.randomUUID();
+        Instant now = CLOSES.minusMillis(1);
+
+        assertThat(window.exclude(manager, admin, false, now))
+                .contains(new RaterExclusion(MATCH, manager, admin, now));
+
+        assertThat(onlyEvent(window, RaterExcluded.class)).isEqualTo(new RaterExcluded(LEAGUE, MATCH, manager, now));
+    }
+
+    @Test
+    @DisplayName("Excluding a member already excluded does nothing")
+    void excludingAMemberAlreadyExcludedDoesNothing() {
+        RatingWindow window = open(DEFAULTS);
+
+        assertThat(window.exclude(UUID.randomUUID(), UUID.randomUUID(), true, CLOSED)).isEmpty();
+
+        assertThat(window.pullEvents()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("A member cannot be excluded from closesAt, before the job closes the window and after")
+    void aMemberCannotBeExcludedFromClosesAt() {
+        RatingWindow window = open(DEFAULTS);
+        UUID manager = UUID.randomUUID();
+
+        for (Instant now : List.of(CLOSES, AFTER)) {
+            assertThatThrownBy(() -> window.exclude(manager, UUID.randomUUID(), false, now))
+                    .isInstanceOf(ConflictException.class)
+                    .extracting(e -> ((ConflictException) e).code())
+                    .isEqualTo(RatingError.RATING_WINDOW_CLOSED);
+        }
+        window.close(Map.of(), AFTER);
+        window.pullEvents();
+        assertThatThrownBy(() -> window.exclude(manager, UUID.randomUUID(), true, AFTER))
+                .isInstanceOf(ConflictException.class);
+
         assertThat(window.pullEvents()).isEmpty();
     }
 }

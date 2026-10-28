@@ -7,7 +7,8 @@ import com.buddyfantasy.shared.application.Query;
 
 /**
  * RF-17, RF-18: the rating windows of the league's closed matches for a member, open ones first and then the most
- * recent kickoff first, with how many players the member rated in each: for the «pending ratings» notice.
+ * recent kickoff first, with how many players the member rated in each and whether the admin excluded them (RF-41):
+ * for the «pending ratings» notice.
  */
 public record ListRatingWindowsQuery(UUID userId, UUID leagueId) implements Query<List<RatingWindowView>> {
 }

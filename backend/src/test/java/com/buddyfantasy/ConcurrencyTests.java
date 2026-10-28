@@ -57,7 +57,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 /**
  * Races against the real database: the same request sent at once (a double tap, two admins), the two paths that
  * lock a match's lineups, the two halves scoring needs to score a match, the events and job of a rating window, and
- * the votes against its close. The checks before writing do not see the other transaction, so the unique indexes
+ * the votes against its close and against the admin's exclusion of their member. The checks before writing do not see the other transaction, so the unique indexes
  * and row locks decide: each race ends in one write and a 409 or nothing, never a 500 nor a duplicate. Each case runs
  * {@link #ROUNDS} times, since a single run may not overlap.
  */
@@ -359,6 +359,44 @@ class ConcurrencyTests {
                     .as("matchday %d: the votes answered 200", matchday).isEqualTo((int) saved);
             assertThat(count("select votes from rating_player where match_id = ?", match))
                     .as("matchday %d: the votes counted in the close", matchday).isEqualTo((int) saved);
+        }
+    }
+
+    /**
+     * A member's vote and the admin's exclusion of that member (RF-41) at once: without locking the window
+     * ({@code for update} in the exclusion, {@code for share} in the vote), the vote reads no exclusion while the
+     * exclusion deletes no vote yet, and the vote of an excluded member is left. Either the vote goes first and the
+     * exclusion deletes it, or it waits and is rejected (409).
+     */
+    @Test
+    @DisplayName("A member's vote and their exclusion at once never leave votes of an excluded member")
+    void aVoteAndTheExclusionOfItsMemberAtOnceNeverLeaveVotes() {
+        UUID ana = fixtures.user("ana");
+        fixtures.join(peña, ana);
+        UUID keeper = fixtures.player(peña, GOALKEEPER);
+
+        for (int matchday = 1; matchday <= ROUNDS; matchday++) {
+            Instant kickoff = FIRST_KICKOFF.plus(Duration.ofDays(7L * (matchday - 1)));
+            UUID match = fixtures.schedule(peña, matchday, kickoff);
+            Instant closedAt = kickoff.plus(Duration.ofHours(2));
+            bus.dispatch(new OpenRatingWindowCommand(peña.id(), match, matchday, kickoff,
+                    List.of(new SheetPlayer(keeper, GOALKEEPER)), closedAt));
+            clock.now = closedAt.plus(Duration.ofHours(1));
+            String vote = """
+                    {"ratings": [{"playerId": "%s", "value": 3}]}""".formatted(keeper);
+
+            List<Object> statuses = Concurrently.run(List.<Callable<Object>>of(
+                    () -> status(ana, put("/api/leagues/{id}/ratings/{matchId}", peña.id(), match)
+                            .contentType(APPLICATION_JSON).content(vote)),
+                    () -> status(admin, put("/api/leagues/{id}/ratings/{matchId}/exclusions/{userId}", peña.id(),
+                            match, ana))));
+
+            assertThat(statuses.getFirst()).as("matchday %d", matchday).isIn(200, 409);
+            assertThat(statuses.getLast()).as("matchday %d", matchday).isEqualTo(204);
+            assertThat(count("select count(*) from rating_vote where match_id = ?", match))
+                    .as("matchday %d: no votes of the excluded member", matchday).isZero();
+            assertThat(count("select count(*) from rating_exclusion where match_id = ? and user_id = ?", match, ana))
+                    .as("matchday %d", matchday).isEqualTo(1);
         }
     }
 }

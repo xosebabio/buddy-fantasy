@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 import com.buddyfantasy.league.RatingSettings;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.rating.PlayerRatingData;
+import com.buddyfantasy.rating.RaterExcluded;
 import com.buddyfantasy.rating.RatingWindowClosed;
 import com.buddyfantasy.rating.RatingsCorrected;
 import com.buddyfantasy.shared.domain.AggregateRoot;
@@ -29,7 +31,8 @@ import lombok.experimental.Accessors;
  * {@code MatchCorrected}): only a more recent event replaces it, and a player removed from it loses his votes.
  *
  * <p>{@code results} has one entry per player in the sheet once {@code closedAt} is set, and is empty before. The
- * votes are not part of the aggregate: they are only read to close it.
+ * votes are not part of the aggregate: they are only read to close it. Neither are the admin's exclusions (RF-41):
+ * the caller reads them after locking the window, so it sees one committed while it waited.
  */
 @Getter
 @Accessors(fluent = true)
@@ -111,6 +114,22 @@ public class RatingWindow extends AggregateRoot {
 
     public boolean closed() {
         return closedAt != null;
+    }
+
+    /**
+     * RF-41: the admin ({@code adminId}) cancels the ratings of a member ({@code userId}) in the match, also of one
+     * who has not rated it yet: the caller deletes their votes and saves the exclusion returned, and the member can
+     * no longer rate it. Only with the window open at {@code now} ({@link RatingError#RATING_WINDOW_CLOSED}, 409).
+     * Definitive and idempotent: a member {@code alreadyExcluded} returns empty and publishes nothing; otherwise
+     * publishes {@link RaterExcluded}.
+     */
+    public Optional<RaterExclusion> exclude(UUID userId, UUID adminId, boolean alreadyExcluded, Instant now) {
+        requireOpen(now);
+        if (alreadyExcluded) {
+            return Optional.empty();
+        }
+        register(new RaterExcluded(leagueId, matchId, userId, now));
+        return Optional.of(new RaterExclusion(matchId, userId, adminId, now));
     }
 
     public boolean hasPlayer(UUID playerId) {

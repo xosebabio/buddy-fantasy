@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-/** The counts are subqueries on the primary key of {@code rating_player} and the (match, user) index of the votes. */
+/**
+ * The counts are subqueries on the primary key of {@code rating_player} and the (match, user) index of the votes; the
+ * exclusion, on the primary key of {@code rating_exclusion}.
+ */
 @Repository
 @RequiredArgsConstructor
 class JdbcRatingWindowsReadModel implements RatingWindowsReadModel {
@@ -26,7 +29,9 @@ class JdbcRatingWindowsReadModel implements RatingWindowsReadModel {
                         select w.match_id, w.matchday, w.kickoff_at, w.closes_at, w.closed_at,
                                (select count(*) from rating_player p where p.match_id = w.match_id) as players,
                                (select count(*) from rating_vote v
-                                where v.match_id = w.match_id and v.user_id = :userId) as my_ratings
+                                where v.match_id = w.match_id and v.user_id = :userId) as my_ratings,
+                               exists (select 1 from rating_exclusion e
+                                       where e.match_id = w.match_id and e.user_id = :userId) as excluded
                         from rating_window w
                         where w.league_id = :leagueId""")
                 .param("leagueId", leagueId)
@@ -38,7 +43,7 @@ class JdbcRatingWindowsReadModel implements RatingWindowsReadModel {
     private static RatingWindowSummary toSummary(ResultSet rs, int rowNum) throws SQLException {
         return new RatingWindowSummary(rs.getObject("match_id", UUID.class), rs.getInt("matchday"),
                 instant(rs, "kickoff_at"), instant(rs, "closes_at"), instant(rs, "closed_at"), rs.getInt("players"),
-                rs.getInt("my_ratings"));
+                rs.getInt("my_ratings"), rs.getBoolean("excluded"));
     }
 
     private static Instant instant(ResultSet rs, String column) throws SQLException {

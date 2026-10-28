@@ -49,10 +49,7 @@ class JdbcRatingVoteRepository implements RatingVoteRepository {
     public void save(MyRatings ratings, Instant now) {
         List<UUID> playerIds = ratings.votes().stream().map(Vote::playerId).toList();
         if (playerIds.isEmpty()) {
-            jdbc.sql("delete from rating_vote where match_id = :matchId and user_id = :userId")
-                    .param("matchId", ratings.matchId())
-                    .param("userId", ratings.userId())
-                    .update();
+            delete(ratings.matchId(), ratings.userId());
             return;
         }
         jdbc.sql("""
@@ -73,5 +70,13 @@ class JdbcRatingVoteRepository implements RatingVoteRepository {
                         .map(vote -> new Object[]{ratings.matchId(), vote.playerId(), ratings.userId(), vote.value(),
                                 updatedAt})
                         .toList());
+    }
+
+    @Override
+    public void delete(UUID matchId, UUID userId) {
+        jdbc.sql("delete from rating_vote where match_id = :matchId and user_id = :userId")
+                .param("matchId", matchId)
+                .param("userId", userId)
+                .update();
     }
 }

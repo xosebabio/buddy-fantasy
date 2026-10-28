@@ -38,6 +38,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -104,6 +105,7 @@ class ApiErrorsTests {
                 "matchId", fixtures.schedule(peña, 1, KICKOFF),
                 "playerId", fixtures.player(peña, FORWARD),
                 "memberId", member,
+                "userId", member,
                 "token", peña.invitationToken());
     }
 
@@ -150,6 +152,8 @@ class ApiErrorsTests {
         isProblem(perform(get("/api/leagues/{id}/managers/{userId}/history", peña.id(), "42")), 400);
         isProblem(perform(get("/api/leagues/{id}/players/{playerId}/points", peña.id(), "42")), 400);
         isProblem(perform(get("/api/leagues/{id}/ratings/{matchId}", peña.id(), "42")), 400);
+        isProblem(perform(put("/api/leagues/{id}/ratings/{matchId}/exclusions/{userId}", peña.id(),
+                variables.get("matchId"), "42")), 400);
     }
 
     @Test

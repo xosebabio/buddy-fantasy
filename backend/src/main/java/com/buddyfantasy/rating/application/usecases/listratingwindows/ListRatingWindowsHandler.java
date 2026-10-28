@@ -33,7 +33,7 @@ class ListRatingWindowsHandler implements QueryHandler<ListRatingWindowsQuery, L
         return readModel.findByLeagueId(query.leagueId(), query.userId()).stream()
                 .map(window -> new RatingWindowView(window.matchId(), window.matchday(), window.kickoffAt(),
                         RatingStatus.of(window.closesAt(), window.closedAt(), now), window.closesAt(),
-                        window.players(), window.myRatings()))
+                        window.players(), window.myRatings(), window.excluded()))
                 .sorted(LISTING_ORDER)
                 .toList();
     }

@@ -105,7 +105,8 @@ class ApiSecurityTests {
         assertThat(apiEndpoints()).contains(
                 new Endpoint(HttpMethod.GET, "/api/leagues/{id}/ratings"),
                 new Endpoint(HttpMethod.GET, "/api/leagues/{id}/ratings/{matchId}"),
-                new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/ratings/{matchId}"));
+                new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/ratings/{matchId}"),
+                new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/ratings/{matchId}/exclusions/{userId}"));
     }
 
     @Test

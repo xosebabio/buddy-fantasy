@@ -16,7 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = """
         Las valoraciones de un partido vistas por un miembro, según el reloj del servidor (RF-18 a RF-21): sus propios \
-        votos y, cuando el job cierra la ventana, la media de cada jugador. Nunca los votos de otro miembro.""")
+        votos y, cuando el job cierra la ventana, la media de cada jugador. Nunca los votos de otro miembro, tampoco \
+        para el administrador.""")
 record MatchRatingsResponse(
         @Schema(description = "Id del partido.", example = ApiExamples.MATCH_ID)
         UUID matchId,
@@ -32,12 +33,20 @@ record MatchRatingsResponse(
         @Schema(description = "Formato de los votos, congelado al abrir la ventana: `SPADES` (0 a 4) o `DECIMAL` (0 a "
                 + "10).", example = "SPADES")
         RatingFormat format,
+        @Schema(description = "Si el administrador canceló las valoraciones del usuario en este partido (RF-41): "
+                + "sus votos se borraron y ya no puede valorarlo.", example = "false")
+        boolean excluded,
+        @ArraySchema(arraySchema = @Schema(description = "Ids de los miembros cuyas valoraciones del partido canceló el "
+                + "administrador (RF-41); solo para el administrador, null para el resto.", nullable = true),
+                schema = @Schema(example = ApiExamples.OTHER_USER_ID))
+        List<UUID> excludedUserIds,
         @ArraySchema(arraySchema = @Schema(description = "Los jugadores del acta, porteros primero."))
         List<PlayerRatingResponse> players) {
 
     static MatchRatingsResponse from(MatchRatingsView view) {
         return new MatchRatingsResponse(view.matchId(), view.matchday(), view.kickoffAt(), view.status(),
-                view.closesAt(), view.format(), view.players().stream().map(PlayerRatingResponse::from).toList());
+                view.closesAt(), view.format(), view.excluded(), view.excludedUserIds(),
+                view.players().stream().map(PlayerRatingResponse::from).toList());
     }
 
     @Schema(description = "Jugador del acta con el voto del usuario y, con la ventana cerrada, su resultado.")

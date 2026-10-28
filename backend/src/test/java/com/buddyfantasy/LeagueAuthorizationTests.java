@@ -146,6 +146,7 @@ class LeagueAuthorizationTests {
         rules.put(endpoint(GET, "/api/leagues/{id}/ratings/{matchId}"), member());
         rules.put(endpoint(PUT, "/api/leagues/{id}/ratings/{matchId}"), member("""
                 {"ratings": []}"""));
+        rules.put(endpoint(PUT, "/api/leagues/{id}/ratings/{matchId}/exclusions/{userId}"), admin());
         return rules;
     }
 

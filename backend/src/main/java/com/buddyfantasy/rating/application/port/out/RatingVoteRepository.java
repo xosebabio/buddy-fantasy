@@ -21,4 +21,7 @@ public interface RatingVoteRepository {
      * vote. A vote whose value changes is stamped with {@code now}; one that does not keep its time.
      */
     void save(MyRatings ratings, Instant now);
+
+    /** Deletes all the member's votes in the match (RF-41). */
+    void delete(UUID matchId, UUID userId);
 }
