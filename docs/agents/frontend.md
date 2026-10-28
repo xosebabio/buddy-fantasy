@@ -82,7 +82,7 @@ frontend/src/app/
 ## Cómo añadir o cambiar un endpoint
 
 1. En el backend, documenta el endpoint con springdoc como pide [conventions.md](conventions.md) (si añade un `ErrorCode`, que quede en el spec).
-2. Regenera `api/openapi.json` con el test de export del backend y después `npm run api:types`.
+2. Regenera `api/openapi.json` con `OpenApiSpecTests` (ver [commands.md](commands.md)) y después `npm run api:types`.
 3. En `core/api/<módulo>/`, exporta los alias de los DTO nuevos y añade el método al `<Módulo>Api`, tipado con `paths`.
 4. Si hay códigos de error nuevos, el `Record<ErrorCode, string>` deja de compilar: añade su texto.
 5. Prueba el método con `HttpTestingController`.

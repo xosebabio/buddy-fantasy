@@ -14,6 +14,7 @@ mvn -B verify                                           # build + todos los test
                                                         # la JVM de los tests corre en Europe/Madrid (argLine del pom.xml)
 mvn test -Dtest='LineupLockTests' -Djacoco.skip=true    # una clase, sin instrumentar la cobertura
 mvn test -Dtest='ModularityTests,HexagonalArchitectureTests'   # solo verificación de arquitectura (sin Docker)
+mvn test -Dtest='OpenApiSpecTests' -Djacoco.skip=true  # regenera api/openapi.json (falla si había cambiado: súbelo)
 S3_ENDPOINT=http://localhost:8333 AWS_ACCESS_KEY_ID=buddyfantasy AWS_SECRET_ACCESS_KEY=buddyfantasy-local \
   mvn spring-boot:run                                   # arranque local contra los servicios de arriba
 ```
@@ -23,7 +24,7 @@ S3_ENDPOINT=http://localhost:8333 AWS_ACCESS_KEY_ID=buddyfantasy AWS_SECRET_ACCE
 
 ## API
 
-La documentación OpenAPI de la API está en `/v3/api-docs` (con sesión iniciada) y, con `SWAGGER_UI_ENABLED=true`, en Swagger UI (`/swagger-ui.html`).
+La documentación OpenAPI de la API está en `/v3/api-docs` (con sesión iniciada), versionada en `api/openapi.json`, y, con `SWAGGER_UI_ENABLED=true`, en Swagger UI (`/swagger-ui.html`).
 
 ## Variables de entorno
 

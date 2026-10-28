@@ -189,7 +189,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 | # | Tarea | Resultado | Hecho |
 | --- | --- | --- | --- |
 | 1 | Revisar este plan con el usuario y cerrar las propuestas (§2) | Decisiones cerradas | ✅ |
-| 2 | `OpenApiSpecTests`, spec determinista y `api/openapi.json` (§3.1) | Spec versionado (FE-05) | |
+| 2 | `OpenApiSpecTests`, spec determinista y `api/openapi.json` (§3.1) | Spec versionado (FE-05) | ✅ |
 | 3 | `ErrorCode` como enum en el spec; `MatchError`, `SquadError` y `LeagueError`; tests (§3.2) | Códigos en el contrato (FE-08) | |
 | 4 | Vuelta tras el login, cabeceras de proxy y `SessionTests`; redirect URI local y CORS en `commands.md`; `/login/oauth2` en `requirements.md` y `frontend.md` (§3.3, §3.5, decisión 3) | Login listo para el front (RF-01, FE-10) | |
 | 5 | Login de pruebas con perfil `e2e` y sus tests (§3.4) | Sesión para E2E (FE-34) | |

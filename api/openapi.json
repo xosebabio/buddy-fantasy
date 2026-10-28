@@ -1,0 +1,5342 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "description" : "API del fantasy de una liga de peñas: un administrador registra el equipo real, sus partidos y estadísticas, y los managers alinean, valoran y compiten en una clasificación.\n\n- **Sesión:** se inicia con Google en `/oauth2/authorization/google` y viaja en la cookie `SESSION`. Sin sesión, todo `/api/**` responde `401`.\n- **CSRF:** las peticiones que modifican (`POST`, `PUT`, `DELETE`) copian la cookie `XSRF-TOKEN` en la cabecera `X-XSRF-TOKEN`; sin ella responden `403`.\n- **Roles por liga:** cada endpoint de `/api/leagues/{id}` dice su rol mínimo. El administrador también juega como manager.\n- **Fechas** en ISO-8601 y UTC; la interfaz las muestra en `Europe/Madrid`.\n- **Importes** (valores, presupuestos) en millones.\n- **Errores** en `application/problem+json` (RFC 9457), con un `code` cuando la interfaz debe distinguir el motivo.",
+    "title" : "buddy-fantasy API",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "/",
+    "description" : "El mismo origen que sirve la interfaz."
+  } ],
+  "security" : [ {
+    "session" : [ ]
+  } ],
+  "tags" : [ {
+    "description" : "Las ventanas de valoración de la liga y los votos del usuario en cada partido (RF-17 a RF-21). Se abren al cerrar el partido y son anónimas: ninguna respuesta incluye votos de otro miembro, tampoco para el administrador, que sí puede cancelar las valoraciones de un miembro en un partido (RF-41).",
+    "name" : "Valoraciones"
+  }, {
+    "description" : "Crear una liga, consultarla y cambiar sus parámetros (RF-05, RF-07).",
+    "name" : "Ligas"
+  }, {
+    "description" : "Los miembros de una liga: verlos, expulsarlos y abandonar la liga.",
+    "name" : "Miembros"
+  }, {
+    "description" : "La alineación de trabajo de cada manager y las alineaciones bloqueadas de cada partido (RF-24 a RF-29).",
+    "name" : "Alineaciones"
+  }, {
+    "description" : "Clasificaciones e historiales de puntos (RF-30 a RF-33). Solo lectura.",
+    "name" : "Clasificación"
+  }, {
+    "description" : "El calendario del equipo real, el acta de cada partido y su cierre (RF-12 a RF-16). Cada cambio del administrador queda en la auditoría del partido (RNF-04).",
+    "name" : "Partidos"
+  }, {
+    "description" : "Los jugadores del equipo real de la liga y su ficha (RF-09 a RF-11).",
+    "name" : "Plantilla"
+  }, {
+    "description" : "Enlace de invitación de una liga (RF-06): una liga tiene como mucho uno activo, y quien lo abre se une como manager.",
+    "name" : "Invitaciones"
+  }, {
+    "description" : "El usuario con la sesión iniciada (RF-01 a RF-04).",
+    "name" : "Cuenta"
+  } ],
+  "paths" : {
+    "/api/invitations/{token}" : {
+      "get" : {
+        "description" : "Cualquier usuario con sesión. Para la pantalla «¿Unirte a la liga X?»: solo el nombre de la liga y si ya es miembro.",
+        "operationId" : "preview",
+        "parameters" : [ {
+          "description" : "Token del enlace de invitación.",
+          "example" : "q7Z2mXk9LwP4vR1sT8yB3nC6dF0gH5jK",
+          "in" : "path",
+          "name" : "token",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InvitationPreviewResponse"
+                }
+              }
+            },
+            "description" : "La liga del enlace."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El enlace no existe o fue revocado."
+          }
+        },
+        "summary" : "Ver a qué liga invita un enlace",
+        "tags" : [ "Invitaciones" ]
+      }
+    },
+    "/api/invitations/{token}/join" : {
+      "post" : {
+        "description" : "Cualquier usuario con sesión. Se une como manager. Si ya era miembro, conserva su rol y su fecha de alta: se puede repetir sin efectos.",
+        "operationId" : "join",
+        "parameters" : [ {
+          "description" : "Token del enlace de invitación.",
+          "example" : "q7Z2mXk9LwP4vR1sT8yB3nC6dF0gH5jK",
+          "in" : "path",
+          "name" : "token",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JoinLeagueResponse"
+                }
+              }
+            },
+            "description" : "La liga a la que se ha unido."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El enlace no existe o fue revocado."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Unirse a una liga",
+        "tags" : [ "Invitaciones" ]
+      }
+    },
+    "/api/leagues" : {
+      "post" : {
+        "description" : "Cualquier usuario puede crear una liga: queda como su administrador, con los parámetros de `league.defaults` y un primer enlace de invitación (RF-05).",
+        "operationId" : "create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateLeagueRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreateLeagueResponse"
+                }
+              }
+            },
+            "description" : "Liga creada. La cabecera `Location` apunta a ella.",
+            "headers" : {
+              "Location" : {
+                "description" : "Ruta de la liga creada.",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e"
+                },
+                "style" : "simple"
+              }
+            }
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "League name must be 1-100 characters",
+                  "instance" : "/api/leagues"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Nombre vacío o más largo que `league.limits.name-max-length`."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Crear una liga",
+        "tags" : [ "Ligas" ]
+      }
+    },
+    "/api/leagues/{id}" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Incluye el rol del usuario en ella.",
+        "operationId" : "get_4",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LeagueResponse"
+                }
+              }
+            },
+            "description" : "La liga."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver una liga",
+        "tags" : [ "Ligas" ]
+      }
+    },
+    "/api/leagues/{id}/invitation" : {
+      "delete" : {
+        "description" : "Rol mínimo: administrador. El enlace activo deja de funcionar y nadie más puede unirse hasta que se regenere. Sin enlace activo no hace nada.",
+        "operationId" : "revoke",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Enlace revocado."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Revocar el enlace de invitación",
+        "tags" : [ "Invitaciones" ]
+      },
+      "post" : {
+        "description" : "Rol mínimo: administrador. Crea un enlace nuevo y el anterior deja de funcionar.",
+        "operationId" : "regenerate",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InvitationTokenResponse"
+                }
+              }
+            },
+            "description" : "El enlace nuevo."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Regenerar el enlace de invitación",
+        "tags" : [ "Invitaciones" ]
+      }
+    },
+    "/api/leagues/{id}/lineup" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. La alineación de trabajo del usuario, el partido para el que cuenta, los cambios que le quedan y sus avisos.",
+        "operationId" : "get_3",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MyLineupResponse"
+                }
+              }
+            },
+            "description" : "La alineación de trabajo."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver mi alineación",
+        "tags" : [ "Alineaciones" ]
+      },
+      "put" : {
+        "description" : "Rol mínimo: miembro. Reemplaza la alineación de trabajo, que cuenta para el próximo partido cuya hora de bloqueo no ha pasado según el reloj del servidor (RF-24, RF-25). Los cambios se cuentan contra la alineación bloqueada del último partido; sustituir a un jugador dado de baja es gratis (RF-26). Si no la vuelve a tocar, se arrastra a los partidos siguientes (RF-28). Guardar la misma alineación no hace nada.",
+        "operationId" : "save_1",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LineupRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MyLineupResponse"
+                }
+              }
+            },
+            "description" : "La alineación guardada."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "A lineup has exactly 7 players",
+                  "code" : "SIZE",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/lineup"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "La alineación no es válida; `code` dice por qué: `SIZE` (no tiene `lineupSize` jugadores), `DUPLICATE_PLAYER`, `UNKNOWN_PLAYER` (no es de la plantilla), `INACTIVE_PLAYER` (dado de baja), `FORMATION` (no llega a los mínimos por posición) u `OVER_BUDGET` (supera el presupuesto)."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "The lineup has 3 changes and at most 2 are allowed per matchday",
+                  "code" : "MAX_CHANGES_EXCEEDED",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/lineup"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Supera los cambios permitidos por jornada (`code`: `MAX_CHANGES_EXCEEDED`)."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Guardar mi alineación",
+        "tags" : [ "Alineaciones" ]
+      }
+    },
+    "/api/leagues/{id}/lineups/{matchId}" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Las de todos los managers, pero solo una vez bloqueadas: antes nadie ve las de los demás. La bloqueada es la que puntúa (RF-27).",
+        "operationId" : "locked",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LockedLineupsResponse"
+                }
+              }
+            },
+            "description" : "Las alineaciones bloqueadas."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "The lineups of match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f are not locked yet",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/lineups/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Las alineaciones del partido aún no están bloqueadas."
+          }
+        },
+        "summary" : "Ver las alineaciones bloqueadas de un partido",
+        "tags" : [ "Alineaciones" ]
+      }
+    },
+    "/api/leagues/{id}/managers/{userId}/history" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Los partidos puntuados de un manager, del más antiguo al más reciente, con los puntos de cada jugador de su alineación (RF-33). Incluye los partidos de antes de su última alta si tenía alineación, marcados como fuera de la clasificación.",
+        "operationId" : "manager",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del manager.",
+          "example" : "7a1d9e3b-2c4f-4b6a-8d5e-9f0a1b2c3d4e",
+          "in" : "path",
+          "name" : "userId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ManagerMatchdayResponse"
+                  }
+                }
+              }
+            },
+            "description" : "El historial del manager."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El manager no es miembro de la liga."
+          }
+        },
+        "summary" : "Ver el historial de un manager",
+        "tags" : [ "Clasificación" ]
+      }
+    },
+    "/api/leagues/{id}/matches" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Todos los partidos de la liga por jornada. Un manager solo ve el resultado de los partidos cerrados.",
+        "operationId" : "list_1",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MatchSummaryResponse"
+                  }
+                }
+              }
+            },
+            "description" : "Los partidos de la liga."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver el calendario",
+        "tags" : [ "Partidos" ]
+      },
+      "post" : {
+        "description" : "Rol mínimo: administrador. Añade un partido al calendario, en estado `SCHEDULED` (RF-12). Una jornada tiene un único partido.",
+        "operationId" : "schedule",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MatchRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchResponse"
+                }
+              }
+            },
+            "description" : "Partido programado. La cabecera `Location` apunta a él.",
+            "headers" : {
+              "Location" : {
+                "description" : "Ruta del partido creado.",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "style" : "simple"
+              }
+            }
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "Matchday must be >= 1",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Jornada, rival u hora fuera de sus límites (`match.limits`)."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "Matchday already has a match",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "La jornada ya tiene partido, u otro partido empieza a la misma hora."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Programar un partido",
+        "tags" : [ "Partidos" ]
+      }
+    },
+    "/api/leagues/{id}/matches/{matchId}" : {
+      "delete" : {
+        "description" : "Rol mínimo: administrador. Solo un partido sin cerrar, por ejemplo uno suspendido que no se va a jugar: no hay estado «cancelado».",
+        "operationId" : "delete",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Partido borrado."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "A closed match cannot be deleted",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido está cerrado."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Borrar un partido",
+        "tags" : [ "Partidos" ]
+      },
+      "get" : {
+        "description" : "Rol mínimo: miembro. Un manager no ve el acta hasta que el partido se cierra; el administrador la ve siempre, con sus avisos de coherencia.",
+        "operationId" : "get_2",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchResponse"
+                }
+              }
+            },
+            "description" : "El partido."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          }
+        },
+        "summary" : "Ver un partido",
+        "tags" : [ "Partidos" ]
+      },
+      "put" : {
+        "description" : "Rol mínimo: administrador. Reemplaza jornada, rival, campo y hora. Cambiar la jornada o la hora es un aplazamiento (RF-12): si las alineaciones ya estaban bloqueadas y la nueva hora de bloqueo aún no ha llegado, se desbloquean. En un partido cerrado solo se pueden cambiar rival y campo.",
+        "operationId" : "update_1",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MatchRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchResponse"
+                }
+              }
+            },
+            "description" : "El partido editado."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "Matchday must be >= 1",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Jornada, rival u hora fuera de sus límites (`match.limits`)."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "The matchday and kickoff of a closed match cannot change",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "La jornada ya tiene partido, otro partido empieza a la misma hora, o se cambia la jornada o la hora de un partido cerrado."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Editar o aplazar un partido",
+        "tags" : [ "Partidos" ]
+      }
+    },
+    "/api/leagues/{id}/matches/{matchId}/audit" : {
+      "get" : {
+        "description" : "Rol mínimo: administrador. Cada cambio del administrador en el partido, del más reciente al más antiguo, con su estado antes y después (RNF-04).",
+        "operationId" : "audit",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MatchAuditEntryResponse"
+                  }
+                }
+              }
+            },
+            "description" : "El historial del partido."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          }
+        },
+        "summary" : "Ver la auditoría de un partido",
+        "tags" : [ "Partidos" ]
+      }
+    },
+    "/api/leagues/{id}/matches/{matchId}/close" : {
+      "post" : {
+        "description" : "Rol mínimo: administrador. Desde la hora de inicio y con el acta completa (resultado y al menos un jugador). Bloquea las alineaciones si aún no lo estaban, abre la ventana de valoración y puntúa la jornada (RF-15, RF-17). Cerrarlo otra vez no hace nada.",
+        "operationId" : "close",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchResponse"
+                }
+              }
+            },
+            "description" : "El partido cerrado."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "A match cannot be closed before kickoff",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/close"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Aún no ha empezado, o al acta le falta el resultado o los jugadores."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Cerrar un partido",
+        "tags" : [ "Partidos" ]
+      }
+    },
+    "/api/leagues/{id}/matches/{matchId}/sheet" : {
+      "put" : {
+        "description" : "Rol mínimo: administrador. Reemplaza el acta entera: resultado y estadísticas de los jugadores que jugaron (RF-13, RF-14). Antes del cierre es un borrador que puede ir sin resultado. Después es una corrección (RF-16): debe seguir completa, recalcula los puntos y los jugadores que se quitan pierden sus valoraciones. Guardar la misma acta no hace nada.",
+        "operationId" : "recordSheet",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MatchSheetRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchSheetResponse"
+                }
+              }
+            },
+            "description" : "Acta guardada, con sus avisos de coherencia."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "A double yellow excludes the yellow card and the straight red",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Resultado a medias, un jugador repetido, que no es de la plantilla o dado de baja (si no estaba ya en el acta), doble amarilla junto a otra tarjeta, o algún valor fuera de `match.limits`."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "A closed match needs a result and at least one player",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Corrección de un partido cerrado sin resultado o sin jugadores."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Guardar el acta",
+        "tags" : [ "Partidos" ]
+      }
+    },
+    "/api/leagues/{id}/members" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Todos los miembros actuales, también el administrador.",
+        "operationId" : "list_3",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MemberResponse"
+                  }
+                }
+              }
+            },
+            "description" : "Los miembros de la liga."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver los miembros de la liga",
+        "tags" : [ "Miembros" ]
+      }
+    },
+    "/api/leagues/{id}/members/me" : {
+      "delete" : {
+        "description" : "Rol mínimo: miembro. El administrador no puede abandonar su liga.",
+        "operationId" : "leave",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "El usuario ya no es miembro de la liga."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "The league admin cannot be removed or leave the league",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/members/me"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario es el administrador de la liga."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Abandonar la liga",
+        "tags" : [ "Miembros" ]
+      }
+    },
+    "/api/leagues/{id}/members/{memberId}" : {
+      "delete" : {
+        "description" : "Rol mínimo: administrador. El administrador no se puede expulsar a sí mismo.",
+        "operationId" : "remove_1",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del usuario a expulsar.",
+          "example" : "e4b7c1d9-6a2f-4e8b-b3c5-0d1e2f3a4b5c",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Miembro expulsado."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario a expulsar no es miembro de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "The league admin cannot be removed or leave the league",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/members/me"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Se intenta expulsar al administrador."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Expulsar a un miembro",
+        "tags" : [ "Miembros" ]
+      }
+    },
+    "/api/leagues/{id}/players" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Porteros primero y después por dorsal (sin dorsal al final) y nombre.",
+        "operationId" : "list",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Incluir también los jugadores dados de baja. Solo vale para el administrador: a un manager se le ignora.",
+          "example" : false,
+          "in" : "query",
+          "name" : "includeRetired",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/PlayerResponse"
+                  }
+                }
+              }
+            },
+            "description" : "Los jugadores de la liga."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver la plantilla",
+        "tags" : [ "Plantilla" ]
+      },
+      "post" : {
+        "description" : "Rol mínimo: administrador. Alta en la plantilla con su valor inicial (RF-09).",
+        "operationId" : "register",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlayerRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlayerResponse"
+                }
+              }
+            },
+            "description" : "Jugador dado de alta. La cabecera `Location` apunta a él.",
+            "headers" : {
+              "Location" : {
+                "description" : "Ruta del jugador creado.",
+                "schema" : {
+                  "type" : "string",
+                  "example" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+                },
+                "style" : "simple"
+              }
+            }
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "Shirt number must be 0-99",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Nombre, dorsal o valor fuera de sus límites (`squad.limits`)."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "Shirt number already taken by an active player",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Otro jugador activo ya tiene ese dorsal."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Dar de alta un jugador",
+        "tags" : [ "Plantilla" ]
+      }
+    },
+    "/api/leagues/{id}/players/{playerId}" : {
+      "delete" : {
+        "description" : "Rol mínimo: administrador. Baja lógica: el jugador sigue en las actas, puntos e historiales, pero ya no se puede alinear ni añadir a un acta, y sustituirlo en una alineación es gratis (RF-10). Repetirla no hace nada.",
+        "operationId" : "retire",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del jugador.",
+          "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b",
+          "in" : "path",
+          "name" : "playerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Jugador dado de baja."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador no es de la liga."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Dar de baja un jugador",
+        "tags" : [ "Plantilla" ]
+      },
+      "get" : {
+        "description" : "Rol mínimo: miembro. También los dados de baja.",
+        "operationId" : "get_1",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del jugador.",
+          "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b",
+          "in" : "path",
+          "name" : "playerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlayerResponse"
+                }
+              }
+            },
+            "description" : "El jugador."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador no es de la liga."
+          }
+        },
+        "summary" : "Ver un jugador",
+        "tags" : [ "Plantilla" ]
+      },
+      "put" : {
+        "description" : "Rol mínimo: administrador. Reemplaza nombre, dorsal, posición y valor inicial (RF-10). Un jugador dado de baja no se puede editar.",
+        "operationId" : "update",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del jugador.",
+          "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b",
+          "in" : "path",
+          "name" : "playerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PlayerRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlayerResponse"
+                }
+              }
+            },
+            "description" : "El jugador editado."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "Shirt number must be 0-99",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Nombre, dorsal o valor fuera de sus límites (`squad.limits`)."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "Shirt number already taken by an active player",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Otro jugador activo ya tiene ese dorsal, o el jugador está dado de baja."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Editar un jugador",
+        "tags" : [ "Plantilla" ]
+      }
+    },
+    "/api/leagues/{id}/players/{playerId}/photo" : {
+      "delete" : {
+        "description" : "Rol mínimo: administrador. Borra la foto del jugador, también si está dado de baja. Sin foto no hace nada.",
+        "operationId" : "remove",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del jugador.",
+          "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b",
+          "in" : "path",
+          "name" : "playerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "El jugador ya no tiene foto."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador no es de la liga."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Quitar la foto de un jugador",
+        "tags" : [ "Plantilla" ]
+      },
+      "put" : {
+        "description" : "Rol mínimo: administrador. Último paso: comprueba que la imagen subida existe y cumple los límites, la pone como foto del jugador y borra la anterior. Confirmar la foto que ya tiene no hace nada.",
+        "operationId" : "confirm",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del jugador.",
+          "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b",
+          "in" : "path",
+          "name" : "playerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmPhotoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlayerResponse"
+                }
+              }
+            },
+            "description" : "El jugador con su foto nueva."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "No photo was uploaded under that key",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "La clave no es de este jugador, no se subió nada con ella o la imagen subida no cumple los límites."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "A retired player cannot be edited",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador está dado de baja."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Confirmar la foto subida",
+        "tags" : [ "Plantilla" ]
+      }
+    },
+    "/api/leagues/{id}/players/{playerId}/photo/upload" : {
+      "post" : {
+        "description" : "Rol mínimo: administrador. Primer paso de los tres para cambiar la foto: el navegador reduce la imagen a WebP, pide aquí una URL prefirmada, la sube directamente al almacenamiento y la confirma con `PUT .../photo`. Hasta confirmarla, el jugador conserva su foto.",
+        "operationId" : "requestUpload",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del jugador.",
+          "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b",
+          "in" : "path",
+          "name" : "playerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PhotoUploadRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoUploadResponse"
+                }
+              }
+            },
+            "description" : "La URL y las cabeceras de la subida."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "Player photos must be image/webp",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo/upload"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Tipo distinto de `image/webp` o tamaño fuera de 1 a `squad.limits.photo-max-size`."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "A retired player cannot be edited",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador está dado de baja."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Pedir una URL para subir la foto de un jugador",
+        "tags" : [ "Plantilla" ]
+      }
+    },
+    "/api/leagues/{id}/players/{playerId}/points" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Los partidos puntuados que jugó, del más antiguo al más reciente, con sus puntos por acción, por valoración y en total (RF-11). Vacía si aún no ha puntuado.",
+        "operationId" : "player",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del jugador.",
+          "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b",
+          "in" : "path",
+          "name" : "playerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/PlayerMatchdayResponse"
+                  }
+                }
+              }
+            },
+            "description" : "Los puntos del jugador por partido."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El jugador no es de la liga."
+          }
+        },
+        "summary" : "Ver los puntos de un jugador",
+        "tags" : [ "Clasificación" ]
+      }
+    },
+    "/api/leagues/{id}/ratings" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Una por partido cerrado: primero las abiertas y después del partido más reciente al más antiguo, con cuántos jugadores ha valorado el usuario y si el administrador canceló sus valoraciones.",
+        "operationId" : "list_2",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/RatingWindowResponse"
+                  }
+                }
+              }
+            },
+            "description" : "Las ventanas de la liga."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver las ventanas de valoración",
+        "tags" : [ "Valoraciones" ]
+      }
+    },
+    "/api/leagues/{id}/ratings/{matchId}" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Los jugadores del acta con el voto del usuario y, cuando se cierra la ventana, los votos que contaron, la media y los puntos de cada uno (RF-21). Dice si el administrador canceló las valoraciones del usuario (RF-41) y, solo al administrador, a quién.",
+        "operationId" : "get",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchRatingsResponse"
+                }
+              }
+            },
+            "description" : "Las valoraciones del partido."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "Match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f is not closed yet",
+                  "code" : "MATCH_NOT_CLOSED",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/ratings/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido aún no está cerrado, así que no tiene ventana (`code`: `MATCH_NOT_CLOSED`)."
+          }
+        },
+        "summary" : "Ver las valoraciones de un partido",
+        "tags" : [ "Valoraciones" ]
+      },
+      "put" : {
+        "description" : "Rol mínimo: miembro (también el administrador). Reemplaza todos los votos del usuario en el partido mientras la ventana siga abierta según el reloj del servidor (RF-18 a RF-20): un voto que llega a la vez que el cierre queda dentro o recibe `409`. Valorar es opcional. Quien tenga sus valoraciones canceladas por el administrador ya no puede valorar el partido (RF-41).",
+        "operationId" : "save",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RatingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchRatingsResponse"
+                }
+              }
+            },
+            "description" : "Las valoraciones del partido con los votos guardados."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "A rating in SPADES is between 0 and 4",
+                  "code" : "INVALID_RATING",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/ratings/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Algún voto no es válido; `code` dice por qué: `INVALID_RATING` (fuera del formato de la ventana), `PLAYER_NOT_IN_SHEET` (el jugador no jugó) o `DUPLICATE_PLAYER` (dos votos al mismo jugador)."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "The ratings of match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f closed at 2026-01-12T12:00:00Z",
+                  "code" : "RATING_WINDOW_CLOSED",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/ratings/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No se puede votar; `code` dice por qué: `RATING_WINDOW_CLOSED` (la ventana se cerró o ya pasó `closesAt`), `MATCH_NOT_CLOSED` (el partido aún no tiene ventana) o `RATER_EXCLUDED` (el administrador canceló las valoraciones del usuario en el partido)."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Guardar mis valoraciones de un partido",
+        "tags" : [ "Valoraciones" ]
+      }
+    },
+    "/api/leagues/{id}/ratings/{matchId}/exclusions/{userId}" : {
+      "put" : {
+        "description" : "Rol mínimo: administrador. Con la ventana abierta según el reloj del servidor, borra todos los votos del miembro en el partido y le impide volver a valorarlo, también si aún no había votado (RF-41). Es definitiva: no hay forma de deshacerla. El administrador también puede cancelar las suyas. Idempotente: repetirla no cambia nada.",
+        "operationId" : "exclude",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del miembro cuyas valoraciones se cancelan.",
+          "example" : "e4b7c1d9-6a2f-4e8b-b3c5-0d1e2f3a4b5c",
+          "in" : "path",
+          "name" : "userId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "El miembro ya no puede valorar el partido y sus votos se borraron."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es administrador de la liga."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga o el usuario a excluir no es miembro."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "The ratings of match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f closed at 2026-01-12T12:00:00Z",
+                  "code" : "RATING_WINDOW_CLOSED",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/ratings/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/exclusions/e4b7c1d9-6a2f-4e8b-b3c5-0d1e2f3a4b5c"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No se puede cancelar; `code` dice por qué: `RATING_WINDOW_CLOSED` (la ventana se cerró o ya pasó `closesAt`) o `MATCH_NOT_CLOSED` (el partido aún no tiene ventana)."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Cancelar las valoraciones de un miembro en un partido",
+        "tags" : [ "Valoraciones" ]
+      }
+    },
+    "/api/leagues/{id}/settings" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Todos los parámetros configurables y la tabla de puntos (RF-07).",
+        "operationId" : "settings",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LeagueSettingsBody"
+                }
+              }
+            },
+            "description" : "Los parámetros de la liga."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver los parámetros de la liga",
+        "tags" : [ "Ligas" ]
+      },
+      "put" : {
+        "description" : "Rol mínimo: administrador. Reemplaza todos los parámetros y la tabla de puntos (RF-07). Valen para lo que venga: una ventana de valoración ya abierta y una jornada ya puntuada conservan los que congelaron.",
+        "operationId" : "updateSettings",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LeagueSettingsBody"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LeagueSettingsBody"
+                }
+              }
+            },
+            "description" : "Los parámetros guardados."
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Bad Request",
+                  "status" : 400,
+                  "detail" : "lineup minimums per position cannot add up to more than lineupSize",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Algún parámetro fuera de su rango, o falta alguna acción o posición en la tabla de puntos."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga."
+          }
+        },
+        "security" : [ {
+          "csrf" : [ ],
+          "session" : [ ]
+        } ],
+        "summary" : "Cambiar los parámetros de la liga",
+        "tags" : [ "Ligas" ]
+      }
+    },
+    "/api/leagues/{id}/standings" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. Los miembros actuales por puntos acumulados (RF-32); a cada uno le cuentan las jornadas que empezaron después de unirse a la liga. Los empatados comparten posición.",
+        "operationId" : "overall",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/StandingResponse"
+                  }
+                }
+              }
+            },
+            "description" : "La clasificación general."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver la clasificación general",
+        "tags" : [ "Clasificación" ]
+      }
+    },
+    "/api/leagues/{id}/standings/{matchId}" : {
+      "get" : {
+        "description" : "Rol mínimo: miembro. La clasificación de la jornada y los puntos de cada jugador del acta (RF-30 a RF-32). Hay puntos cuando el partido está cerrado, sus alineaciones bloqueadas y su ventana de valoración cerrada (RF-17): hasta entonces la jornada no cuenta en la clasificación.",
+        "operationId" : "matchday",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Id del partido.",
+          "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f",
+          "in" : "path",
+          "name" : "matchId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchdayScoresResponse"
+                }
+              }
+            },
+            "description" : "Los puntos de la jornada."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es miembro de la liga (o no existe)."
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "404" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Not Found",
+                      "status" : 404,
+                      "detail" : "Not found",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido no es de la liga."
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "example" : {
+                  "type" : "about:blank",
+                  "title" : "Conflict",
+                  "status" : 409,
+                  "detail" : "Match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f is not scored yet",
+                  "code" : "MATCH_NOT_SCORED",
+                  "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/standings/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El partido aún no tiene puntos: no está cerrado o su ventana de valoración sigue abierta (`code`: `MATCH_NOT_SCORED`)."
+          }
+        },
+        "summary" : "Ver los puntos de una jornada",
+        "tags" : [ "Clasificación" ]
+      }
+    },
+    "/api/me" : {
+      "get" : {
+        "description" : "Devuelve el usuario de la sesión. La interfaz lo usa para saber si hay sesión: sin ella responde `401` y hay que iniciar el login con Google.",
+        "operationId" : "me",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            },
+            "description" : "El usuario de la sesión."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          }
+        },
+        "summary" : "Ver mi usuario",
+        "tags" : [ "Cuenta" ]
+      }
+    },
+    "/api/me/leagues" : {
+      "get" : {
+        "description" : "Las ligas de las que el usuario es miembro, con su rol en cada una. Vacía si no está en ninguna.",
+        "operationId" : "myLeagues",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MyLeagueResponse"
+                  }
+                }
+              }
+            },
+            "description" : "Las ligas del usuario."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          }
+        },
+        "summary" : "Ver mis ligas",
+        "tags" : [ "Ligas" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ConfirmPhotoRequest" : {
+        "required" : [ "photoKey" ],
+        "type" : "object",
+        "properties" : {
+          "photoKey" : {
+            "minLength" : 1,
+            "type" : "string",
+            "description" : "La `photoKey` que devolvió la petición de subida, de este jugador.",
+            "example" : "leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/0b6f2c1a-5d4e-4f3a-9b8c-7d6e5f4a3b2c.webp"
+          }
+        },
+        "description" : "Foto ya subida que pasa a ser la del jugador."
+      },
+      "CreateLeagueRequest" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "minLength" : 1,
+            "type" : "string",
+            "description" : "Nombre de la liga, sin espacios al principio ni al final. Como mucho `league.limits.name-max-length` caracteres.",
+            "example" : "Peña Os Amigos"
+          }
+        },
+        "description" : "Liga nueva."
+      },
+      "CreateLeagueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "Id de la liga.",
+            "format" : "uuid",
+            "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e"
+          },
+          "invitationToken" : {
+            "type" : "string",
+            "description" : "Token del enlace de invitación. Solo se devuelve aquí y al regenerarlo: no se puede volver a consultar.",
+            "example" : "q7Z2mXk9LwP4vR1sT8yB3nC6dF0gH5jK"
+          }
+        },
+        "description" : "Liga creada, con su primer enlace de invitación."
+      },
+      "InvitationPreviewResponse" : {
+        "type" : "object",
+        "properties" : {
+          "alreadyMember" : {
+            "type" : "boolean",
+            "description" : "Si el usuario ya es miembro de la liga.",
+            "example" : false
+          },
+          "leagueName" : {
+            "type" : "string",
+            "description" : "Nombre de la liga.",
+            "example" : "Peña Os Amigos"
+          }
+        },
+        "description" : "Lo que muestra la pantalla «¿Unirte a la liga X?» antes de aceptar la invitación."
+      },
+      "InvitationTokenResponse" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "description" : "Token del enlace. Solo se devuelve aquí: no se puede volver a consultar.",
+            "example" : "q7Z2mXk9LwP4vR1sT8yB3nC6dF0gH5jK"
+          }
+        },
+        "description" : "Enlace de invitación nuevo."
+      },
+      "JoinLeagueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "leagueId" : {
+            "type" : "string",
+            "description" : "Id de la liga.",
+            "format" : "uuid",
+            "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e"
+          }
+        },
+        "description" : "Liga a la que se ha unido el usuario."
+      },
+      "LeagueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "description" : "Cuándo se creó.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id de la liga.",
+            "format" : "uuid",
+            "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Nombre de la liga.",
+            "example" : "Peña Os Amigos"
+          },
+          "role" : {
+            "type" : "string",
+            "description" : "Rol del usuario en la liga. `ADMIN` también juega como manager.",
+            "example" : "MANAGER",
+            "enum" : [ "ADMIN", "MANAGER" ]
+          }
+        },
+        "description" : "Liga vista por uno de sus miembros, con el rol que tiene en ella."
+      },
+      "LeagueSettingsBody" : {
+        "type" : "object",
+        "properties" : {
+          "defaultRating" : {
+            "type" : "number",
+            "description" : "Nota que se aplica a quien no llega al mínimo de votos, en el formato de la liga (de 0 al máximo del formato); null para no aplicar ninguna (puntúa 0 por valoración).",
+            "nullable" : true,
+            "example" : 2
+          },
+          "lineupBudget" : {
+            "minimum" : 0,
+            "exclusiveMinimum" : true,
+            "type" : "number",
+            "description" : "Presupuesto máximo de una alineación, en millones. Mayor que 0, aunque esté desactivado.",
+            "example" : 100
+          },
+          "lineupBudgetEnabled" : {
+            "type" : "boolean",
+            "description" : "Si las alineaciones tienen presupuesto máximo.",
+            "example" : true
+          },
+          "lineupFormationEnabled" : {
+            "type" : "boolean",
+            "description" : "Si se exigen los mínimos por posición.",
+            "example" : true
+          },
+          "lineupLockHours" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Horas antes del partido en que se bloquean las alineaciones. De 0 a `league.limits.lineup-lock-hours-max`.",
+            "format" : "int32",
+            "example" : 2
+          },
+          "lineupMaxChanges" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Cambios por jornada contra la alineación bloqueada anterior. Mínimo 0.",
+            "format" : "int32",
+            "example" : 2
+          },
+          "lineupMinDefenders" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Defensas mínimos, si se exige la formación. Mínimo 0.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "lineupMinForwards" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Delanteros mínimos, si se exige la formación. Mínimo 0.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "lineupMinGoalkeepers" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Porteros mínimos, si se exige la formación. Mínimo 0; los cuatro mínimos no suman más que `lineupSize`.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "lineupMinMidfielders" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Medios mínimos, si se exige la formación. Mínimo 0.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "lineupSize" : {
+            "minimum" : 1,
+            "type" : "integer",
+            "description" : "Jugadores de cada alineación. Mínimo 1.",
+            "format" : "int32",
+            "example" : 7
+          },
+          "marketK" : {
+            "minimum" : 0,
+            "exclusiveMinimum" : true,
+            "type" : "number",
+            "description" : "Sensibilidad `k` del valor de mercado a los puntos de la jornada. Mayor que 0.",
+            "example" : 0.05
+          },
+          "marketMaxChangePct" : {
+            "maximum" : 100,
+            "minimum" : 0,
+            "exclusiveMinimum" : true,
+            "type" : "number",
+            "description" : "Variación máxima del valor de mercado por jornada, en porcentaje. Mayor que 0 y como mucho 100.",
+            "example" : 10
+          },
+          "marketMinValue" : {
+            "minimum" : 0,
+            "exclusiveMinimum" : true,
+            "type" : "number",
+            "description" : "Valor de mercado mínimo de un jugador, en millones. Mayor que 0.",
+            "example" : 1
+          },
+          "ratingDecimalBase" : {
+            "type" : "number",
+            "description" : "Base de la conversión de nota decimal, con hasta 4 cifras enteras y 2 decimales.",
+            "example" : 0
+          },
+          "ratingDecimalFactor" : {
+            "type" : "number",
+            "description" : "Factor de la conversión de nota decimal: puntos = factor × media + base. Mayor que 0, con hasta 4 cifras enteras y 2 decimales.",
+            "example" : 1
+          },
+          "ratingFormat" : {
+            "type" : "string",
+            "description" : "Formato de las valoraciones: `SPADES` (picas de 0 a 4) o `DECIMAL` (nota de 0 a 10).",
+            "example" : "SPADES",
+            "enum" : [ "SPADES", "DECIMAL" ]
+          },
+          "ratingMinVotes" : {
+            "minimum" : 1,
+            "type" : "integer",
+            "description" : "Votos mínimos para que un jugador puntúe por valoración (RF-23). Mínimo 1.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "ratingSpadesBase" : {
+            "type" : "number",
+            "description" : "Base de la conversión de picas, con hasta 4 cifras enteras y 2 decimales.",
+            "example" : -2
+          },
+          "ratingSpadesFactor" : {
+            "type" : "number",
+            "description" : "Factor de la conversión de picas: puntos = factor × media + base. Mayor que 0, con hasta 4 cifras enteras y 2 decimales.",
+            "example" : 4
+          },
+          "ratingWindowHours" : {
+            "minimum" : 1,
+            "type" : "integer",
+            "description" : "Horas que dura la ventana de valoración desde el cierre del partido. Mínimo 1.",
+            "format" : "int32",
+            "example" : 24
+          },
+          "scoringRules" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object",
+              "additionalProperties" : {
+                "type" : "integer",
+                "description" : "Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
+                "format" : "int32"
+              },
+              "description" : "Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
+              "example" : {
+                "ASSIST" : {
+                  "DEFENDER" : 1,
+                  "FORWARD" : 1,
+                  "GOALKEEPER" : 1,
+                  "MIDFIELDER" : 1
+                },
+                "DOUBLE_YELLOW" : {
+                  "DEFENDER" : -3,
+                  "FORWARD" : -3,
+                  "GOALKEEPER" : -3,
+                  "MIDFIELDER" : -3
+                },
+                "GOAL" : {
+                  "DEFENDER" : 5,
+                  "FORWARD" : 3,
+                  "GOALKEEPER" : 6,
+                  "MIDFIELDER" : 4
+                },
+                "OWN_GOAL" : {
+                  "DEFENDER" : -3,
+                  "FORWARD" : -3,
+                  "GOALKEEPER" : -3,
+                  "MIDFIELDER" : -3
+                },
+                "PENALTY_GOAL" : {
+                  "DEFENDER" : 3,
+                  "FORWARD" : 3,
+                  "GOALKEEPER" : 3,
+                  "MIDFIELDER" : 3
+                },
+                "PENALTY_MISSED" : {
+                  "DEFENDER" : -2,
+                  "FORWARD" : -2,
+                  "GOALKEEPER" : -2,
+                  "MIDFIELDER" : -2
+                },
+                "PENALTY_SAVED" : {
+                  "DEFENDER" : 3,
+                  "FORWARD" : 3,
+                  "GOALKEEPER" : 3,
+                  "MIDFIELDER" : 3
+                },
+                "RED_CARD" : {
+                  "DEFENDER" : -5,
+                  "FORWARD" : -5,
+                  "GOALKEEPER" : -5,
+                  "MIDFIELDER" : -5
+                },
+                "YELLOW_CARD" : {
+                  "DEFENDER" : -1,
+                  "FORWARD" : -1,
+                  "GOALKEEPER" : -1,
+                  "MIDFIELDER" : -1
+                }
+              }
+            },
+            "description" : "Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
+            "example" : {
+              "ASSIST" : {
+                "DEFENDER" : 1,
+                "FORWARD" : 1,
+                "GOALKEEPER" : 1,
+                "MIDFIELDER" : 1
+              },
+              "DOUBLE_YELLOW" : {
+                "DEFENDER" : -3,
+                "FORWARD" : -3,
+                "GOALKEEPER" : -3,
+                "MIDFIELDER" : -3
+              },
+              "GOAL" : {
+                "DEFENDER" : 5,
+                "FORWARD" : 3,
+                "GOALKEEPER" : 6,
+                "MIDFIELDER" : 4
+              },
+              "OWN_GOAL" : {
+                "DEFENDER" : -3,
+                "FORWARD" : -3,
+                "GOALKEEPER" : -3,
+                "MIDFIELDER" : -3
+              },
+              "PENALTY_GOAL" : {
+                "DEFENDER" : 3,
+                "FORWARD" : 3,
+                "GOALKEEPER" : 3,
+                "MIDFIELDER" : 3
+              },
+              "PENALTY_MISSED" : {
+                "DEFENDER" : -2,
+                "FORWARD" : -2,
+                "GOALKEEPER" : -2,
+                "MIDFIELDER" : -2
+              },
+              "PENALTY_SAVED" : {
+                "DEFENDER" : 3,
+                "FORWARD" : 3,
+                "GOALKEEPER" : 3,
+                "MIDFIELDER" : 3
+              },
+              "RED_CARD" : {
+                "DEFENDER" : -5,
+                "FORWARD" : -5,
+                "GOALKEEPER" : -5,
+                "MIDFIELDER" : -5
+              },
+              "YELLOW_CARD" : {
+                "DEFENDER" : -1,
+                "FORWARD" : -1,
+                "GOALKEEPER" : -1,
+                "MIDFIELDER" : -1
+              }
+            }
+          }
+        },
+        "description" : "Parámetros de una liga (RF-07), con los que nace desde `league.defaults`. Importes en millones. El `PUT` los recibe todos, como los devuelve el `GET`."
+      },
+      "LinedUpPlayerResponse" : {
+        "type" : "object",
+        "properties" : {
+          "actionPoints" : {
+            "type" : "integer",
+            "description" : "Puntos por acciones.",
+            "format" : "int32",
+            "example" : 5
+          },
+          "actions" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "description" : "Puntos de cada acción que suma o resta; vacío si no jugó.",
+              "format" : "int32"
+            },
+            "description" : "Puntos de cada acción que suma o resta; vacío si no jugó.",
+            "example" : {
+              "GOAL" : 3,
+              "PENALTY_GOAL" : 3,
+              "YELLOW_CARD" : -1
+            }
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id del jugador.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "played" : {
+            "type" : "boolean",
+            "description" : "Si jugó: uno que no jugó puntúa 0.",
+            "example" : true
+          },
+          "points" : {
+            "type" : "integer",
+            "description" : "Total: acciones más valoración.",
+            "format" : "int32",
+            "example" : 5
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición con la que jugó; null si no jugó.",
+            "nullable" : true,
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "ratingPoints" : {
+            "type" : "integer",
+            "description" : "Puntos por valoración: la media convertida, o la nota por defecto de la liga si no llegó al mínimo de votos; 0 si tampoco la hay (RF-22, RF-23).",
+            "format" : "int32",
+            "example" : 0
+          }
+        },
+        "description" : "Jugador de una alineación bloqueada con sus puntos en el partido."
+      },
+      "LineupPlayerResponse" : {
+        "type" : "object",
+        "properties" : {
+          "active" : {
+            "type" : "boolean",
+            "description" : "False si se dio de baja: hay que sustituirlo, gratis.",
+            "example" : true
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id del jugador.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición actual en la plantilla.",
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "value" : {
+            "type" : "number",
+            "description" : "Valor de mercado vigente, en millones.",
+            "example" : 12.5
+          }
+        },
+        "description" : "Jugador de la alineación de trabajo, con su posición, estado y valor actuales."
+      },
+      "LineupRequest" : {
+        "required" : [ "playerIds" ],
+        "type" : "object",
+        "properties" : {
+          "playerIds" : {
+            "type" : "array",
+            "description" : "Ids de los jugadores, en cualquier orden: exactamente `lineupSize` jugadores activos de la plantilla, sin repetir, con los mínimos por posición si la liga exige formación y dentro del presupuesto si lo tiene.",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+            }
+          }
+        },
+        "description" : "Alineación completa del manager (RF-24)."
+      },
+      "LockedLineupResponse" : {
+        "type" : "object",
+        "properties" : {
+          "budget" : {
+            "type" : "number",
+            "description" : "Presupuesto al bloquear; null si estaba desactivado.",
+            "nullable" : true,
+            "example" : 100
+          },
+          "overBudget" : {
+            "type" : "boolean",
+            "description" : "Si superaba el presupuesto: entonces no puntúa en este partido.",
+            "example" : false
+          },
+          "players" : {
+            "type" : "array",
+            "description" : "Sus jugadores, por id.",
+            "items" : {
+              "$ref" : "#/components/schemas/LockedPlayerResponse"
+            }
+          },
+          "totalValue" : {
+            "type" : "number",
+            "description" : "Suma del valor de sus jugadores al bloquear.",
+            "example" : 96
+          },
+          "userId" : {
+            "type" : "string",
+            "description" : "Id del manager.",
+            "format" : "uuid",
+            "example" : "7a1d9e3b-2c4f-4b6a-8d5e-9f0a1b2c3d4e"
+          }
+        },
+        "description" : "Alineación bloqueada de un manager, con la comprobación del presupuesto al bloquear (RF-29). Importes en millones."
+      },
+      "LockedLineupsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Hora de inicio, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "lineups" : {
+            "type" : "array",
+            "description" : "Una por manager, por id de usuario. No aparecen quienes no guardaron ninguna antes de `lockAt` ni quienes ya no eran miembros entonces.",
+            "items" : {
+              "$ref" : "#/components/schemas/LockedLineupResponse"
+            }
+          },
+          "lockAt" : {
+            "type" : "string",
+            "description" : "Hora de bloqueo: cuentan las alineaciones guardadas antes.",
+            "format" : "date-time",
+            "example" : "2026-01-11T08:00:00Z"
+          },
+          "lockedAt" : {
+            "type" : "string",
+            "description" : "Cuándo se bloquearon de verdad (el job o el cierre del partido).",
+            "format" : "date-time",
+            "example" : "2026-01-11T08:01:00Z"
+          },
+          "matchId" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          }
+        },
+        "description" : "Las alineaciones bloqueadas de un partido, tal y como quedaron al bloquearse (RF-25, RF-27)."
+      },
+      "LockedPlayerResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "Id del jugador.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "value" : {
+            "type" : "number",
+            "description" : "Su valor al bloquear (no el actual), en millones.",
+            "example" : 12.5
+          }
+        },
+        "description" : "Jugador de una alineación bloqueada."
+      },
+      "ManagerMatchdayResponse" : {
+        "type" : "object",
+        "properties" : {
+          "inStandings" : {
+            "type" : "boolean",
+            "description" : "False si el partido es de antes de su última alta en la liga: ya no cuenta para su clasificación.",
+            "example" : true
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Hora de inicio del partido, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchId" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "overBudget" : {
+            "type" : "boolean",
+            "description" : "Si su alineación superaba el presupuesto al bloquearse.",
+            "example" : false
+          },
+          "players" : {
+            "type" : "array",
+            "description" : "Los jugadores de su alineación bloqueada, por puntos y después por id; vacía sin alineación.",
+            "items" : {
+              "$ref" : "#/components/schemas/LinedUpPlayerResponse"
+            }
+          },
+          "points" : {
+            "type" : "integer",
+            "description" : "Sus puntos: 0 sin alineación bloqueada o fuera de presupuesto (RF-29).",
+            "format" : "int32",
+            "example" : 24
+          }
+        },
+        "description" : "Partido puntuado del historial de un manager (RF-33)."
+      },
+      "MatchAuditEntryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "action" : {
+            "type" : "string",
+            "description" : "Tipo de cambio: `SCHEDULED` (alta), `DETAILS_UPDATED` (rival o campo), `RESCHEDULED` (jornada u hora), `SHEET_RECORDED` (acta antes del cierre), `CLOSED`, `CORRECTED` (acta después del cierre) o `DELETED`.",
+            "example" : "CORRECTED",
+            "enum" : [ "SCHEDULED", "DETAILS_UPDATED", "RESCHEDULED", "SHEET_RECORDED", "CLOSED", "CORRECTED", "DELETED" ]
+          },
+          "actorUserId" : {
+            "type" : "string",
+            "description" : "Id del usuario que hizo el cambio.",
+            "format" : "uuid",
+            "example" : "7a1d9e3b-2c4f-4b6a-8d5e-9f0a1b2c3d4e"
+          },
+          "after" : {
+            "description" : "Estado posterior; null en el borrado.",
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MatchSnapshotResponse"
+            } ]
+          },
+          "before" : {
+            "description" : "Estado anterior; null en el alta.",
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MatchSnapshotResponse"
+            } ]
+          },
+          "occurredAt" : {
+            "type" : "string",
+            "description" : "Cuándo se hizo.",
+            "format" : "date-time",
+            "example" : "2026-01-12T12:30:00Z"
+          }
+        },
+        "description" : "Un cambio del administrador en el partido, con su estado antes y después (RNF-04)."
+      },
+      "MatchRatingsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "closesAt" : {
+            "type" : "string",
+            "description" : "Hasta cuándo acepta votos.",
+            "format" : "date-time",
+            "example" : "2026-01-12T12:00:00Z"
+          },
+          "excluded" : {
+            "type" : "boolean",
+            "description" : "Si el administrador canceló las valoraciones del usuario en este partido (RF-41): sus votos se borraron y ya no puede valorarlo.",
+            "example" : false
+          },
+          "excludedUserIds" : {
+            "type" : "array",
+            "description" : "Ids de los miembros cuyas valoraciones del partido canceló el administrador (RF-41); solo para el administrador, null para el resto.",
+            "nullable" : true,
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "example" : "e4b7c1d9-6a2f-4e8b-b3c5-0d1e2f3a4b5c"
+            }
+          },
+          "format" : {
+            "type" : "string",
+            "description" : "Formato de los votos, congelado al abrir la ventana: `SPADES` (0 a 4) o `DECIMAL` (0 a 10).",
+            "example" : "SPADES",
+            "enum" : [ "SPADES", "DECIMAL" ]
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Hora de inicio del partido, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchId" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "players" : {
+            "type" : "array",
+            "description" : "Los jugadores del acta, porteros primero.",
+            "items" : {
+              "$ref" : "#/components/schemas/PlayerRatingResponse"
+            }
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "`OPEN` mientras acepta votos; `CLOSED` desde `closesAt`, aunque los resultados solo aparecen cuando el job la cierra.",
+            "example" : "CLOSED",
+            "enum" : [ "OPEN", "CLOSED" ]
+          }
+        },
+        "description" : "Las valoraciones de un partido vistas por un miembro, según el reloj del servidor (RF-18 a RF-21): sus propios votos y, cuando el job cierra la ventana, la media de cada jugador. Nunca los votos de otro miembro, tampoco para el administrador."
+      },
+      "MatchRequest" : {
+        "required" : [ "kickoffAt", "matchday", "opponent", "venue" ],
+        "type" : "object",
+        "properties" : {
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Fecha y hora de inicio, en UTC. Dos partidos de la liga no pueden empezar a la vez.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada, desde `match.limits.matchday-min` y sin repetir en la liga.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "opponent" : {
+            "minLength" : 1,
+            "type" : "string",
+            "description" : "Nombre del rival, sin espacios al principio ni al final. Como mucho `match.limits.opponent-max-length` caracteres.",
+            "example" : "Atlético Lavadores"
+          },
+          "venue" : {
+            "type" : "string",
+            "description" : "Si el equipo juega en casa o fuera.",
+            "example" : "HOME",
+            "enum" : [ "HOME", "AWAY" ]
+          }
+        },
+        "description" : "Datos de un partido del calendario (RF-12). Una jornada tiene un único partido."
+      },
+      "MatchResponse" : {
+        "type" : "object",
+        "properties" : {
+          "closedAt" : {
+            "type" : "string",
+            "description" : "Cuándo se cerró; null si no está cerrado.",
+            "format" : "date-time",
+            "nullable" : true,
+            "example" : "2026-01-12T12:30:00Z"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Fecha y hora de inicio, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "opponent" : {
+            "type" : "string",
+            "description" : "Rival.",
+            "example" : "Atlético Lavadores"
+          },
+          "performances" : {
+            "type" : "array",
+            "description" : "Jugadores del acta; null para los managers hasta el cierre.",
+            "nullable" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/PlayerPerformanceResponse"
+            }
+          },
+          "result" : {
+            "description" : "Resultado; null si aún no está en el acta, y para los managers hasta el cierre.",
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MatchResultResponse"
+            } ]
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "`SCHEDULED` hasta que el administrador lo cierra; entonces `CLOSED`.",
+            "example" : "CLOSED",
+            "enum" : [ "SCHEDULED", "CLOSED" ]
+          },
+          "venue" : {
+            "type" : "string",
+            "description" : "Si el equipo juega en casa o fuera.",
+            "example" : "HOME",
+            "enum" : [ "HOME", "AWAY" ]
+          },
+          "warnings" : {
+            "type" : "array",
+            "description" : "Avisos de coherencia del acta, solo para el administrador (null para los managers). Nunca impiden guardar ni cerrar.",
+            "nullable" : true,
+            "example" : [ "GOALS_MISMATCH" ],
+            "items" : {
+              "type" : "string",
+              "enum" : [ "GOALS_MISMATCH", "OWN_GOALS_EXCEED_GOALS_AGAINST" ]
+            }
+          }
+        },
+        "description" : "Detalle de un partido. Un manager no ve el acta (`result`, `performances`) hasta que se cierra; el administrador la ve siempre, con sus avisos."
+      },
+      "MatchResultRequest" : {
+        "required" : [ "goalsAgainst", "goalsFor" ],
+        "type" : "object",
+        "properties" : {
+          "goalsAgainst" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Goles en contra, de 0 a `match.limits.goals-max`.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "goalsFor" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Goles a favor, de 0 a `match.limits.goals-max`.",
+            "format" : "int32",
+            "example" : 3
+          }
+        },
+        "description" : "Resultado final, desde el punto de vista del equipo."
+      },
+      "MatchResultResponse" : {
+        "type" : "object",
+        "properties" : {
+          "goalsAgainst" : {
+            "type" : "integer",
+            "description" : "Goles en contra.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "goalsFor" : {
+            "type" : "integer",
+            "description" : "Goles a favor.",
+            "format" : "int32",
+            "example" : 3
+          }
+        },
+        "description" : "Resultado final, desde el punto de vista del equipo."
+      },
+      "MatchSheetRequest" : {
+        "required" : [ "performances" ],
+        "type" : "object",
+        "properties" : {
+          "performances" : {
+            "type" : "array",
+            "description" : "Los jugadores que jugaron, cada uno una vez y como mucho `match.limits.sheet-players-max`. Un partido cerrado necesita al menos uno.",
+            "items" : {
+              "$ref" : "#/components/schemas/PlayerPerformanceRequest"
+            }
+          },
+          "result" : {
+            "description" : "Resultado; null en un borrador de un partido sin cerrar. Un partido cerrado lo necesita.",
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MatchResultRequest"
+            } ]
+          }
+        },
+        "description" : "Acta completa del partido (RF-13, RF-14): reemplaza la anterior."
+      },
+      "MatchSheetResponse" : {
+        "type" : "object",
+        "properties" : {
+          "warnings" : {
+            "type" : "array",
+            "description" : "Avisos que la interfaz traduce; nunca impiden guardar ni cerrar, porque en una liga de peñas puede faltar algún goleador. `GOALS_MISMATCH`: los goles (normales y de penalti) de los jugadores no suman los goles a favor. `OWN_GOALS_EXCEED_GOALS_AGAINST`: hay más goles en propia puerta que goles en contra.",
+            "example" : [ "GOALS_MISMATCH" ],
+            "items" : {
+              "type" : "string",
+              "enum" : [ "GOALS_MISMATCH", "OWN_GOALS_EXCEED_GOALS_AGAINST" ]
+            }
+          }
+        },
+        "description" : "Acta guardada, con sus avisos de coherencia."
+      },
+      "MatchSnapshotResponse" : {
+        "type" : "object",
+        "properties" : {
+          "closedAt" : {
+            "type" : "string",
+            "description" : "Cuándo se cerró; null si no estaba cerrado.",
+            "format" : "date-time",
+            "nullable" : true,
+            "example" : "2026-01-12T12:30:00Z"
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Fecha y hora de inicio, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "opponent" : {
+            "type" : "string",
+            "description" : "Rival.",
+            "example" : "Atlético Lavadores"
+          },
+          "performances" : {
+            "type" : "array",
+            "description" : "Jugadores del acta; vacía si no había ninguno.",
+            "items" : {
+              "$ref" : "#/components/schemas/PlayerPerformanceResponse"
+            }
+          },
+          "result" : {
+            "description" : "Resultado; null si no estaba en el acta.",
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MatchResultResponse"
+            } ]
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Estado del partido.",
+            "example" : "CLOSED",
+            "enum" : [ "SCHEDULED", "CLOSED" ]
+          },
+          "venue" : {
+            "type" : "string",
+            "description" : "Si el equipo juega en casa o fuera.",
+            "example" : "HOME",
+            "enum" : [ "HOME", "AWAY" ]
+          }
+        },
+        "description" : "Estado completo del partido en un momento de su historial."
+      },
+      "MatchSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "closedAt" : {
+            "type" : "string",
+            "description" : "Cuándo se cerró; null si no está cerrado.",
+            "format" : "date-time",
+            "nullable" : true,
+            "example" : "2026-01-12T12:30:00Z"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Fecha y hora de inicio, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "opponent" : {
+            "type" : "string",
+            "description" : "Rival.",
+            "example" : "Atlético Lavadores"
+          },
+          "result" : {
+            "description" : "Resultado; null si aún no está en el acta, y para los managers hasta el cierre.",
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MatchResultResponse"
+            } ]
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "`SCHEDULED` hasta que el administrador lo cierra; entonces `CLOSED`.",
+            "example" : "SCHEDULED",
+            "enum" : [ "SCHEDULED", "CLOSED" ]
+          },
+          "venue" : {
+            "type" : "string",
+            "description" : "Si el equipo juega en casa o fuera.",
+            "example" : "AWAY",
+            "enum" : [ "HOME", "AWAY" ]
+          }
+        },
+        "description" : "Fila del calendario."
+      },
+      "MatchdayPlayerResponse" : {
+        "type" : "object",
+        "properties" : {
+          "actionPoints" : {
+            "type" : "integer",
+            "description" : "Puntos por acciones, según la tabla de la liga congelada al puntuar.",
+            "format" : "int32",
+            "example" : 7
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id del jugador.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "points" : {
+            "type" : "integer",
+            "description" : "Total: acciones más valoración.",
+            "format" : "int32",
+            "example" : 7
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición con la que jugó.",
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "ratingPoints" : {
+            "type" : "integer",
+            "description" : "Puntos por valoración: la media convertida, o la nota por defecto de la liga si no llegó al mínimo de votos; 0 si tampoco la hay (RF-22, RF-23).",
+            "format" : "int32",
+            "example" : 0
+          }
+        },
+        "description" : "Jugador del acta con sus puntos en el partido (RF-30)."
+      },
+      "MatchdayScoresResponse" : {
+        "type" : "object",
+        "properties" : {
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Hora de inicio del partido, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchId" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "players" : {
+            "type" : "array",
+            "description" : "Todos los jugadores del acta, alineados o no, por puntos y después por id.",
+            "items" : {
+              "$ref" : "#/components/schemas/MatchdayPlayerResponse"
+            }
+          },
+          "scoredAt" : {
+            "type" : "string",
+            "description" : "Última vez que cambiaron sus puntos (el cierre o la última corrección).",
+            "format" : "date-time",
+            "example" : "2026-01-12T12:30:00Z"
+          },
+          "standings" : {
+            "type" : "array",
+            "description" : "Clasificación de la jornada, por puntos: los miembros que ya lo eran al empezar el partido.",
+            "items" : {
+              "$ref" : "#/components/schemas/MatchdayStandingResponse"
+            }
+          }
+        },
+        "description" : "Puntos de un partido puntuado: la clasificación de la jornada y los puntos de cada jugador."
+      },
+      "MatchdayStandingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "overBudget" : {
+            "type" : "boolean",
+            "description" : "Si su alineación superaba el presupuesto al bloquearse.",
+            "example" : false
+          },
+          "playerIds" : {
+            "type" : "array",
+            "description" : "Su alineación bloqueada, por id; vacía si no tenía.",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid",
+              "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+            }
+          },
+          "points" : {
+            "type" : "integer",
+            "description" : "Puntos en la jornada: los de sus jugadores alineados; 0 sin alineación bloqueada o fuera de presupuesto (RF-29, RF-31).",
+            "format" : "int32",
+            "example" : 24
+          },
+          "position" : {
+            "type" : "integer",
+            "description" : "Posición; los empatados a puntos la comparten.",
+            "format" : "int32",
+            "example" : 2
+          },
+          "userId" : {
+            "type" : "string",
+            "description" : "Id del manager.",
+            "format" : "uuid",
+            "example" : "7a1d9e3b-2c4f-4b6a-8d5e-9f0a1b2c3d4e"
+          }
+        },
+        "description" : "Fila de la clasificación de una jornada."
+      },
+      "MemberResponse" : {
+        "type" : "object",
+        "properties" : {
+          "avatarUrl" : {
+            "type" : "string",
+            "description" : "Foto de su cuenta de Google; null si no tiene o no se encuentra su usuario.",
+            "nullable" : true,
+            "example" : "https://lh3.googleusercontent.com/a/iago"
+          },
+          "displayName" : {
+            "type" : "string",
+            "description" : "Nombre que se muestra; null si no se encuentra su usuario.",
+            "nullable" : true,
+            "example" : "Iago Fernández"
+          },
+          "joinedAt" : {
+            "type" : "string",
+            "description" : "Cuándo se unió (o creó la liga, el administrador).",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "role" : {
+            "type" : "string",
+            "description" : "Rol en la liga.",
+            "example" : "MANAGER",
+            "enum" : [ "ADMIN", "MANAGER" ]
+          },
+          "userId" : {
+            "type" : "string",
+            "description" : "Id del usuario.",
+            "format" : "uuid",
+            "example" : "7a1d9e3b-2c4f-4b6a-8d5e-9f0a1b2c3d4e"
+          }
+        },
+        "description" : "Miembro de una liga. El administrador también aparece, porque juega como manager."
+      },
+      "MyLeagueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "leagueId" : {
+            "type" : "string",
+            "description" : "Id de la liga.",
+            "format" : "uuid",
+            "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Nombre de la liga.",
+            "example" : "Peña Os Amigos"
+          },
+          "role" : {
+            "type" : "string",
+            "description" : "Rol del usuario en la liga. `ADMIN` también juega como manager.",
+            "example" : "ADMIN",
+            "enum" : [ "ADMIN", "MANAGER" ]
+          }
+        },
+        "description" : "Liga de la que el usuario es miembro."
+      },
+      "MyLineupResponse" : {
+        "type" : "object",
+        "properties" : {
+          "budget" : {
+            "type" : "number",
+            "description" : "Presupuesto máximo; null si la liga lo tiene desactivado.",
+            "nullable" : true,
+            "example" : 100
+          },
+          "changesRemaining" : {
+            "type" : "integer",
+            "description" : "Cambios que le quedan; null mientras no hay límite (aún no se ha bloqueado ninguna alineación suya).",
+            "format" : "int32",
+            "nullable" : true,
+            "example" : 1
+          },
+          "changesUsed" : {
+            "type" : "integer",
+            "description" : "Cambios que lleva contra la alineación bloqueada del último partido bloqueado. Sustituir a un jugador dado de baja no cuenta.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "maxChanges" : {
+            "type" : "integer",
+            "description" : "Cambios permitidos por jornada.",
+            "format" : "int32",
+            "example" : 2
+          },
+          "players" : {
+            "type" : "array",
+            "description" : "Sus jugadores, porteros primero; vacía si nunca la ha guardado.",
+            "items" : {
+              "$ref" : "#/components/schemas/LineupPlayerResponse"
+            }
+          },
+          "savedAt" : {
+            "type" : "string",
+            "description" : "Cuándo la guardó por última vez; null si nunca la ha guardado.",
+            "format" : "date-time",
+            "nullable" : true,
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "targetMatch" : {
+            "description" : "Partido para el que cuenta guardarla ahora; null si no queda ninguno por jugar.",
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/TargetMatchResponse"
+            } ]
+          },
+          "totalValue" : {
+            "type" : "number",
+            "description" : "Suma del valor vigente de sus jugadores.",
+            "example" : 84.5
+          },
+          "warnings" : {
+            "type" : "array",
+            "description" : "Problemas causados por cambios posteriores, que nunca impiden nada: `OVER_BUDGET` (con los valores actuales ya no cabe en el presupuesto; si sigue así al bloquear, esa jornada puntúa 0), `RETIRED_PLAYERS` (algún jugador se dio de baja; sustituirlo es gratis) y `SIZE_MISMATCH` (la liga cambió el tamaño de las alineaciones).",
+            "example" : [ "RETIRED_PLAYERS" ],
+            "items" : {
+              "type" : "string",
+              "enum" : [ "OVER_BUDGET", "RETIRED_PLAYERS", "SIZE_MISMATCH" ]
+            }
+          }
+        },
+        "description" : "Alineación de trabajo del manager según el reloj del servidor (RF-24 a RF-29). Si no la toca, se arrastra a la jornada siguiente. Importes en millones."
+      },
+      "PhotoUploadRequest" : {
+        "required" : [ "contentType", "sizeBytes" ],
+        "type" : "object",
+        "properties" : {
+          "contentType" : {
+            "minLength" : 1,
+            "type" : "string",
+            "description" : "Tipo de la imagen: solo `image/webp`.",
+            "example" : "image/webp"
+          },
+          "sizeBytes" : {
+            "type" : "integer",
+            "description" : "Tamaño en bytes, de 1 a `squad.limits.photo-max-size`.",
+            "format" : "int64",
+            "example" : 30000
+          }
+        },
+        "description" : "La foto que el navegador va a subir."
+      },
+      "PhotoUploadResponse" : {
+        "type" : "object",
+        "properties" : {
+          "expiresAt" : {
+            "type" : "string",
+            "description" : "Hasta cuándo vale la URL (`squad.photos.s3.upload-ttl`).",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:05:00Z"
+          },
+          "headers" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string",
+              "description" : "Cabeceras que el `PUT` debe enviar tal cual.",
+              "example" : "{\"Content-Type\":\"image/webp\",\"Cache-Control\":\"public, max-age=31536000, immutable\"}"
+            },
+            "description" : "Cabeceras que el `PUT` debe enviar tal cual.",
+            "example" : {
+              "Cache-Control" : "public, max-age=31536000, immutable",
+              "Content-Type" : "image/webp"
+            }
+          },
+          "photoKey" : {
+            "type" : "string",
+            "description" : "Clave de la foto, para confirmarla después de subirla.",
+            "example" : "leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/0b6f2c1a-5d4e-4f3a-9b8c-7d6e5f4a3b2c.webp"
+          },
+          "uploadUrl" : {
+            "type" : "string",
+            "description" : "URL prefirmada del almacenamiento a la que subir la imagen.",
+            "example" : "https://buddy-fantasy-photos.s3.eu-west-1.amazonaws.com/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/0b6f2c1a-5d4e-4f3a-9b8c-7d6e5f4a3b2c.webp?X-Amz-Signature=…"
+          }
+        },
+        "description" : "Subida prefirmada: el navegador envía la imagen con un `PUT` a `uploadUrl` con estas `headers` y después confirma `photoKey`."
+      },
+      "PlayerMatchdayResponse" : {
+        "type" : "object",
+        "properties" : {
+          "actionPoints" : {
+            "type" : "integer",
+            "description" : "Puntos por acciones.",
+            "format" : "int32",
+            "example" : 5
+          },
+          "actions" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "description" : "Puntos de cada acción que suma o resta.",
+              "format" : "int32"
+            },
+            "description" : "Puntos de cada acción que suma o resta.",
+            "example" : {
+              "GOAL" : 3,
+              "PENALTY_GOAL" : 3,
+              "YELLOW_CARD" : -1
+            }
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Hora de inicio del partido, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchId" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "points" : {
+            "type" : "integer",
+            "description" : "Total: acciones más valoración.",
+            "format" : "int32",
+            "example" : 5
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición con la que jugó.",
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "ratingPoints" : {
+            "type" : "integer",
+            "description" : "Puntos por valoración: la media convertida, o la nota por defecto de la liga si no llegó al mínimo de votos; 0 si tampoco la hay (RF-22, RF-23).",
+            "format" : "int32",
+            "example" : 0
+          }
+        },
+        "description" : "Puntos de un jugador en un partido puntuado (RF-11, RF-30)."
+      },
+      "PlayerPerformanceRequest" : {
+        "required" : [ "playerId" ],
+        "type" : "object",
+        "properties" : {
+          "assists" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Asistencias. De 0 a `match.limits.stat-count-max`.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "doubleYellow" : {
+            "type" : "boolean",
+            "description" : "Doble amarilla (expulsión). Excluye `yellowCard` y `redCard`: vale −3 en total.",
+            "example" : false
+          },
+          "goals" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Goles normales, sin contar los de penalti. De 0 a `match.limits.stat-count-max`.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "ownGoals" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Goles en propia puerta. De 0 a `match.limits.stat-count-max`.",
+            "format" : "int32",
+            "example" : 0
+          },
+          "penaltiesMissed" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Penaltis fallados. De 0 a `match.limits.stat-count-max`.",
+            "format" : "int32",
+            "example" : 0
+          },
+          "penaltiesSaved" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Penaltis parados. De 0 a `match.limits.stat-count-max`.",
+            "format" : "int32",
+            "example" : 0
+          },
+          "penaltyGoals" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Goles de penalti. De 0 a `match.limits.stat-count-max`.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "playerId" : {
+            "type" : "string",
+            "description" : "Id de un jugador de la plantilla. Uno dado de baja solo puede seguir si ya estaba en el acta.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "redCard" : {
+            "type" : "boolean",
+            "description" : "Roja directa.",
+            "example" : false
+          },
+          "yellowCard" : {
+            "type" : "boolean",
+            "description" : "Tarjeta amarilla.",
+            "example" : true
+          }
+        },
+        "description" : "Estadísticas de un jugador en el partido. Los contadores que faltan valen 0 y las tarjetas, `false`. La posición no se envía: se toma de la plantilla al añadirlo al acta y se conserva en las correcciones."
+      },
+      "PlayerPerformanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "assists" : {
+            "type" : "integer",
+            "description" : "Asistencias.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "doubleYellow" : {
+            "type" : "boolean",
+            "description" : "Doble amarilla (expulsión).",
+            "example" : false
+          },
+          "goals" : {
+            "type" : "integer",
+            "description" : "Goles normales, sin contar los de penalti.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "ownGoals" : {
+            "type" : "integer",
+            "description" : "Goles en propia puerta.",
+            "format" : "int32",
+            "example" : 0
+          },
+          "penaltiesMissed" : {
+            "type" : "integer",
+            "description" : "Penaltis fallados.",
+            "format" : "int32",
+            "example" : 0
+          },
+          "penaltiesSaved" : {
+            "type" : "integer",
+            "description" : "Penaltis parados.",
+            "format" : "int32",
+            "example" : 0
+          },
+          "penaltyGoals" : {
+            "type" : "integer",
+            "description" : "Goles de penalti.",
+            "format" : "int32",
+            "example" : 1
+          },
+          "playerId" : {
+            "type" : "string",
+            "description" : "Id del jugador.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición con la que jugó: la que tenía en la plantilla al añadirlo al acta.",
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "redCard" : {
+            "type" : "boolean",
+            "description" : "Roja directa.",
+            "example" : false
+          },
+          "yellowCard" : {
+            "type" : "boolean",
+            "description" : "Tarjeta amarilla.",
+            "example" : true
+          }
+        },
+        "description" : "Estadísticas de un jugador en el acta."
+      },
+      "PlayerRatingRequest" : {
+        "required" : [ "playerId", "value" ],
+        "type" : "object",
+        "properties" : {
+          "playerId" : {
+            "type" : "string",
+            "description" : "Id de un jugador del acta.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "value" : {
+            "maximum" : 10,
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "Valor entero en el formato de la ventana: de 0 a 4 picas (`SPADES`) o de 0 a 10 (`DECIMAL`). Un decimal da `400`.",
+            "format" : "int32",
+            "example" : 3
+          }
+        },
+        "description" : "Voto a un jugador."
+      },
+      "PlayerRatingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "average" : {
+            "type" : "number",
+            "description" : "Media de los votos, redondeada a 2 decimales solo para mostrarla; null hasta que se cierra la ventana o sin votos.",
+            "nullable" : true,
+            "example" : 2.83
+          },
+          "myRating" : {
+            "type" : "integer",
+            "description" : "Voto del usuario; null si no lo ha valorado.",
+            "format" : "int32",
+            "nullable" : true,
+            "example" : 3
+          },
+          "playerId" : {
+            "type" : "string",
+            "description" : "Id del jugador.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición con la que jugó.",
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "ratingPoints" : {
+            "type" : "integer",
+            "description" : "Puntos por valoración (la media convertida y redondeada, mitad hacia arriba); null hasta que se cierra la ventana.",
+            "format" : "int32",
+            "nullable" : true,
+            "example" : 9
+          },
+          "votes" : {
+            "type" : "integer",
+            "description" : "Votos que contaron; null hasta que se cierra la ventana.",
+            "format" : "int32",
+            "nullable" : true,
+            "example" : 6
+          }
+        },
+        "description" : "Jugador del acta con el voto del usuario y, con la ventana cerrada, su resultado."
+      },
+      "PlayerRequest" : {
+        "required" : [ "initialValue", "name", "position" ],
+        "type" : "object",
+        "properties" : {
+          "initialValue" : {
+            "minimum" : 0,
+            "exclusiveMinimum" : true,
+            "type" : "number",
+            "description" : "Valor inicial en millones. Mayor que 0, con hasta 8 cifras enteras y 2 decimales.",
+            "example" : 12.5
+          },
+          "name" : {
+            "minLength" : 1,
+            "type" : "string",
+            "description" : "Nombre, sin espacios al principio ni al final. Como mucho `squad.limits.name-max-length` caracteres.",
+            "example" : "Iago Aspas"
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición en el campo.",
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "shirtNumber" : {
+            "type" : "integer",
+            "description" : "Dorsal, opcional. Entre `squad.limits.shirt-number-min` y `squad.limits.shirt-number-max`, y sin repetir entre los jugadores activos de la liga.",
+            "format" : "int32",
+            "nullable" : true,
+            "example" : 10
+          }
+        },
+        "description" : "Ficha de un jugador del equipo real (RF-09, RF-10)."
+      },
+      "PlayerResponse" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "description" : "Cuándo se dio de alta.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "currentValue" : {
+            "type" : "number",
+            "description" : "Valor de mercado vigente; igual al inicial hasta que exista el mercado (Fase 3).",
+            "example" : 12.5
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id del jugador.",
+            "format" : "uuid",
+            "example" : "c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b"
+          },
+          "initialValue" : {
+            "type" : "number",
+            "description" : "Valor con el que se dio de alta.",
+            "example" : 12.5
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Nombre.",
+            "example" : "Iago Aspas"
+          },
+          "photoUrl" : {
+            "type" : "string",
+            "description" : "URL pública de la foto; null si no tiene.",
+            "nullable" : true,
+            "example" : "https://cdn.example.com/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/0b6f2c1a-5d4e-4f3a-9b8c-7d6e5f4a3b2c.webp"
+          },
+          "position" : {
+            "type" : "string",
+            "description" : "Posición en el campo.",
+            "example" : "FORWARD",
+            "enum" : [ "GOALKEEPER", "DEFENDER", "MIDFIELDER", "FORWARD" ]
+          },
+          "retiredAt" : {
+            "type" : "string",
+            "description" : "Cuándo se dio de baja; null si está activo.",
+            "format" : "date-time",
+            "nullable" : true,
+            "example" : "2026-01-12T12:30:00Z"
+          },
+          "shirtNumber" : {
+            "type" : "integer",
+            "description" : "Dorsal; null si no tiene.",
+            "format" : "int32",
+            "nullable" : true,
+            "example" : 10
+          }
+        },
+        "description" : "Ficha de un jugador del equipo real (RF-11). Importes en millones."
+      },
+      "Problem" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "description" : "Motivo para la interfaz cuando debe distinguirlo; cada endpoint documenta los suyos.",
+            "nullable" : true,
+            "example" : "MAX_CHANGES_EXCEEDED"
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "Motivo legible, en inglés y solo para depurar: la interfaz no debe mostrarlo.",
+            "example" : "The lineup has 3 changes and at most 2 are allowed per matchday"
+          },
+          "instance" : {
+            "type" : "string",
+            "description" : "Ruta de la petición.",
+            "example" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/lineup"
+          },
+          "status" : {
+            "type" : "integer",
+            "description" : "Código HTTP.",
+            "format" : "int32",
+            "example" : 409
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "Texto estándar del código HTTP.",
+            "example" : "Conflict"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Tipo del error; siempre `about:blank`.",
+            "example" : "about:blank"
+          },
+          "violations" : {
+            "type" : "array",
+            "description" : "Restricciones incumplidas, solo en algunos `400` de validación.",
+            "nullable" : true,
+            "example" : [ "name: must not be blank" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "description" : "Error en formato RFC 9457 (`application/problem+json`)."
+      },
+      "RatingWindowResponse" : {
+        "type" : "object",
+        "properties" : {
+          "closesAt" : {
+            "type" : "string",
+            "description" : "Hasta cuándo acepta votos.",
+            "format" : "date-time",
+            "example" : "2026-01-12T12:00:00Z"
+          },
+          "excluded" : {
+            "type" : "boolean",
+            "description" : "Si el administrador canceló las valoraciones del usuario en este partido (RF-41).",
+            "example" : false
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Hora de inicio del partido, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "matchId" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          },
+          "myRatings" : {
+            "type" : "integer",
+            "description" : "A cuántos de ellos ha valorado el usuario.",
+            "format" : "int32",
+            "example" : 4
+          },
+          "players" : {
+            "type" : "integer",
+            "description" : "Jugadores que se pueden valorar: los del acta.",
+            "format" : "int32",
+            "example" : 11
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "`OPEN` mientras acepta votos; `CLOSED` desde `closesAt`.",
+            "example" : "OPEN",
+            "enum" : [ "OPEN", "CLOSED" ]
+          }
+        },
+        "description" : "Ventana de valoración de un partido cerrado, según el reloj del servidor."
+      },
+      "RatingsRequest" : {
+        "required" : [ "ratings" ],
+        "type" : "object",
+        "properties" : {
+          "ratings" : {
+            "type" : "array",
+            "description" : "Sus votos, en cualquier orden y como mucho uno por jugador. Reemplazan los anteriores: un jugador que no aparece se queda sin su voto. Vacía para retirarlos todos.",
+            "items" : {
+              "$ref" : "#/components/schemas/PlayerRatingRequest"
+            }
+          }
+        },
+        "description" : "Todas las valoraciones del miembro en el partido (RF-18, RF-20)."
+      },
+      "StandingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "lastMatchdayPoints" : {
+            "type" : "integer",
+            "description" : "Puntos de la última de esas jornadas; 0 si no hay ninguna.",
+            "format" : "int32",
+            "example" : 24
+          },
+          "matchdays" : {
+            "type" : "integer",
+            "description" : "Jornadas puntuadas que cuentan para él: las que empezaron después de unirse a la liga.",
+            "format" : "int32",
+            "example" : 9
+          },
+          "points" : {
+            "type" : "integer",
+            "description" : "Puntos acumulados en las jornadas que cuentan para él.",
+            "format" : "int32",
+            "example" : 187
+          },
+          "position" : {
+            "type" : "integer",
+            "description" : "Posición; los empatados a puntos la comparten (1, 1, 3).",
+            "format" : "int32",
+            "example" : 1
+          },
+          "userId" : {
+            "type" : "string",
+            "description" : "Id del manager.",
+            "format" : "uuid",
+            "example" : "7a1d9e3b-2c4f-4b6a-8d5e-9f0a1b2c3d4e"
+          }
+        },
+        "description" : "Fila de la clasificación general."
+      },
+      "TargetMatchResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "Id del partido.",
+            "format" : "uuid",
+            "example" : "5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
+          },
+          "kickoffAt" : {
+            "type" : "string",
+            "description" : "Hora de inicio, en UTC.",
+            "format" : "date-time",
+            "example" : "2026-01-11T10:00:00Z"
+          },
+          "lockAt" : {
+            "type" : "string",
+            "description" : "Hora de bloqueo: lo que se guarde después cuenta para el partido siguiente.",
+            "format" : "date-time",
+            "example" : "2026-01-11T08:00:00Z"
+          },
+          "matchday" : {
+            "type" : "integer",
+            "description" : "Número de jornada.",
+            "format" : "int32",
+            "example" : 3
+          }
+        },
+        "description" : "Partido para el que cuenta la alineación guardada ahora."
+      },
+      "UserResponse" : {
+        "type" : "object",
+        "properties" : {
+          "avatarUrl" : {
+            "type" : "string",
+            "description" : "Foto de la cuenta de Google; null si no tiene.",
+            "nullable" : true,
+            "example" : "https://lh3.googleusercontent.com/a/iago"
+          },
+          "displayName" : {
+            "type" : "string",
+            "description" : "Nombre que se muestra a los demás.",
+            "example" : "Iago Fernández"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "Email de la cuenta de Google.",
+            "example" : "iago@example.com"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Id del usuario.",
+            "format" : "uuid",
+            "example" : "7a1d9e3b-2c4f-4b6a-8d5e-9f0a1b2c3d4e"
+          }
+        },
+        "description" : "Usuario con la sesión iniciada, con los datos de su cuenta de Google."
+      }
+    },
+    "securitySchemes" : {
+      "csrf" : {
+        "description" : "Valor de la cookie `XSRF-TOKEN`, obligatorio en las peticiones que modifican.",
+        "in" : "header",
+        "name" : "X-XSRF-TOKEN",
+        "type" : "apiKey"
+      },
+      "session" : {
+        "description" : "Cookie de sesión tras el login con Google.",
+        "in" : "cookie",
+        "name" : "SESSION",
+        "type" : "apiKey"
+      }
+    }
+  }
+}

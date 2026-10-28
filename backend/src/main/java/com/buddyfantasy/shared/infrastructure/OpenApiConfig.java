@@ -1,6 +1,7 @@
 package com.buddyfantasy.shared.infrastructure;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.PropertyCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +34,8 @@ import org.springframework.context.annotation.Configuration;
  * The API description served at {@code /v3/api-docs}. Each controller documents its own operations, parameters and
  * responses; this adds what every operation shares, so the controllers do not repeat it: the session and CSRF
  * requirements, the {@code 401} without a session, and the {@link ApiProblem} body and a generic example on every
- * error response that does not bring its own.
+ * error response that does not bring its own. The server is the relative {@code /}, not the one springdoc deduces from
+ * the request, so the document is the same whatever the host and port (it is versioned in {@code api/openapi.json}).
  */
 @Configuration
 class OpenApiConfig {
@@ -70,6 +73,7 @@ class OpenApiConfig {
                                 - **Importes** (valores, presupuestos) en millones.
                                 - **Errores** en `application/problem+json` (RFC 9457), con un `code` cuando la \
                                 interfaz debe distinguir el motivo."""))
+                .servers(List.of(new Server().url("/").description("El mismo origen que sirve la interfaz.")))
                 .components(new Components()
                         .addSecuritySchemes(SESSION, new SecurityScheme()
                                 .type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.COOKIE).name("SESSION")

@@ -142,5 +142,8 @@ springdoc:
   api-docs:
     version: openapi_3_0 # 3.0 para los generadores de clientes y para "nullable" en los campos que pueden ser null
   default-produces-media-type: application/json
+  # spec estable entre ejecuciones: api/openapi.json se versiona y los tipos del frontend salen de él (FE-05)
+  writer-with-order-by-keys: true
+  writer-with-default-pretty-printer: true
   swagger-ui:
     enabled: ${SWAGGER_UI_ENABLED:false}
