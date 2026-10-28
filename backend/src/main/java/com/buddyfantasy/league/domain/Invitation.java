@@ -9,6 +9,7 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.UUID;
 
+import com.buddyfantasy.shared.domain.UnexpectedException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -44,7 +45,7 @@ public class Invitation {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is not available", e);
+            throw new UnexpectedException("SHA-256 is not available", e);
         }
     }
 

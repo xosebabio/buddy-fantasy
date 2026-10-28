@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.buddyfantasy.match.application.port.out.MatchAuditEntry;
 import com.buddyfantasy.match.application.port.out.MatchAuditLog;
 import com.buddyfantasy.match.application.port.out.MatchSnapshot;
+import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -49,7 +50,7 @@ class JdbcMatchAuditLog implements MatchAuditLog {
         try {
             return json.writeValueAsString(snapshot);
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Cannot serialize match snapshot", e);
+            throw new UnexpectedException("Cannot serialize match snapshot", e);
         }
     }
 }

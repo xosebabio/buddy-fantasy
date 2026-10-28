@@ -6,10 +6,10 @@ import java.util.List;
 import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.shared.application.QueryHandler;
+import com.buddyfantasy.shared.domain.ForbiddenException;
 import com.buddyfantasy.squad.application.port.out.ImageStorage;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.application.usecases.getplayer.PlayerView;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,7 +33,7 @@ class ListPlayersHandler implements QueryHandler<ListPlayersQuery, List<PlayerVi
     @Override
     public List<PlayerView> handle(ListPlayersQuery query) {
         LeagueRole role = access.roleOf(query.userId(), query.leagueId())
-                .orElseThrow(() -> new AccessDeniedException("Not a member of league " + query.leagueId()));
+                .orElseThrow(() -> new ForbiddenException("Not a member of league " + query.leagueId()));
         boolean includeRetired = query.includeRetired() && role == LeagueRole.ADMIN;
         return players.findByLeagueId(query.leagueId(), includeRetired).stream()
                 .map(player -> PlayerView.from(player, images))

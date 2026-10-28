@@ -5,7 +5,8 @@ import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.shared.application.QueryHandler;
-import org.springframework.security.access.AccessDeniedException;
+import com.buddyfantasy.shared.domain.ForbiddenException;
+import com.buddyfantasy.shared.domain.UnexpectedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,8 +23,9 @@ class GetLeagueHandler implements QueryHandler<GetLeagueQuery, LeagueView> {
     @Override
     public LeagueView handle(GetLeagueQuery query) {
         LeagueRole role = access.roleOf(query.userId(), query.leagueId())
-                .orElseThrow(() -> new AccessDeniedException("Not a member of league " + query.leagueId()));
-        League league = leagues.findById(query.leagueId()).orElseThrow();
+                .orElseThrow(() -> new ForbiddenException("Not a member of league " + query.leagueId()));
+        League league = leagues.findById(query.leagueId())
+                .orElseThrow(() -> new UnexpectedException("League not found: " + query.leagueId()));
         return new LeagueView(league.id().value(), league.name(), league.createdAt(), role);
     }
 }

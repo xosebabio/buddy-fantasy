@@ -11,6 +11,7 @@ import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
 import com.buddyfantasy.league.domain.ScoringRules;
+import com.buddyfantasy.shared.domain.UnexpectedException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -30,7 +31,8 @@ class JpaLeagueRepository implements LeagueRepository {
     @Override
     public Optional<League> findById(UUID id) {
         return leagues.findById(id).map(league -> LeagueMapper.toDomain(league,
-                settings.findById(id).orElseThrow(), rules.findByLeagueId(id)));
+                settings.findById(id).orElseThrow(() -> new UnexpectedException("League settings not found: " + id)),
+                rules.findByLeagueId(id)));
     }
 
     @Override

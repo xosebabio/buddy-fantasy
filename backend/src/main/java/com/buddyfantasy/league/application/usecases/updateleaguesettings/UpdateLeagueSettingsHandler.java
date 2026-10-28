@@ -5,6 +5,7 @@ import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.shared.application.CommandHandler;
+import com.buddyfantasy.shared.domain.UnexpectedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +24,8 @@ class UpdateLeagueSettingsHandler implements CommandHandler<UpdateLeagueSettings
     @Override
     public Void handle(UpdateLeagueSettingsCommand command) {
         access.requireAdmin(command.userId(), command.leagueId());
-        League league = leagues.findById(command.leagueId()).orElseThrow();
+        League league = leagues.findById(command.leagueId())
+                .orElseThrow(() -> new UnexpectedException("League not found: " + command.leagueId()));
         leagues.save(league.withSettings(command.settings(), command.scoringRules(), limits.get()));
         return null;
     }

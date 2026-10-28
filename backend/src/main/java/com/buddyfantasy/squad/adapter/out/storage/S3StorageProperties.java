@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
 
+import com.buddyfantasy.shared.domain.DomainValidationException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -18,7 +19,7 @@ record S3StorageProperties(String bucket, String region, String endpoint, String
 
     S3StorageProperties {
         if (uploadTtl == null || uploadTtl.isNegative() || uploadTtl.isZero()) {
-            throw new IllegalArgumentException("squad.photos.s3.upload-ttl must be > 0");
+            throw new DomainValidationException("squad.photos.s3.upload-ttl must be > 0");
         }
     }
 

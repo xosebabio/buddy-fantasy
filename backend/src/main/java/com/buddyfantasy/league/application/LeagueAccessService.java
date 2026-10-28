@@ -10,7 +10,7 @@ import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.Membership;
-import org.springframework.security.access.AccessDeniedException;
+import com.buddyfantasy.shared.domain.ForbiddenException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,13 +36,13 @@ class LeagueAccessService implements LeagueAccess {
     public Instant requireMemberSince(UUID userId, UUID leagueId) {
         return memberships.findByLeagueIdAndUserId(leagueId, userId)
                 .map(Membership::joinedAt)
-                .orElseThrow(() -> new AccessDeniedException("Not a member of league " + leagueId));
+                .orElseThrow(() -> new ForbiddenException("Not a member of league " + leagueId));
     }
 
     @Override
     public void requireAdmin(UUID userId, UUID leagueId) {
         if (roleOf(userId, leagueId).filter(role -> role == LeagueRole.ADMIN).isEmpty()) {
-            throw new AccessDeniedException("Not an admin of league " + leagueId);
+            throw new ForbiddenException("Not an admin of league " + leagueId);
         }
     }
 

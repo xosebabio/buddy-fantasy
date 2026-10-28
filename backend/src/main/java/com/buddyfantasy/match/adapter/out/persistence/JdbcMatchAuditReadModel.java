@@ -8,6 +8,7 @@ import com.buddyfantasy.match.application.port.out.MatchSnapshot;
 import com.buddyfantasy.match.application.usecases.listmatchaudit.MatchAuditEntryView;
 import com.buddyfantasy.match.application.usecases.listmatchaudit.MatchAuditReadModel;
 import com.buddyfantasy.match.domain.MatchAuditAction;
+import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -48,7 +49,7 @@ class JdbcMatchAuditReadModel implements MatchAuditReadModel {
         try {
             return json.readValue(value, MatchSnapshot.class);
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Cannot read match snapshot", e);
+            throw new UnexpectedException("Cannot read match snapshot", e);
         }
     }
 }

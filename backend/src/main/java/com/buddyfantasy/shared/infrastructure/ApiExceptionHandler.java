@@ -3,13 +3,13 @@ package com.buddyfantasy.shared.infrastructure;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
 import com.buddyfantasy.shared.domain.ErrorCode;
+import com.buddyfantasy.shared.domain.ForbiddenException;
 import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -49,9 +49,9 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return withCode(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage()), e.code());
     }
 
-    /** Thrown by the per-league checks of the handlers; without this, {@link #handleUnexpected} would make it a 500. */
-    @ExceptionHandler(AccessDeniedException.class)
-    ProblemDetail handleAccessDenied(AccessDeniedException e) {
+    /** Thrown by the per-league checks of the handlers. */
+    @ExceptionHandler(ForbiddenException.class)
+    ProblemDetail handleForbidden(ForbiddenException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Forbidden");
     }
 

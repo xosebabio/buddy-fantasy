@@ -6,7 +6,7 @@ import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.match.domain.MatchStatus;
 import com.buddyfantasy.shared.application.QueryHandler;
-import org.springframework.security.access.AccessDeniedException;
+import com.buddyfantasy.shared.domain.ForbiddenException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +23,7 @@ class ListMatchesHandler implements QueryHandler<ListMatchesQuery, List<MatchSum
     @Override
     public List<MatchSummaryView> handle(ListMatchesQuery query) {
         LeagueRole role = access.roleOf(query.userId(), query.leagueId())
-                .orElseThrow(() -> new AccessDeniedException("Not a member of league " + query.leagueId()));
+                .orElseThrow(() -> new ForbiddenException("Not a member of league " + query.leagueId()));
         List<MatchSummaryView> matches = calendar.findByLeagueId(query.leagueId());
         if (role == LeagueRole.ADMIN) {
             return matches;

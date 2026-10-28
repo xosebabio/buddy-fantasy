@@ -28,6 +28,7 @@ import com.buddyfantasy.scoring.domain.PlayerMatchday;
 import com.buddyfantasy.scoring.domain.PlayerPerformance;
 import com.buddyfantasy.scoring.domain.PlayerScore;
 import com.buddyfantasy.scoring.domain.ScoredLine;
+import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +74,8 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
                 .param("matchday", initial.matchday())
                 .param("kickoffAt", utc(initial.kickoffAt()))
                 .update();
-        return lock(initial.matchId()).orElseThrow();
+        return lock(initial.matchId())
+                .orElseThrow(() -> new UnexpectedException("Scoring match not found: " + initial.matchId()));
     }
 
     @Override
@@ -315,7 +317,7 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
         try {
             return json.writeValueAsString(rules.points());
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Cannot serialize scoring rules", e);
+            throw new UnexpectedException("Cannot serialize scoring rules", e);
         }
     }
 
@@ -326,7 +328,7 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
         try {
             return new ScoringTable(json.readValue(value, RULES));
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Cannot read scoring rules", e);
+            throw new UnexpectedException("Cannot read scoring rules", e);
         }
     }
 

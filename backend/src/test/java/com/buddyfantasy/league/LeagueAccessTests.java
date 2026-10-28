@@ -11,12 +11,12 @@ import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.Membership;
+import com.buddyfantasy.shared.domain.ForbiddenException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.access.AccessDeniedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -82,7 +82,7 @@ class LeagueAccessTests {
         assertThatCode(() -> access.requireMember(manager, league.id().value())).doesNotThrowAnyException();
         assertThat(access.requireMemberSince(manager, league.id().value())).isEqualTo(NOW);
         assertThatThrownBy(() -> access.requireAdmin(manager, league.id().value()))
-                .isInstanceOf(AccessDeniedException.class);
+                .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
@@ -93,11 +93,11 @@ class LeagueAccessTests {
 
         assertThat(access.roleOf(stranger, league.id().value())).isEmpty();
         assertThatThrownBy(() -> access.requireMember(stranger, league.id().value()))
-                .isInstanceOf(AccessDeniedException.class);
+                .isInstanceOf(ForbiddenException.class);
         assertThatThrownBy(() -> access.requireMemberSince(stranger, league.id().value()))
-                .isInstanceOf(AccessDeniedException.class);
+                .isInstanceOf(ForbiddenException.class);
         assertThatThrownBy(() -> access.requireAdmin(stranger, league.id().value()))
-                .isInstanceOf(AccessDeniedException.class);
+                .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
@@ -145,6 +145,6 @@ class LeagueAccessTests {
         assertThat(access.roleOf(user, b.id().value())).contains(LeagueRole.MANAGER);
         assertThatCode(() -> access.requireAdmin(user, a.id().value())).doesNotThrowAnyException();
         assertThatThrownBy(() -> access.requireAdmin(user, b.id().value()))
-                .isInstanceOf(AccessDeniedException.class);
+                .isInstanceOf(ForbiddenException.class);
     }
 }
