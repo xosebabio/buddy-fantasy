@@ -7,17 +7,15 @@ import java.util.UUID;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.match.application.port.out.MatchScheduleReadModel;
 import com.buddyfantasy.match.domain.MatchStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 /** The sheet collection is lazy and never touched, so each method is a single query on {@code match_match}. */
 @Repository
+@RequiredArgsConstructor
 class JpaMatchScheduleReadModel implements MatchScheduleReadModel {
 
     private final SpringDataMatchRepository jpa;
-
-    JpaMatchScheduleReadModel(SpringDataMatchRepository jpa) {
-        this.jpa = jpa;
-    }
 
     @Override
     public List<MatchSchedule> findByLeagueId(UUID leagueId) {

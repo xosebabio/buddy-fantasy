@@ -28,6 +28,7 @@ import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCo
 import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.test.context.TestComponent;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -36,6 +37,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * rows by hand. Available in every Spring test (imported by {@link PostgresTestConfig}).
  */
 @TestComponent
+@RequiredArgsConstructor
 public class TestFixtures {
 
     /** Initial value of the players created without one, in millions. */
@@ -43,11 +45,6 @@ public class TestFixtures {
 
     private final CommandBus bus;
     private final JdbcTemplate jdbc;
-
-    TestFixtures(CommandBus bus, JdbcTemplate jdbc) {
-        this.bus = bus;
-        this.jdbc = jdbc;
-    }
 
     /** A league created by {@link #admin}; {@code invitationToken} is its initial link. */
     public record TestLeague(UUID id, UUID admin, String invitationToken) {

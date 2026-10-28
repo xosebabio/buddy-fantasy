@@ -6,6 +6,7 @@ import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.scoring.application.port.out.MatchScoreRepository;
 import com.buddyfantasy.scoring.domain.MatchScore;
 import com.buddyfantasy.shared.application.CommandHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,15 +15,11 @@ import org.springframework.stereotype.Component;
  * {@code LineupsLocked} delivered late after a deletion recreates a match without a sheet, which is never scored.
  */
 @Component
+@RequiredArgsConstructor
 class DiscardLockedLineupsHandler implements CommandHandler<DiscardLockedLineupsCommand, Void> {
 
     private final MatchScoreRepository scores;
     private final MatchApi matches;
-
-    DiscardLockedLineupsHandler(MatchScoreRepository scores, MatchApi matches) {
-        this.scores = scores;
-        this.matches = matches;
-    }
 
     @Override
     public Void handle(DiscardLockedLineupsCommand command) {

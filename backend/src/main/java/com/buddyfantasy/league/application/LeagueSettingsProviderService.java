@@ -14,18 +14,15 @@ import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.LeagueSettings;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 class LeagueSettingsProviderService implements LeagueSettingsProvider {
 
     private final LeagueRepository leagues;
     private final LeagueLimitsRepository limits;
-
-    LeagueSettingsProviderService(LeagueRepository leagues, LeagueLimitsRepository limits) {
-        this.leagues = leagues;
-        this.limits = limits;
-    }
 
     @Override
     public LineupSettings lineupSettings(UUID leagueId) {

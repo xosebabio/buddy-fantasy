@@ -22,6 +22,7 @@ import com.buddyfantasy.lineup.domain.MatchLineupLock;
 import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.shared.application.CommandHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Component;
  * for the budget check (RF-29). Only the transaction that inserts the lock publishes the event.
  */
 @Component
+@RequiredArgsConstructor
 class LockMatchLineupsHandler implements CommandHandler<LockMatchLineupsCommand, Boolean> {
 
     private final LeagueAccess access;
@@ -41,19 +43,6 @@ class LockMatchLineupsHandler implements CommandHandler<LockMatchLineupsCommand,
     private final MatchLineupLockRepository locks;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    LockMatchLineupsHandler(LeagueAccess access, LeagueSettingsProvider leagueSettings, MatchApi matches,
-                            LineupVersionRepository versions, PlayerCatalog players, MatchLineupLockRepository locks,
-                            ApplicationEventPublisher events, Clock clock) {
-        this.access = access;
-        this.leagueSettings = leagueSettings;
-        this.matches = matches;
-        this.versions = versions;
-        this.players = players;
-        this.locks = locks;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Boolean handle(LockMatchLineupsCommand command) {

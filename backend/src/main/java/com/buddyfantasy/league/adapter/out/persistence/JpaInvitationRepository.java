@@ -5,16 +5,14 @@ import java.util.UUID;
 
 import com.buddyfantasy.league.application.port.out.InvitationRepository;
 import com.buddyfantasy.league.domain.Invitation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JpaInvitationRepository implements InvitationRepository {
 
     private final SpringDataInvitationRepository jpa;
-
-    JpaInvitationRepository(SpringDataInvitationRepository jpa) {
-        this.jpa = jpa;
-    }
 
     @Override
     public Optional<Invitation> findActiveByTokenHash(String tokenHash) {

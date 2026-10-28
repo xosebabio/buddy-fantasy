@@ -8,20 +8,16 @@ import com.buddyfantasy.league.application.port.out.InvitationRepository;
 import com.buddyfantasy.league.domain.Invitation;
 import com.buddyfantasy.league.domain.LeagueId;
 import com.buddyfantasy.shared.application.CommandHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class RegenerateInvitationHandler implements CommandHandler<RegenerateInvitationCommand, String> {
 
     private final LeagueAccess access;
     private final InvitationRepository invitations;
     private final Clock clock;
-
-    RegenerateInvitationHandler(LeagueAccess access, InvitationRepository invitations, Clock clock) {
-        this.access = access;
-        this.invitations = invitations;
-        this.clock = clock;
-    }
 
     @Override
     public String handle(RegenerateInvitationCommand command) {

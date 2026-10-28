@@ -13,9 +13,11 @@ import com.buddyfantasy.league.domain.Invitation;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.Membership;
 import com.buddyfantasy.shared.application.CommandHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class CreateLeagueHandler implements CommandHandler<CreateLeagueCommand, CreatedLeague> {
 
     private final LeagueRepository leagues;
@@ -24,16 +26,6 @@ class CreateLeagueHandler implements CommandHandler<CreateLeagueCommand, Created
     private final LeagueDefaultsRepository defaults;
     private final LeagueLimitsRepository limits;
     private final Clock clock;
-
-    CreateLeagueHandler(LeagueRepository leagues, MembershipRepository memberships, InvitationRepository invitations,
-                        LeagueDefaultsRepository defaults, LeagueLimitsRepository limits, Clock clock) {
-        this.leagues = leagues;
-        this.memberships = memberships;
-        this.invitations = invitations;
-        this.defaults = defaults;
-        this.limits = limits;
-        this.clock = clock;
-    }
 
     @Override
     public CreatedLeague handle(CreateLeagueCommand command) {

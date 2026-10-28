@@ -15,6 +15,7 @@ import com.buddyfantasy.lineup.domain.LineupTimeline;
 import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.shared.application.QueryHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,20 +24,13 @@ import org.springframework.stereotype.Component;
  * locked late; {@code MatchClosed} still locks them.
  */
 @Component
+@RequiredArgsConstructor
 class FindMatchesToLockHandler implements QueryHandler<FindMatchesToLockQuery, List<MatchToLock>> {
 
     private final MatchApi matches;
     private final LeagueSettingsProvider leagueSettings;
     private final MatchLineupLockRepository locks;
     private final Clock clock;
-
-    FindMatchesToLockHandler(MatchApi matches, LeagueSettingsProvider leagueSettings,
-                             MatchLineupLockRepository locks, Clock clock) {
-        this.matches = matches;
-        this.leagueSettings = leagueSettings;
-        this.locks = locks;
-        this.clock = clock;
-    }
 
     @Override
     public List<MatchToLock> handle(FindMatchesToLockQuery query) {

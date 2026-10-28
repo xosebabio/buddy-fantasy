@@ -32,6 +32,7 @@ import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -43,6 +44,7 @@ import org.springframework.stereotype.Repository;
  * position.
  */
 @Repository
+@RequiredArgsConstructor
 class JdbcMatchScoreRepository implements MatchScoreRepository {
 
     private static final TypeReference<Map<ScoringAction, Map<Position, Integer>>> RULES = new TypeReference<>() {
@@ -55,12 +57,6 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
     private final JdbcClient jdbc;
     private final JdbcTemplate batch;
     private final ObjectMapper json;
-
-    JdbcMatchScoreRepository(JdbcClient jdbc, JdbcTemplate batch, ObjectMapper json) {
-        this.jdbc = jdbc;
-        this.batch = batch;
-        this.json = json;
-    }
 
     @Override
     public MatchScore lockOrCreate(MatchScore initial) {

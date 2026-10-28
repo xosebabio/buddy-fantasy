@@ -10,9 +10,11 @@ import com.buddyfantasy.shared.domain.ForbiddenException;
 import com.buddyfantasy.squad.application.port.out.ImageStorage;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.application.usecases.getplayer.PlayerView;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class ListPlayersHandler implements QueryHandler<ListPlayersQuery, List<PlayerView>> {
 
     /** Goalkeepers first, then by shirt number (players without one last) and name. */
@@ -23,12 +25,6 @@ class ListPlayersHandler implements QueryHandler<ListPlayersQuery, List<PlayerVi
     private final LeagueAccess access;
     private final PlayerRepository players;
     private final ImageStorage images;
-
-    ListPlayersHandler(LeagueAccess access, PlayerRepository players, ImageStorage images) {
-        this.access = access;
-        this.players = players;
-        this.images = images;
-    }
 
     @Override
     public List<PlayerView> handle(ListPlayersQuery query) {

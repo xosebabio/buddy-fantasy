@@ -8,24 +8,18 @@ import com.buddyfantasy.shared.domain.NotFoundException;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class RetirePlayerHandler implements CommandHandler<RetirePlayerCommand, Void> {
 
     private final LeagueAccess access;
     private final PlayerRepository players;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    RetirePlayerHandler(LeagueAccess access, PlayerRepository players, ApplicationEventPublisher events,
-                        Clock clock) {
-        this.access = access;
-        this.players = players;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Void handle(RetirePlayerCommand command) {

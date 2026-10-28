@@ -11,6 +11,7 @@ import com.buddyfantasy.squad.application.usecases.getplayer.PlayerView;
 import com.buddyfantasy.squad.application.usecases.removeplayerphoto.RemovePlayerPhotoCommand;
 import com.buddyfantasy.squad.application.usecases.requestplayerphotoupload.RequestPlayerPhotoUploadCommand;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,13 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Player photo in three steps: request a presigned URL, upload straight to storage, confirm the key. */
 @RestController
+@RequiredArgsConstructor
 class PlayerPhotoController {
 
     private final CommandBus bus;
-
-    PlayerPhotoController(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @PostMapping("/api/leagues/{id}/players/{playerId}/photo/upload")
     PhotoUploadResponse requestUpload(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,

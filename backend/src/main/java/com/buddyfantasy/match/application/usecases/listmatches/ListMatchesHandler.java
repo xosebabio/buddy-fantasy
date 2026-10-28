@@ -7,18 +7,15 @@ import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.match.domain.MatchStatus;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.ForbiddenException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class ListMatchesHandler implements QueryHandler<ListMatchesQuery, List<MatchSummaryView>> {
 
     private final LeagueAccess access;
     private final MatchCalendarReadModel calendar;
-
-    ListMatchesHandler(LeagueAccess access, MatchCalendarReadModel calendar) {
-        this.access = access;
-        this.calendar = calendar;
-    }
 
     @Override
     public List<MatchSummaryView> handle(ListMatchesQuery query) {

@@ -16,18 +16,16 @@ import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.league.LineupSettings;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import lombok.RequiredArgsConstructor;
 
 /**
  * The lineup rules of a league (RF-24, RF-26, RF-29) with its current parameters. {@code players} maps every player
  * id involved to its current data; ids missing from it are unknown or belong to another league.
  */
+@RequiredArgsConstructor
 public final class LineupRules {
 
     private final LineupSettings settings;
-
-    public LineupRules(LineupSettings settings) {
-        this.settings = settings;
-    }
 
     /**
      * A new lineup: exactly {@code size} different players, all active and of the league, the minimum per position

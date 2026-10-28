@@ -10,20 +10,18 @@ import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.ShirtNumber;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JpaPlayerRepository implements PlayerRepository {
 
     /** Partial unique index of V7 on {@code (league_id, shirt_number)} among active players. */
     private static final String SHIRT_NUMBER_INDEX = "squad_player_active_shirt_number_idx";
 
     private final SpringDataPlayerRepository jpa;
-
-    JpaPlayerRepository(SpringDataPlayerRepository jpa) {
-        this.jpa = jpa;
-    }
 
     @Override
     public Optional<Player> findByLeagueIdAndId(UUID leagueId, PlayerId id) {

@@ -6,6 +6,7 @@ import com.buddyfantasy.league.LeagueSettingsProvider;
 import com.buddyfantasy.scoring.application.port.out.MatchScoreRepository;
 import com.buddyfantasy.scoring.domain.MatchScore;
 import com.buddyfantasy.shared.application.CommandHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -14,20 +15,13 @@ import org.springframework.stereotype.Component;
  * publishes {@code MatchdayScored} again only if it changes some points.
  */
 @Component
+@RequiredArgsConstructor
 class ApplyMatchSheetHandler implements CommandHandler<ApplyMatchSheetCommand, Void> {
 
     private final MatchScoreRepository scores;
     private final LeagueSettingsProvider leagueSettings;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    ApplyMatchSheetHandler(MatchScoreRepository scores, LeagueSettingsProvider leagueSettings,
-                           ApplicationEventPublisher events, Clock clock) {
-        this.scores = scores;
-        this.leagueSettings = leagueSettings;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Void handle(ApplyMatchSheetCommand command) {

@@ -7,16 +7,14 @@ import java.util.Optional;
 import com.buddyfantasy.identity.application.port.out.UserRepository;
 import com.buddyfantasy.identity.domain.User;
 import com.buddyfantasy.identity.domain.UserId;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JpaUserRepository implements UserRepository {
 
     private final SpringDataUserRepository jpa;
-
-    JpaUserRepository(SpringDataUserRepository jpa) {
-        this.jpa = jpa;
-    }
 
     @Override
     public Optional<User> findById(UserId id) {

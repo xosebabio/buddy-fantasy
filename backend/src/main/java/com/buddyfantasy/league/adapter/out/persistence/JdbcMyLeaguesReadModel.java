@@ -6,17 +6,15 @@ import java.util.UUID;
 import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.league.application.usecases.listmyleagues.MyLeagueView;
 import com.buddyfantasy.league.application.usecases.listmyleagues.MyLeaguesReadModel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JdbcMyLeaguesReadModel implements MyLeaguesReadModel {
 
     private final JdbcClient jdbc;
-
-    JdbcMyLeaguesReadModel(JdbcClient jdbc) {
-        this.jdbc = jdbc;
-    }
 
     @Override
     public List<MyLeagueView> findByUserId(UUID userId) {

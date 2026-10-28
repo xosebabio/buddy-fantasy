@@ -9,6 +9,7 @@ import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.ShirtNumber;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,17 +17,12 @@ import org.springframework.stereotype.Component;
  * {@code market} will move the value (plan 04, confirmed decision 1).
  */
 @Component
+@RequiredArgsConstructor
 class UpdatePlayerHandler implements CommandHandler<UpdatePlayerCommand, Void> {
 
     private final LeagueAccess access;
     private final PlayerRepository players;
     private final SquadLimitsRepository limits;
-
-    UpdatePlayerHandler(LeagueAccess access, PlayerRepository players, SquadLimitsRepository limits) {
-        this.access = access;
-        this.players = players;
-        this.limits = limits;
-    }
 
     @Override
     public Void handle(UpdatePlayerCommand command) {

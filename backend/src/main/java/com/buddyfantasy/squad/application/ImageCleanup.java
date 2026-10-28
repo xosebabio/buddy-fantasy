@@ -1,6 +1,7 @@
 package com.buddyfantasy.squad.application;
 
 import com.buddyfantasy.squad.application.port.out.ImageStorage;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -12,15 +13,12 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * never leaves the database pointing at a deleted object; a failure only leaves an orphan behind, which is harmless.
  */
 @Component
+@RequiredArgsConstructor
 public class ImageCleanup {
 
     private static final Logger log = LoggerFactory.getLogger(ImageCleanup.class);
 
     private final ImageStorage images;
-
-    ImageCleanup(ImageStorage images) {
-        this.images = images;
-    }
 
     public void deleteAfterCommit(String key) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {

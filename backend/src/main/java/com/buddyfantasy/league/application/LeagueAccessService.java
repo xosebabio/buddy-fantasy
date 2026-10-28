@@ -11,16 +11,14 @@ import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.Membership;
 import com.buddyfantasy.shared.domain.ForbiddenException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 class LeagueAccessService implements LeagueAccess {
 
     private final MembershipRepository memberships;
-
-    LeagueAccessService(MembershipRepository memberships) {
-        this.memberships = memberships;
-    }
 
     @Override
     public Optional<LeagueRole> roleOf(UUID userId, UUID leagueId) {

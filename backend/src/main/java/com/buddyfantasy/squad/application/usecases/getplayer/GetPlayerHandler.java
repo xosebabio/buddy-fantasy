@@ -6,20 +6,16 @@ import com.buddyfantasy.shared.domain.NotFoundException;
 import com.buddyfantasy.squad.application.port.out.ImageStorage;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.domain.PlayerId;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class GetPlayerHandler implements QueryHandler<GetPlayerQuery, PlayerView> {
 
     private final LeagueAccess access;
     private final PlayerRepository players;
     private final ImageStorage images;
-
-    GetPlayerHandler(LeagueAccess access, PlayerRepository players, ImageStorage images) {
-        this.access = access;
-        this.players = players;
-        this.images = images;
-    }
 
     @Override
     public PlayerView handle(GetPlayerQuery query) {

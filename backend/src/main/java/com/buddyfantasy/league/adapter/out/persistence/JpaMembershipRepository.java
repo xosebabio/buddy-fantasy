@@ -9,19 +9,16 @@ import java.util.UUID;
 
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.Membership;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JpaMembershipRepository implements MembershipRepository {
 
     private final SpringDataMembershipRepository jpa;
     private final JdbcClient jdbc;
-
-    JpaMembershipRepository(SpringDataMembershipRepository jpa, JdbcClient jdbc) {
-        this.jpa = jpa;
-        this.jdbc = jdbc;
-    }
 
     @Override
     public Optional<Membership> findByLeagueIdAndUserId(UUID leagueId, UUID userId) {

@@ -12,21 +12,16 @@ import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
 import com.buddyfantasy.league.domain.ScoringRules;
 import com.buddyfantasy.shared.domain.UnexpectedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JpaLeagueRepository implements LeagueRepository {
 
     private final SpringDataLeagueRepository leagues;
     private final SpringDataLeagueSettingsRepository settings;
     private final SpringDataScoringRuleRepository rules;
-
-    JpaLeagueRepository(SpringDataLeagueRepository leagues, SpringDataLeagueSettingsRepository settings,
-                        SpringDataScoringRuleRepository rules) {
-        this.leagues = leagues;
-        this.settings = settings;
-        this.rules = rules;
-    }
 
     @Override
     public Optional<League> findById(UUID id) {

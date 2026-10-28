@@ -10,10 +10,12 @@ import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.ShirtNumber;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class RegisterPlayerHandler implements CommandHandler<RegisterPlayerCommand, PlayerId> {
 
     private final LeagueAccess access;
@@ -21,15 +23,6 @@ class RegisterPlayerHandler implements CommandHandler<RegisterPlayerCommand, Pla
     private final SquadLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    RegisterPlayerHandler(LeagueAccess access, PlayerRepository players, SquadLimitsRepository limits,
-                          ApplicationEventPublisher events, Clock clock) {
-        this.access = access;
-        this.players = players;
-        this.limits = limits;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public PlayerId handle(RegisterPlayerCommand command) {

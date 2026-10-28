@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.buddyfantasy.rating.application.usecases.closeratingwindow.CloseRatingWindowCommand;
 import com.buddyfantasy.rating.application.usecases.finddueratingwindows.FindDueRatingWindowsQuery;
 import com.buddyfantasy.shared.application.CommandBus;
+import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +18,12 @@ import org.springframework.stereotype.Component;
  * Idempotent: running it twice closes and publishes nothing more.
  */
 @Component
+@RequiredArgsConstructor
 public class CloseDueRatingWindowsJob {
 
     private static final Logger log = LoggerFactory.getLogger(CloseDueRatingWindowsJob.class);
 
     private final CommandBus bus;
-
-    CloseDueRatingWindowsJob(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @Scheduled(cron = "${rating.close-job.cron}")
     @SchedulerLock(name = "CloseDueRatingWindowsJob")

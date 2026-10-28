@@ -7,18 +7,15 @@ import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.ForbiddenException;
 import com.buddyfantasy.shared.domain.UnexpectedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class GetLeagueHandler implements QueryHandler<GetLeagueQuery, LeagueView> {
 
     private final LeagueAccess access;
     private final LeagueRepository leagues;
-
-    GetLeagueHandler(LeagueAccess access, LeagueRepository leagues) {
-        this.access = access;
-        this.leagues = leagues;
-    }
 
     @Override
     public LeagueView handle(GetLeagueQuery query) {

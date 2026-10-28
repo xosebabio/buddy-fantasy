@@ -4,16 +4,14 @@ import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.Membership;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.ForbiddenException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class LeaveLeagueHandler implements CommandHandler<LeaveLeagueCommand, Void> {
 
     private final MembershipRepository memberships;
-
-    LeaveLeagueHandler(MembershipRepository memberships) {
-        this.memberships = memberships;
-    }
 
     @Override
     public Void handle(LeaveLeagueCommand command) {

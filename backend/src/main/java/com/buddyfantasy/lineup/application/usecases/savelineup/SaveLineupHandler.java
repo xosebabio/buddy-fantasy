@@ -26,6 +26,7 @@ import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Component;
  * last joined the league do not count. Saving the current lineup again creates no version.
  */
 @Component
+@RequiredArgsConstructor
 class SaveLineupHandler implements CommandHandler<SaveLineupCommand, MyLineupView> {
 
     private final LeagueAccess access;
@@ -43,18 +45,6 @@ class SaveLineupHandler implements CommandHandler<SaveLineupCommand, MyLineupVie
     private final MatchLineupLockRepository locks;
     private final PlayerCatalog players;
     private final Clock clock;
-
-    SaveLineupHandler(LeagueAccess access, LeagueSettingsProvider leagueSettings, MatchApi matches,
-                      LineupVersionRepository versions, MatchLineupLockRepository locks,
-                      PlayerCatalog players, Clock clock) {
-        this.access = access;
-        this.leagueSettings = leagueSettings;
-        this.matches = matches;
-        this.versions = versions;
-        this.locks = locks;
-        this.players = players;
-        this.clock = clock;
-    }
 
     @Override
     public MyLineupView handle(SaveLineupCommand command) {

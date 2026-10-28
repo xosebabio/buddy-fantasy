@@ -10,20 +10,16 @@ import com.buddyfantasy.league.domain.LeagueId;
 import com.buddyfantasy.league.domain.Membership;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class JoinLeagueHandler implements CommandHandler<JoinLeagueCommand, LeagueId> {
 
     private final InvitationRepository invitations;
     private final MembershipRepository memberships;
     private final Clock clock;
-
-    JoinLeagueHandler(InvitationRepository invitations, MembershipRepository memberships, Clock clock) {
-        this.invitations = invitations;
-        this.memberships = memberships;
-        this.clock = clock;
-    }
 
     @Override
     public LeagueId handle(JoinLeagueCommand command) {

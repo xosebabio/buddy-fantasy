@@ -9,10 +9,12 @@ import com.buddyfantasy.match.domain.Match;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.match.domain.Matchday;
 import com.buddyfantasy.shared.domain.ConflictException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JpaMatchRepository implements MatchRepository {
 
     /** Unique indexes of V8 on {@code (league_id, matchday)} and {@code (league_id, kickoff_at)}. */
@@ -20,10 +22,6 @@ class JpaMatchRepository implements MatchRepository {
     private static final String KICKOFF_INDEX = "match_match_league_kickoff_idx";
 
     private final SpringDataMatchRepository jpa;
-
-    JpaMatchRepository(SpringDataMatchRepository jpa) {
-        this.jpa = jpa;
-    }
 
     @Override
     public Optional<Match> findByLeagueIdAndId(UUID leagueId, MatchId id) {

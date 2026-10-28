@@ -12,17 +12,15 @@ import com.buddyfantasy.match.application.usecases.listmatches.MatchSummaryView;
 import com.buddyfantasy.match.domain.MatchResult;
 import com.buddyfantasy.match.domain.MatchStatus;
 import com.buddyfantasy.match.domain.Venue;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JdbcMatchCalendarReadModel implements MatchCalendarReadModel {
 
     private final JdbcClient jdbc;
-
-    JdbcMatchCalendarReadModel(JdbcClient jdbc) {
-        this.jdbc = jdbc;
-    }
 
     @Override
     public List<MatchSummaryView> findByLeagueId(UUID leagueId) {

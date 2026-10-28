@@ -7,6 +7,7 @@ import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,17 +15,12 @@ import org.springframework.stereotype.Component;
  * a match of another league or unknown (404) from one not locked yet (409).
  */
 @Component
+@RequiredArgsConstructor
 class GetLockedLineupsHandler implements QueryHandler<GetLockedLineupsQuery, LockedLineupsView> {
 
     private final LeagueAccess access;
     private final MatchLineupLockRepository locks;
     private final MatchApi matches;
-
-    GetLockedLineupsHandler(LeagueAccess access, MatchLineupLockRepository locks, MatchApi matches) {
-        this.access = access;
-        this.locks = locks;
-        this.matches = matches;
-    }
 
     @Override
     public LockedLineupsView handle(GetLockedLineupsQuery query) {

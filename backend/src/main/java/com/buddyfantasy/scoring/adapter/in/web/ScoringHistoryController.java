@@ -9,6 +9,7 @@ import com.buddyfantasy.scoring.application.usecases.getplayerpoints.GetPlayerPo
 import com.buddyfantasy.scoring.application.usecases.getplayerpoints.PlayerMatchdayView;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,13 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The points history of a manager (RF-33) and of a player (RF-11), for every member. Read only. */
 @RestController
+@RequiredArgsConstructor
 class ScoringHistoryController {
 
     private final CommandBus bus;
-
-    ScoringHistoryController(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @GetMapping("/api/leagues/{id}/managers/{userId}/history")
     List<ManagerMatchdayView> manager(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,

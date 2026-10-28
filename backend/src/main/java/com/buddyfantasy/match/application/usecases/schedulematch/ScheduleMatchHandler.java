@@ -15,10 +15,12 @@ import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.match.domain.Matchday;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.ConflictException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class ScheduleMatchHandler implements CommandHandler<ScheduleMatchCommand, MatchId> {
 
     private final LeagueAccess access;
@@ -27,16 +29,6 @@ class ScheduleMatchHandler implements CommandHandler<ScheduleMatchCommand, Match
     private final MatchLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    ScheduleMatchHandler(LeagueAccess access, MatchRepository matches, MatchAuditLog audit,
-                         MatchLimitsRepository limits, ApplicationEventPublisher events, Clock clock) {
-        this.access = access;
-        this.matches = matches;
-        this.audit = audit;
-        this.limits = limits;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public MatchId handle(ScheduleMatchCommand command) {

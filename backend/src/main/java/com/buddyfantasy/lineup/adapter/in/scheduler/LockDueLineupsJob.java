@@ -4,6 +4,7 @@ import com.buddyfantasy.lineup.application.usecases.findmatchestolock.FindMatche
 import com.buddyfantasy.lineup.application.usecases.findmatchestolock.MatchToLock;
 import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLineupsCommand;
 import com.buddyfantasy.shared.application.CommandBus;
+import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,17 +18,13 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @EnableConfigurationProperties(LockDueLineupsJobProperties.class)
+@RequiredArgsConstructor
 public class LockDueLineupsJob {
 
     private static final Logger log = LoggerFactory.getLogger(LockDueLineupsJob.class);
 
     private final CommandBus bus;
     private final LockDueLineupsJobProperties properties;
-
-    LockDueLineupsJob(CommandBus bus, LockDueLineupsJobProperties properties) {
-        this.bus = bus;
-        this.properties = properties;
-    }
 
     @Scheduled(cron = "${lineup.lock-job.cron}")
     @SchedulerLock(name = "LockDueLineupsJob")

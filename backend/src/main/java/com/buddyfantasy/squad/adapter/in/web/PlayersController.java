@@ -14,6 +14,7 @@ import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerComm
 import com.buddyfantasy.squad.application.usecases.updateplayer.UpdatePlayerCommand;
 import com.buddyfantasy.squad.domain.PlayerId;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,13 +27,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 class PlayersController {
 
     private final CommandBus bus;
-
-    PlayersController(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @PostMapping("/api/leagues/{id}/players")
     ResponseEntity<PlayerView> register(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,

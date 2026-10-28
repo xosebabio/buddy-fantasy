@@ -21,6 +21,7 @@ import com.buddyfantasy.lineup.application.port.out.MatchLineupLockRepository;
 import com.buddyfantasy.lineup.domain.LockedLineup;
 import com.buddyfantasy.lineup.domain.LockedPlayer;
 import com.buddyfantasy.lineup.domain.MatchLineupLock;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -31,15 +32,11 @@ import org.springframework.stereotype.Repository;
  * Deleting the lock row cascades to its lineups and players.
  */
 @Repository
+@RequiredArgsConstructor
 class JdbcMatchLineupLockRepository implements MatchLineupLockRepository {
 
     private final JdbcClient jdbc;
     private final JdbcTemplate batch;
-
-    JdbcMatchLineupLockRepository(JdbcClient jdbc, JdbcTemplate batch) {
-        this.jdbc = jdbc;
-        this.batch = batch;
-    }
 
     @Override
     public boolean saveIfAbsent(MatchLineupLock lock) {

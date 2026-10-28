@@ -9,6 +9,7 @@ import com.buddyfantasy.lineup.application.port.out.PlayerCatalog;
 import com.buddyfantasy.lineup.domain.LineupPlayer;
 import com.buddyfantasy.squad.SquadApi;
 import com.buddyfantasy.squad.SquadPlayer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,13 +17,10 @@ import org.springframework.stereotype.Component;
  * may edit; {@code market} will only change this adapter.
  */
 @Component
+@RequiredArgsConstructor
 class SquadPlayerCatalog implements PlayerCatalog {
 
     private final SquadApi squad;
-
-    SquadPlayerCatalog(SquadApi squad) {
-        this.squad = squad;
-    }
 
     @Override
     public Map<UUID, LineupPlayer> findPlayers(UUID leagueId, Collection<UUID> playerIds) {

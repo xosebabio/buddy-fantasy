@@ -9,16 +9,14 @@ import com.buddyfantasy.squad.SquadPlayer;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 class SquadApiService implements SquadApi {
 
     private final PlayerRepository players;
-
-    SquadApiService(PlayerRepository players) {
-        this.players = players;
-    }
 
     @Override
     public List<SquadPlayer> findPlayers(UUID leagueId, Collection<UUID> playerIds) {

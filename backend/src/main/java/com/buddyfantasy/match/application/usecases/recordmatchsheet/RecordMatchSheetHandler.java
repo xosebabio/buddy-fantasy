@@ -28,6 +28,7 @@ import com.buddyfantasy.shared.domain.DomainValidationException;
 import com.buddyfantasy.shared.domain.NotFoundException;
 import com.buddyfantasy.squad.SquadApi;
 import com.buddyfantasy.squad.SquadPlayer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Component;
  * the squad never changes a recorded sheet.
  */
 @Component
+@RequiredArgsConstructor
 class RecordMatchSheetHandler implements CommandHandler<RecordMatchSheetCommand, List<MatchSheetWarning>> {
 
     private final LeagueAccess access;
@@ -46,17 +48,6 @@ class RecordMatchSheetHandler implements CommandHandler<RecordMatchSheetCommand,
     private final MatchLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    RecordMatchSheetHandler(LeagueAccess access, MatchRepository matches, SquadApi squad, MatchAuditLog audit,
-                            MatchLimitsRepository limits, ApplicationEventPublisher events, Clock clock) {
-        this.access = access;
-        this.matches = matches;
-        this.squad = squad;
-        this.audit = audit;
-        this.limits = limits;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public List<MatchSheetWarning> handle(RecordMatchSheetCommand command) {

@@ -15,10 +15,12 @@ import com.buddyfantasy.lineup.application.port.out.PlayerCatalog;
 import com.buddyfantasy.lineup.domain.LineupTimeline;
 import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.shared.application.QueryHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Values, statuses and parameters are the current ones, so the warnings reflect what changed since saving. */
 @Component
+@RequiredArgsConstructor
 class GetMyLineupHandler implements QueryHandler<GetMyLineupQuery, MyLineupView> {
 
     private final LeagueAccess access;
@@ -28,18 +30,6 @@ class GetMyLineupHandler implements QueryHandler<GetMyLineupQuery, MyLineupView>
     private final MatchLineupLockRepository locks;
     private final PlayerCatalog players;
     private final Clock clock;
-
-    GetMyLineupHandler(LeagueAccess access, LeagueSettingsProvider leagueSettings, MatchApi matches,
-                       LineupVersionRepository versions, MatchLineupLockRepository locks,
-                       PlayerCatalog players, Clock clock) {
-        this.access = access;
-        this.leagueSettings = leagueSettings;
-        this.matches = matches;
-        this.versions = versions;
-        this.locks = locks;
-        this.players = players;
-        this.clock = clock;
-    }
 
     @Override
     public MyLineupView handle(GetMyLineupQuery query) {

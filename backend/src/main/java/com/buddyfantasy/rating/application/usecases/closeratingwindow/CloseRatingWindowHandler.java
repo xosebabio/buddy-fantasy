@@ -7,6 +7,7 @@ import com.buddyfantasy.rating.application.port.out.RatingVoteRepository;
 import com.buddyfantasy.rating.application.port.out.RatingWindowRepository;
 import com.buddyfantasy.rating.domain.RatingWindow;
 import com.buddyfantasy.shared.application.CommandHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -15,20 +16,13 @@ import org.springframework.stereotype.Component;
  * finds the window closed; a concurrent close waits and then finds it closed too.
  */
 @Component
+@RequiredArgsConstructor
 class CloseRatingWindowHandler implements CommandHandler<CloseRatingWindowCommand, Boolean> {
 
     private final RatingWindowRepository windows;
     private final RatingVoteRepository votes;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    CloseRatingWindowHandler(RatingWindowRepository windows, RatingVoteRepository votes,
-                             ApplicationEventPublisher events, Clock clock) {
-        this.windows = windows;
-        this.votes = votes;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Boolean handle(CloseRatingWindowCommand command) {

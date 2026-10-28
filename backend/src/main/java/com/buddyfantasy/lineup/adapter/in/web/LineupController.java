@@ -10,6 +10,7 @@ import com.buddyfantasy.lineup.application.usecases.savelineup.SaveLineupCommand
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,13 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The current user's own working lineup in a league, and every member's lineup once a match is locked. */
 @RestController
+@RequiredArgsConstructor
 class LineupController {
 
     private final CommandBus bus;
-
-    LineupController(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @GetMapping("/api/leagues/{id}/lineup")
     MyLineupView get(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {

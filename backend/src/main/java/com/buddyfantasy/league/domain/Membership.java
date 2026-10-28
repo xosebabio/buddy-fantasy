@@ -5,14 +5,14 @@ import java.util.UUID;
 
 import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.shared.domain.ConflictException;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 
 /** A user's single role in a league. {@code userId} is a logical reference to the identity module. */
 @Getter
 @Accessors(fluent = true)
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class Membership {
 
     private final UUID id;

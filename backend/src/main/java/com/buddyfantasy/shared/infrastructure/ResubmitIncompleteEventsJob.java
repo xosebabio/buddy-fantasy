@@ -1,5 +1,6 @@
 package com.buddyfantasy.shared.infrastructure;
 
+import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.modulith.events.IncompleteEventPublications;
@@ -14,16 +15,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @EnableConfigurationProperties(ResubmitIncompleteEventsJobProperties.class)
+@RequiredArgsConstructor
 public class ResubmitIncompleteEventsJob {
 
     private final IncompleteEventPublications publications;
     private final ResubmitIncompleteEventsJobProperties properties;
-
-    ResubmitIncompleteEventsJob(IncompleteEventPublications publications,
-                                ResubmitIncompleteEventsJobProperties properties) {
-        this.publications = publications;
-        this.properties = properties;
-    }
 
     @Scheduled(cron = "${shared.events.resubmit-job.cron}")
     @SchedulerLock(name = "ResubmitIncompleteEventsJob")

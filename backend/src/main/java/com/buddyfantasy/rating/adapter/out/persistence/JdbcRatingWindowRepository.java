@@ -20,6 +20,7 @@ import com.buddyfantasy.rating.domain.PlayerRatingResult;
 import com.buddyfantasy.rating.domain.RatingRules;
 import com.buddyfantasy.rating.domain.RatingWindow;
 import com.buddyfantasy.rating.domain.SheetPlayer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Repository;
  * removed from the sheet loses.
  */
 @Repository
+@RequiredArgsConstructor
 class JdbcRatingWindowRepository implements RatingWindowRepository {
 
     private static final String SELECT_WINDOW = """
@@ -41,11 +43,6 @@ class JdbcRatingWindowRepository implements RatingWindowRepository {
 
     private final JdbcClient jdbc;
     private final JdbcTemplate batch;
-
-    JdbcRatingWindowRepository(JdbcClient jdbc, JdbcTemplate batch) {
-        this.jdbc = jdbc;
-        this.batch = batch;
-    }
 
     @Override
     public boolean saveIfAbsent(RatingWindow window) {

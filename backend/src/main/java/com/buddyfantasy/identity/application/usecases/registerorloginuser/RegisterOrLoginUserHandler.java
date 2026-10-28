@@ -7,18 +7,15 @@ import com.buddyfantasy.identity.application.port.out.UserRepository;
 import com.buddyfantasy.identity.domain.User;
 import com.buddyfantasy.identity.domain.UserId;
 import com.buddyfantasy.shared.application.CommandHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class RegisterOrLoginUserHandler implements CommandHandler<RegisterOrLoginUserCommand, UserId> {
 
     private final UserRepository users;
     private final Clock clock;
-
-    RegisterOrLoginUserHandler(UserRepository users, Clock clock) {
-        this.users = users;
-        this.clock = clock;
-    }
 
     @Override
     public UserId handle(RegisterOrLoginUserCommand command) {

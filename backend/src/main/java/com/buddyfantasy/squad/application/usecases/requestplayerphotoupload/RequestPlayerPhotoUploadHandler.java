@@ -11,23 +11,17 @@ import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.PlayerPhotoFormat;
 import com.buddyfantasy.squad.domain.PlayerPhotoKey;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class RequestPlayerPhotoUploadHandler implements CommandHandler<RequestPlayerPhotoUploadCommand, ImageUpload> {
 
     private final LeagueAccess access;
     private final PlayerRepository players;
     private final ImageStorage images;
     private final SquadLimitsRepository limits;
-
-    RequestPlayerPhotoUploadHandler(LeagueAccess access, PlayerRepository players, ImageStorage images,
-                                    SquadLimitsRepository limits) {
-        this.access = access;
-        this.players = players;
-        this.images = images;
-        this.limits = limits;
-    }
 
     @Override
     public ImageUpload handle(RequestPlayerPhotoUploadCommand command) {

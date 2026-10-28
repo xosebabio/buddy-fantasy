@@ -12,20 +12,16 @@ import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.Membership;
 import com.buddyfantasy.shared.application.QueryHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class ListLeagueMembersHandler implements QueryHandler<ListLeagueMembersQuery, List<MemberView>> {
 
     private final LeagueAccess access;
     private final MembershipRepository memberships;
     private final UserDirectory users;
-
-    ListLeagueMembersHandler(LeagueAccess access, MembershipRepository memberships, UserDirectory users) {
-        this.access = access;
-        this.memberships = memberships;
-        this.users = users;
-    }
 
     @Override
     public List<MemberView> handle(ListLeagueMembersQuery query) {

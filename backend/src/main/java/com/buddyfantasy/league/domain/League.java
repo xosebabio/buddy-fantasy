@@ -3,13 +3,13 @@ package com.buddyfantasy.league.domain;
 import java.time.Instant;
 
 import com.buddyfantasy.shared.domain.AggregateRoot;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 
 @Getter
 @Accessors(fluent = true)
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class League extends AggregateRoot {
 
     private final LeagueId id;

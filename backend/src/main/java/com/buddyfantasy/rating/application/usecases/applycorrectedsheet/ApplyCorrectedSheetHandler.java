@@ -8,6 +8,7 @@ import com.buddyfantasy.rating.application.port.out.RatingWindowRepository;
 import com.buddyfantasy.rating.domain.RatingWindow;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.UnexpectedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -16,20 +17,13 @@ import org.springframework.stereotype.Component;
  * if a concurrent {@code MatchClosed} opens it first, the insert waits for it and the correction is applied on top.
  */
 @Component
+@RequiredArgsConstructor
 class ApplyCorrectedSheetHandler implements CommandHandler<ApplyCorrectedSheetCommand, Void> {
 
     private final RatingWindowRepository windows;
     private final LeagueSettingsProvider leagueSettings;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    ApplyCorrectedSheetHandler(RatingWindowRepository windows, LeagueSettingsProvider leagueSettings,
-                               ApplicationEventPublisher events, Clock clock) {
-        this.windows = windows;
-        this.leagueSettings = leagueSettings;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Void handle(ApplyCorrectedSheetCommand command) {

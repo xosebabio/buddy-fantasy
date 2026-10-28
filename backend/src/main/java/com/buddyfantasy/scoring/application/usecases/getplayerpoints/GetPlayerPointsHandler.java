@@ -8,6 +8,7 @@ import com.buddyfantasy.scoring.domain.PlayerMatchday;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.NotFoundException;
 import com.buddyfantasy.squad.SquadApi;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,17 +16,12 @@ import org.springframework.stereotype.Component;
  * does it look at the squad, to tell a player of another league or unknown (404) from one who has not played yet.
  */
 @Component
+@RequiredArgsConstructor
 class GetPlayerPointsHandler implements QueryHandler<GetPlayerPointsQuery, List<PlayerMatchdayView>> {
 
     private final LeagueAccess access;
     private final MatchScoreRepository scores;
     private final SquadApi squad;
-
-    GetPlayerPointsHandler(LeagueAccess access, MatchScoreRepository scores, SquadApi squad) {
-        this.access = access;
-        this.scores = scores;
-        this.squad = squad;
-    }
 
     @Override
     public List<PlayerMatchdayView> handle(GetPlayerPointsQuery query) {

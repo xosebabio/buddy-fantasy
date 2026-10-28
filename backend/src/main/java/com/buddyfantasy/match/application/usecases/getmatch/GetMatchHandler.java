@@ -7,18 +7,15 @@ import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.ForbiddenException;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class GetMatchHandler implements QueryHandler<GetMatchQuery, MatchView> {
 
     private final LeagueAccess access;
     private final MatchRepository matches;
-
-    GetMatchHandler(LeagueAccess access, MatchRepository matches) {
-        this.access = access;
-        this.matches = matches;
-    }
 
     @Override
     public MatchView handle(GetMatchQuery query) {

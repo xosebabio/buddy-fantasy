@@ -7,18 +7,16 @@ import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.Discar
 import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.DiscardLockedLineupsCommand.Cause;
 import com.buddyfantasy.scoring.domain.ManagerLineup;
 import com.buddyfantasy.shared.application.CommandBus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 /** Keeps scoring's copy of the locked lineups. Delivery is at least once and every command is idempotent. */
 @Component
+@RequiredArgsConstructor
 class LineupEventsListener {
 
     private final CommandBus bus;
-
-    LineupEventsListener(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @ApplicationModuleListener
     void on(LineupsLocked event) {

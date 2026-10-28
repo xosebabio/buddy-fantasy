@@ -11,16 +11,14 @@ import com.buddyfantasy.identity.UserSummary;
 import com.buddyfantasy.identity.application.port.out.UserRepository;
 import com.buddyfantasy.identity.domain.User;
 import com.buddyfantasy.identity.domain.UserId;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 class UserDirectoryService implements UserDirectory {
 
     private final UserRepository users;
-
-    UserDirectoryService(UserRepository users) {
-        this.users = users;
-    }
 
     @Override
     public Map<UUID, UserSummary> findSummaries(Set<UUID> userIds) {

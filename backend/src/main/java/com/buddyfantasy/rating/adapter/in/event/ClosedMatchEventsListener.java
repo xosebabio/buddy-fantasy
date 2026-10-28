@@ -9,6 +9,7 @@ import com.buddyfantasy.rating.application.usecases.applycorrectedsheet.ApplyCor
 import com.buddyfantasy.rating.application.usecases.openratingwindow.OpenRatingWindowCommand;
 import com.buddyfantasy.rating.domain.SheetPlayer;
 import com.buddyfantasy.shared.application.CommandBus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
@@ -17,13 +18,10 @@ import org.springframework.stereotype.Component;
  * already have beans named after their match listeners). Delivery is at least once and every command is idempotent.
  */
 @Component
+@RequiredArgsConstructor
 class ClosedMatchEventsListener {
 
     private final CommandBus bus;
-
-    ClosedMatchEventsListener(CommandBus bus) {
-        this.bus = bus;
-    }
 
     /** RF-17. */
     @ApplicationModuleListener

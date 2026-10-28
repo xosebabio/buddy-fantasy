@@ -11,6 +11,7 @@ import com.buddyfantasy.scoring.domain.Standings;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,17 +19,12 @@ import org.springframework.stereotype.Component;
  * another league or unknown (404) from one of the league not scored yet (409).
  */
 @Component
+@RequiredArgsConstructor
 class GetMatchdayScoresHandler implements QueryHandler<GetMatchdayScoresQuery, MatchdayScoresView> {
 
     private final LeagueAccess access;
     private final MatchScoreRepository scores;
     private final MatchApi matches;
-
-    GetMatchdayScoresHandler(LeagueAccess access, MatchScoreRepository scores, MatchApi matches) {
-        this.access = access;
-        this.scores = scores;
-        this.matches = matches;
-    }
 
     @Override
     public MatchdayScoresView handle(GetMatchdayScoresQuery query) {

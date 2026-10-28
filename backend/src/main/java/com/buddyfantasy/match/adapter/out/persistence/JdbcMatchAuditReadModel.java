@@ -11,20 +11,17 @@ import com.buddyfantasy.match.domain.MatchAuditAction;
 import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 /** Reads the JSONB snapshots written by {@link JdbcMatchAuditLog} with the same {@link ObjectMapper}. */
 @Repository
+@RequiredArgsConstructor
 class JdbcMatchAuditReadModel implements MatchAuditReadModel {
 
     private final JdbcClient jdbc;
     private final ObjectMapper json;
-
-    JdbcMatchAuditReadModel(JdbcClient jdbc, ObjectMapper json) {
-        this.jdbc = jdbc;
-        this.json = json;
-    }
 
     @Override
     public List<MatchAuditEntryView> findByLeagueIdAndMatchId(UUID leagueId, UUID matchId) {

@@ -16,8 +16,8 @@ import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.shared.domain.AggregateRoot;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 
 /**
@@ -27,7 +27,7 @@ import lombok.experimental.Accessors;
  */
 @Getter
 @Accessors(fluent = true)
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MatchLineupLock extends AggregateRoot {
 
     private final UUID matchId;

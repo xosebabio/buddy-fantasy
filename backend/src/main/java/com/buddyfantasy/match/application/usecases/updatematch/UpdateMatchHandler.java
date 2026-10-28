@@ -17,6 +17,7 @@ import com.buddyfantasy.match.domain.Matchday;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
  * change of opponent or venue), {@code DETAILS_UPDATED} otherwise, and none if nothing changed.
  */
 @Component
+@RequiredArgsConstructor
 class UpdateMatchHandler implements CommandHandler<UpdateMatchCommand, Void> {
 
     private final LeagueAccess access;
@@ -33,16 +35,6 @@ class UpdateMatchHandler implements CommandHandler<UpdateMatchCommand, Void> {
     private final MatchLimitsRepository limits;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    UpdateMatchHandler(LeagueAccess access, MatchRepository matches, MatchAuditLog audit,
-                       MatchLimitsRepository limits, ApplicationEventPublisher events, Clock clock) {
-        this.access = access;
-        this.matches = matches;
-        this.audit = audit;
-        this.limits = limits;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Void handle(UpdateMatchCommand command) {

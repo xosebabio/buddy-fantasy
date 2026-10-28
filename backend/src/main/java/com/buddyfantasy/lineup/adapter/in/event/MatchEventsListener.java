@@ -7,18 +7,16 @@ import com.buddyfantasy.match.MatchClosed;
 import com.buddyfantasy.match.MatchDeleted;
 import com.buddyfantasy.match.MatchRescheduled;
 import com.buddyfantasy.shared.application.CommandBus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 /** Keeps the lineup locks in step with the calendar. Delivery is at least once and every command is idempotent. */
 @Component
+@RequiredArgsConstructor
 class MatchEventsListener {
 
     private final CommandBus bus;
-
-    MatchEventsListener(CommandBus bus) {
-        this.bus = bus;
-    }
 
     /** Safety net: locks a match the job did not reach, or one loaded into the calendar already played. */
     @ApplicationModuleListener

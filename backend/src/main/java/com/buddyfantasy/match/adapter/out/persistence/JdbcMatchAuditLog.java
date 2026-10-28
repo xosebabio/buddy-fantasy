@@ -10,20 +10,17 @@ import com.buddyfantasy.match.application.port.out.MatchSnapshot;
 import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 /** Snapshots are stored as JSONB with the application's {@link ObjectMapper} (ISO-8601 instants). */
 @Repository
+@RequiredArgsConstructor
 class JdbcMatchAuditLog implements MatchAuditLog {
 
     private final JdbcClient jdbc;
     private final ObjectMapper json;
-
-    JdbcMatchAuditLog(JdbcClient jdbc, ObjectMapper json) {
-        this.jdbc = jdbc;
-        this.json = json;
-    }
 
     @Override
     public void append(MatchAuditEntry entry) {

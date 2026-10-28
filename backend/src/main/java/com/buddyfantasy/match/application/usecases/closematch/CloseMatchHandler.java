@@ -13,11 +13,13 @@ import com.buddyfantasy.match.domain.MatchAuditAction;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 /** The deadline is checked against the server clock. Closing an already closed match changes and logs nothing. */
 @Component
+@RequiredArgsConstructor
 class CloseMatchHandler implements CommandHandler<CloseMatchCommand, Void> {
 
     private final LeagueAccess access;
@@ -25,15 +27,6 @@ class CloseMatchHandler implements CommandHandler<CloseMatchCommand, Void> {
     private final MatchAuditLog audit;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    CloseMatchHandler(LeagueAccess access, MatchRepository matches, MatchAuditLog audit,
-                      ApplicationEventPublisher events, Clock clock) {
-        this.access = access;
-        this.matches = matches;
-        this.audit = audit;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Void handle(CloseMatchCommand command) {

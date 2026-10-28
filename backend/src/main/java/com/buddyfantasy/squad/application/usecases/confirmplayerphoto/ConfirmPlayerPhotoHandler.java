@@ -13,9 +13,11 @@ import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.PlayerPhotoFormat;
 import com.buddyfantasy.squad.domain.PlayerPhotoKey;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class ConfirmPlayerPhotoHandler implements CommandHandler<ConfirmPlayerPhotoCommand, Void> {
 
     private final LeagueAccess access;
@@ -23,15 +25,6 @@ class ConfirmPlayerPhotoHandler implements CommandHandler<ConfirmPlayerPhotoComm
     private final ImageStorage images;
     private final ImageCleanup cleanup;
     private final SquadLimitsRepository limits;
-
-    ConfirmPlayerPhotoHandler(LeagueAccess access, PlayerRepository players, ImageStorage images,
-                              ImageCleanup cleanup, SquadLimitsRepository limits) {
-        this.access = access;
-        this.players = players;
-        this.images = images;
-        this.cleanup = cleanup;
-        this.limits = limits;
-    }
 
     @Override
     public Void handle(ConfirmPlayerPhotoCommand command) {

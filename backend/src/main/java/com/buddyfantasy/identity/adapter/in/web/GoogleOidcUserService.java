@@ -4,6 +4,7 @@ import com.buddyfantasy.identity.application.usecases.registerorloginuser.Regist
 import com.buddyfantasy.identity.domain.UserId;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -13,13 +14,10 @@ import org.springframework.stereotype.Component;
 
 /** Single adapter coupled to Google: registers the user on login and swaps the principal for {@link CurrentUser}. */
 @Component
+@RequiredArgsConstructor
 class GoogleOidcUserService extends OidcUserService {
 
     private final CommandBus bus;
-
-    GoogleOidcUserService(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @Override
     public OidcUser loadUser(OidcUserRequest request) {

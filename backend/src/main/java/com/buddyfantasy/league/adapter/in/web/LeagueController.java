@@ -12,6 +12,7 @@ import com.buddyfantasy.league.application.usecases.updateleaguesettings.UpdateL
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +23,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 class LeagueController {
 
     private final CommandBus bus;
-
-    LeagueController(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @PostMapping("/api/leagues")
     ResponseEntity<CreateLeagueResponse> create(@AuthenticationPrincipal CurrentUser user,

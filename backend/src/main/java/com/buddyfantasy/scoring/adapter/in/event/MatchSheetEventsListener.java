@@ -9,6 +9,7 @@ import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.Discar
 import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.DiscardLockedLineupsCommand.Cause;
 import com.buddyfantasy.scoring.domain.PlayerPerformance;
 import com.buddyfantasy.shared.application.CommandBus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
@@ -17,13 +18,10 @@ import org.springframework.stereotype.Component;
  * at least once and every command is idempotent.
  */
 @Component
+@RequiredArgsConstructor
 class MatchSheetEventsListener {
 
     private final CommandBus bus;
-
-    MatchSheetEventsListener(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @ApplicationModuleListener
     void on(MatchClosed event) {

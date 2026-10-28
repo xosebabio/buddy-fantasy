@@ -5,16 +5,14 @@ import com.buddyfantasy.identity.domain.User;
 import com.buddyfantasy.identity.domain.UserId;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.UnexpectedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class GetCurrentUserHandler implements QueryHandler<GetCurrentUserQuery, UserView> {
 
     private final UserRepository users;
-
-    GetCurrentUserHandler(UserRepository users) {
-        this.users = users;
-    }
 
     @Override
     public UserView handle(GetCurrentUserQuery query) {

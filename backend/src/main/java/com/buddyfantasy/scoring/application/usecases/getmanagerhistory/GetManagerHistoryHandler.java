@@ -8,19 +8,16 @@ import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.scoring.application.port.out.MatchScoreRepository;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** One query for the members and two for the manager's matches and lineups' players. */
 @Component
+@RequiredArgsConstructor
 class GetManagerHistoryHandler implements QueryHandler<GetManagerHistoryQuery, List<ManagerMatchdayView>> {
 
     private final LeagueAccess access;
     private final MatchScoreRepository scores;
-
-    GetManagerHistoryHandler(LeagueAccess access, MatchScoreRepository scores) {
-        this.access = access;
-        this.scores = scores;
-    }
 
     @Override
     public List<ManagerMatchdayView> handle(GetManagerHistoryQuery query) {

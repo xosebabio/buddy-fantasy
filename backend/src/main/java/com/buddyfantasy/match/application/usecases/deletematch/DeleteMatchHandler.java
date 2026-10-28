@@ -13,10 +13,12 @@ import com.buddyfantasy.match.domain.MatchAuditAction;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.shared.application.CommandHandler;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 class DeleteMatchHandler implements CommandHandler<DeleteMatchCommand, Void> {
 
     private final LeagueAccess access;
@@ -24,15 +26,6 @@ class DeleteMatchHandler implements CommandHandler<DeleteMatchCommand, Void> {
     private final MatchAuditLog audit;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-
-    DeleteMatchHandler(LeagueAccess access, MatchRepository matches, MatchAuditLog audit,
-                       ApplicationEventPublisher events, Clock clock) {
-        this.access = access;
-        this.matches = matches;
-        this.audit = audit;
-        this.events = events;
-        this.clock = clock;
-    }
 
     @Override
     public Void handle(DeleteMatchCommand command) {

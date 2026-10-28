@@ -6,17 +6,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.buddyfantasy.rating.application.port.out.RatingVoteRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 class JdbcRatingVoteRepository implements RatingVoteRepository {
 
     private final JdbcClient jdbc;
-
-    JdbcRatingVoteRepository(JdbcClient jdbc) {
-        this.jdbc = jdbc;
-    }
 
     @Override
     public Map<UUID, List<Integer>> findValuesByPlayer(UUID matchId) {

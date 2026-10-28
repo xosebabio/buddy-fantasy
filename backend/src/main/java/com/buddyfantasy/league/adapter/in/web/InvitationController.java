@@ -9,6 +9,7 @@ import com.buddyfantasy.league.application.usecases.regenerateinvitation.Regener
 import com.buddyfantasy.league.application.usecases.revokeinvitation.RevokeInvitationCommand;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,13 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Invitation tokens travel in the path: never log request URLs under {@code /api/invitations/}. */
 @RestController
+@RequiredArgsConstructor
 class InvitationController {
 
     private final CommandBus bus;
-
-    InvitationController(CommandBus bus) {
-        this.bus = bus;
-    }
 
     @PostMapping("/api/leagues/{id}/invitation")
     InvitationTokenResponse regenerate(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {

@@ -15,21 +15,18 @@ import java.util.UUID;
 
 import com.buddyfantasy.lineup.application.port.out.LineupVersionRepository;
 import com.buddyfantasy.lineup.domain.LineupVersion;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 /** Versions are immutable, so plain inserts and one joined select are enough; no JPA entity. */
 @Repository
+@RequiredArgsConstructor
 class JdbcLineupVersionRepository implements LineupVersionRepository {
 
     private final JdbcClient jdbc;
     private final JdbcTemplate batch;
-
-    JdbcLineupVersionRepository(JdbcClient jdbc, JdbcTemplate batch) {
-        this.jdbc = jdbc;
-        this.batch = batch;
-    }
 
     @Override
     public List<LineupVersion> findByLeagueIdAndUserId(UUID leagueId, UUID userId) {

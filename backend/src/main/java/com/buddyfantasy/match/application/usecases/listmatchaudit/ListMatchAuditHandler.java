@@ -5,6 +5,7 @@ import java.util.List;
 import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.shared.application.QueryHandler;
 import com.buddyfantasy.shared.domain.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,15 +13,11 @@ import org.springframework.stereotype.Component;
  * belongs to another one): {@code 404}, like the other match endpoints.
  */
 @Component
+@RequiredArgsConstructor
 class ListMatchAuditHandler implements QueryHandler<ListMatchAuditQuery, List<MatchAuditEntryView>> {
 
     private final LeagueAccess access;
     private final MatchAuditReadModel auditLog;
-
-    ListMatchAuditHandler(LeagueAccess access, MatchAuditReadModel auditLog) {
-        this.access = access;
-        this.auditLog = auditLog;
-    }
 
     @Override
     public List<MatchAuditEntryView> handle(ListMatchAuditQuery query) {

@@ -7,16 +7,14 @@ import java.util.UUID;
 import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.match.application.port.out.MatchScheduleReadModel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 class MatchApiService implements MatchApi {
 
     private final MatchScheduleReadModel schedules;
-
-    MatchApiService(MatchScheduleReadModel schedules) {
-        this.schedules = schedules;
-    }
 
     @Override
     public List<MatchSchedule> findMatches(UUID leagueId) {
