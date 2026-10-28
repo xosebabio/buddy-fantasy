@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dirección visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- Tokens (boceto: la paleta real la genera palette.mjs en la tarea 9) ---------- */
+  .theme, :root {
+    --bf-color-bg: #f6f5f2;
+    --bf-color-surface: #ffffff;
+    --bf-color-surface-sunken: #efede9;
+    --bf-color-border: #e3e0da;
+    --bf-color-border-strong: #c4c0b7;
+    --bf-color-text: #1d1b18;
+    --bf-color-text-muted: #66615a;
+    --bf-color-brand: #00a375;
+    --bf-color-brand-text: #00704f;
+    --bf-color-brand-subtle: #ddf3ea;
+    --bf-color-on-color: #1d1b18;
+    --bf-color-accent: #7a86ee;
+    --bf-color-accent-text: #4a54b8;
+    --bf-color-accent-subtle: #e8eafc;
+    --bf-color-focus: #5b67d6;
+    --bf-color-danger: #d23b32;
+    --bf-color-danger-text: #a82a24;
+    --bf-color-warning: #f2b33d;
+    --bf-color-warning-text: #6f4c00;
+    --bf-color-warning-subtle: #fdf0d2;
+    --bf-color-position-goalkeeper: #e2794e;
+    --bf-color-position-defender: #009dc2;
+    --bf-color-position-midfielder: #84941d;
+    --bf-color-position-forward: #de5ea5;
+    --bf-color-pitch: #123d29;
+    --bf-color-pitch-stripe: #164530;
+    --bf-color-pitch-line: rgb(255 255 255 / 0.55);
+    --bf-color-on-pitch: #ffffff;
+    --bf-color-on-pitch-muted: rgb(255 255 255 / 0.78);
+    --bf-color-scrim: rgb(29 27 24 / 0.45);
+    --bf-shadow-overlay: 0 -1px 0 rgb(29 27 24 / 0.06), 0 -12px 32px rgb(29 27 24 / 0.14);
+    --bf-shadow-raised: 0 1px 2px rgb(29 27 24 / 0.12), 0 4px 12px rgb(29 27 24 / 0.08);
+
+    --bf-font-display: "Barlow Condensed", system-ui, sans-serif;
+    --bf-font-text: "Barlow", system-ui, sans-serif;
+    --bf-font-size-1: 0.8125rem; /* 13 */
+    --bf-font-size-2: 1rem;      /* 16 */
+    --bf-font-size-3: 1.25rem;   /* 20 */
+    --bf-font-size-4: 1.5625rem; /* 25 */
+    --bf-font-size-5: 1.9375rem; /* 31 */
+    --bf-font-size-6: 2.4375rem; /* 39 */
+    --bf-font-size-7: 3.0625rem; /* 49 */
+    --bf-font-size-8: 3.8125rem; /* 61 */
+
+    --bf-space-1: 4px; --bf-space-2: 8px; --bf-space-3: 12px; --bf-space-4: 16px;
+    --bf-space-5: 24px; --bf-space-6: 32px; --bf-space-7: 48px; --bf-space-8: 64px;
+
+    --bf-radius-tag: 4px;
+    --bf-radius-control: 10px;
+    --bf-radius-sheet: 20px;
+    --bf-radius-round: 999px;
+
+    --bf-motion-fast: 120ms;
+    --bf-motion-base: 220ms;
+    --bf-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .theme[data-theme="dark"] {
+    --bf-color-bg: #121211;
+    --bf-color-surface: #1c1b19;
+    --bf-color-surface-sunken: #171615;
+    --bf-color-border: #312f2b;
+    --bf-color-border-strong: #4d4a44;
+    --bf-color-text: #f2f0ec;
+    --bf-color-text-muted: #a8a399;
+    --bf-color-brand-text: #1fbf8c;
+    --bf-color-brand-subtle: #0d2e23;
+    --bf-color-accent-text: #9aa3f3;
+    --bf-color-accent-subtle: #23264a;
+    --bf-color-focus: #9aa3f3;
+    --bf-color-danger-text: #f0766e;
+    --bf-color-warning-text: #f2b33d;
+    --bf-color-warning-subtle: #33280f;
+    --bf-color-scrim: rgb(0 0 0 / 0.6);
+    --bf-shadow-overlay: 0 -1px 0 rgb(255 255 255 / 0.06), 0 -12px 32px rgb(0 0 0 / 0.5);
+  }
+
+  /* ---------- Página del boceto (no es parte del sistema) ---------- */
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #d9d6cf; color: #1d1b18; font: 16px/1.5 var(--bf-font-text); }
+  .doc { max-width: 1680px; margin: 0 auto; padding: 32px 24px 80px; }
+  .doc h1 { font: 700 2.4375rem/1.1 var(--bf-font-display); margin: 0 0 8px; }
+  .doc > p { max-width: 70ch; margin: 0 0 32px; color: #4b4741; }
+  .doc h2 { font: 600 1.5625rem/1.2 var(--bf-font-display); margin: 48px 0 16px; }
+  .row { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { font-size: 13px; color: #4b4741; margin-top: 8px; max-width: 360px; }
+
+  /* ---------- Marco de móvil ---------- */
+  .phone {
+    width: 360px; height: 740px; border-radius: 28px; overflow: hidden; position: relative;
+    background: var(--bf-color-bg); color: var(--bf-color-text);
+    font-family: var(--bf-font-text); font-size: var(--bf-font-size-2); line-height: 1.5;
+    display: flex; flex-direction: column;
+    box-shadow: 0 0 0 8px #1d1b18, 0 20px 40px rgb(0 0 0 / 0.25);
+  }
+  .status { height: 28px; flex: none; }
+
+  /* ---------- Barra superior ---------- */
+  .topbar {
+    flex: none; display: flex; align-items: center; gap: var(--bf-space-2);
+    padding: 0 var(--bf-space-2) 0 var(--bf-space-4); min-height: 56px;
+    border-bottom: 1px solid var(--bf-color-border);
+  }
+  .wordmark { font: 700 var(--bf-font-size-4)/1 var(--bf-font-display); letter-spacing: -0.01em; }
+  .wordmark b { color: var(--bf-color-brand-text); font-weight: 700; }
+  .switcher {
+    display: flex; align-items: center; gap: var(--bf-space-1); min-height: 44px; padding: 0;
+    background: none; border: 0; color: inherit; font: 600 var(--bf-font-size-3)/1.1 var(--bf-font-display);
+  }
+  .switcher svg { width: 20px; height: 20px; color: var(--bf-color-text-muted); }
+  .spacer { flex: 1; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: var(--bf-radius-round); flex: none;
+    background: var(--bf-color-accent-subtle); color: var(--bf-color-accent-text);
+    display: grid; place-items: center; font: 600 var(--bf-font-size-1)/1 var(--bf-font-text);
+  }
+  .avatar-hit { width: 44px; height: 44px; display: grid; place-items: center; }
+
+  .content { flex: 1; overflow: hidden; padding: var(--bf-space-5) var(--bf-space-4) var(--bf-space-4); }
+
+  /* ---------- Tipografía ---------- */
+  .title { font: 700 var(--bf-font-size-6)/1.05 var(--bf-font-display); margin: 0; letter-spacing: -0.01em; }
+  .title-s { font: 700 var(--bf-font-size-5)/1.1 var(--bf-font-display); margin: 0; }
+  .lead { color: var(--bf-color-text-muted); margin: var(--bf-space-1) 0 0; font-size: 15px; }
+  .num { font-family: var(--bf-font-display); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Peto: el elemento propio ---------- */
+  .peto {
+    --size: 44px;
+    width: var(--size); height: calc(var(--size) * 1.12); flex: none;
+    clip-path: polygon(0 10%, 30% 0, 50% 16%, 70% 0, 100% 10%, 100% 100%, 0 100%);
+    background: var(--peto-color, var(--bf-color-border-strong));
+    color: var(--bf-color-on-color);
+    display: grid; place-items: center; padding-top: calc(var(--size) * 0.14);
+    font: 700 calc(var(--size) * 0.5)/1 var(--bf-font-display); font-variant-numeric: tabular-nums;
+  }
+  .peto.s { --size: 30px; }
+  .peto.l { --size: 72px; }
+  .gk { --peto-color: var(--bf-color-position-goalkeeper); }
+  .df { --peto-color: var(--bf-color-position-defender); }
+  .mf { --peto-color: var(--bf-color-position-midfielder); }
+  .fw { --peto-color: var(--bf-color-position-forward); }
+  .peto-wrap { position: relative; display: grid; place-items: center; }
+  .peto-wrap.selected::before {
+    content: ""; position: absolute; inset: -5px -6px -4px; border-radius: var(--bf-radius-control);
+    border: 2px solid var(--bf-color-accent);
+  }
+
+  /* ---------- Botones ---------- */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: var(--bf-space-2);
+    min-height: 48px; padding: 0 var(--bf-space-5); width: 100%;
+    border-radius: var(--bf-radius-control); border: 0;
+    font: 600 var(--bf-font-size-2)/1 var(--bf-font-text);
+  }
+  .btn svg { width: 20px; height: 20px; }
+  .btn-primary { background: var(--bf-color-brand); color: var(--bf-color-on-color); }
+  .btn-secondary { background: transparent; color: var(--bf-color-text); box-shadow: inset 0 0 0 1px var(--bf-color-border-strong); }
+  .btn-google { background: var(--bf-color-surface); color: var(--bf-color-text); box-shadow: inset 0 0 0 1px var(--bf-color-border-strong); }
+  .btn.focus { outline: 2px solid var(--bf-color-focus); outline-offset: 2px; }
+
+  .dock { flex: none; padding: var(--bf-space-3) var(--bf-space-4) var(--bf-space-3); }
+
+  /* ---------- Lista de ligas ---------- */
+  .list { list-style: none; margin: var(--bf-space-5) calc(var(--bf-space-4) * -1) 0; padding: 0; border-top: 1px solid var(--bf-color-border); }
+  .list li { display: flex; align-items: center; gap: var(--bf-space-3); min-height: 72px; padding: var(--bf-space-3) var(--bf-space-2) var(--bf-space-3) var(--bf-space-4); border-bottom: 1px solid var(--bf-color-border); }
+  .list .name { font: 600 var(--bf-font-size-4)/1.1 var(--bf-font-display); }
+  .list .meta { font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); margin-top: 2px; }
+  .list .chev { width: 20px; height: 20px; color: var(--bf-color-text-muted); flex: none; }
+  .tag {
+    display: inline-flex; align-items: center; height: 22px; padding: 0 var(--bf-space-2);
+    border-radius: var(--bf-radius-tag); font: 600 var(--bf-font-size-1)/1 var(--bf-font-text);
+    background: var(--bf-color-accent-subtle); color: var(--bf-color-accent-text);
+  }
+  .hint { font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); margin: var(--bf-space-3) 0 0; text-align: center; }
+
+  /* ---------- Navegación inferior ---------- */
+  .tabbar { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--bf-color-border); background: var(--bf-color-surface); padding-bottom: 16px; }
+  .tab { position: relative; display: grid; justify-items: center; gap: 2px; padding: 10px 0 6px; color: var(--bf-color-text-muted); font: 500 12px/1.2 var(--bf-font-text); }
+  .tab svg { width: 24px; height: 24px; }
+  .tab.active { color: var(--bf-color-brand-text); font-weight: 600; }
+  .tab.active::before { content: ""; position: absolute; top: -1px; left: 22%; right: 22%; height: 3px; border-radius: 0 0 3px 3px; background: var(--bf-color-brand); }
+
+  /* ---------- Jornada / alineación ---------- */
+  .match { font-size: 15px; color: var(--bf-color-text-muted); margin: var(--bf-space-1) 0 0; }
+  .deadline {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: var(--bf-space-3);
+    padding: 4px 10px 4px 8px; border-radius: var(--bf-radius-tag);
+    background: var(--bf-color-warning-subtle); color: var(--bf-color-warning-text);
+    font: 600 var(--bf-font-size-1)/1.3 var(--bf-font-text);
+  }
+  .deadline svg { width: 16px; height: 16px; }
+  .figures { display: flex; gap: var(--bf-space-5); margin-top: var(--bf-space-4); align-items: flex-end; }
+  .heading { display: flex; align-items: center; justify-content: space-between; gap: var(--bf-space-3); }
+  .heading .deadline { margin: 0; white-space: nowrap; }
+  .figure .value { white-space: nowrap; }
+  .figure .value { font: 600 var(--bf-font-size-4)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; }
+  .figure .value small { font-size: var(--bf-font-size-3); color: var(--bf-color-text-muted); font-weight: 500; }
+  .figure .label { font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); }
+
+  .pitch {
+    position: relative; margin-top: var(--bf-space-4); height: 290px;
+    border-radius: var(--bf-radius-tag); color: var(--bf-color-on-pitch);
+    background: repeating-linear-gradient(to bottom, var(--bf-color-pitch) 0 36px, var(--bf-color-pitch-stripe) 36px 72px);
+  }
+  .pitch .line { position: absolute; border: 1.5px solid var(--bf-color-pitch-line); }
+  .pitch .half { left: 0; right: 0; top: 0; height: 0; border-width: 1.5px 0 0; }
+  .pitch .circle { width: 84px; height: 84px; border-radius: 50%; left: calc(50% - 42px); top: -42px; }
+  .pitch .box { left: 22%; right: 22%; bottom: -1.5px; height: 64px; border-bottom: 0; }
+  .pitch .goalbox { left: 36%; right: 36%; bottom: -1.5px; height: 24px; border-bottom: 0; }
+  .pitch .clip { position: absolute; inset: 10px; overflow: hidden; border: 1.5px solid var(--bf-color-pitch-line); }
+  .player { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 3px; width: 76px; }
+  .player .pname { font: 600 14px/1 var(--bf-font-display); white-space: nowrap; }
+  .player .pval { font: 500 12px/1 var(--bf-font-display); color: var(--bf-color-on-pitch-muted); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Hoja inferior ---------- */
+  .scrim { position: absolute; inset: 0; background: var(--bf-color-scrim); }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; background: var(--bf-color-surface);
+    border-radius: var(--bf-radius-sheet) var(--bf-radius-sheet) 0 0; box-shadow: var(--bf-shadow-overlay);
+    padding: var(--bf-space-2) var(--bf-space-4) 32px;
+  }
+  .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--bf-color-border-strong); margin: 0 auto var(--bf-space-3); }
+  .sheet h3 { font: 700 var(--bf-font-size-4)/1.1 var(--bf-font-display); margin: 0 0 var(--bf-space-2); }
+  .sheet .list { margin-top: var(--bf-space-2); }
+  .sheet .list li { min-height: 60px; }
+  .sheet .check { width: 22px; height: 22px; color: var(--bf-color-brand-text); flex: none; }
+  .sheet .current .name { color: var(--bf-color-brand-text); }
+  .link { display: flex; align-items: center; min-height: 48px; color: var(--bf-color-accent-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---------- Vacío ---------- */
+  .empty { margin-top: var(--bf-space-7); display: grid; justify-items: start; gap: var(--bf-space-3); }
+  .empty p { margin: 0; color: var(--bf-color-text-muted); max-width: 32ch; }
+  .peto.ghost { background: none; box-shadow: none; outline: none; position: relative; }
+  .ghost-wrap { position: relative; width: 44px; height: 50px; }
+  .ghost-wrap svg { position: absolute; inset: 0; }
+
+  /* ---------- Login ---------- */
+  .login { flex: 1; display: flex; flex-direction: column; padding: var(--bf-space-6) var(--bf-space-4) var(--bf-space-4); }
+  .login .lineup { display: flex; gap: var(--bf-space-3); margin: auto 0 var(--bf-space-5); }
+  .login .lineup .peto { animation: drop var(--bf-motion-base) var(--bf-ease-out) both; }
+  .login .lineup .peto:nth-child(2) { animation-delay: 80ms; }
+  .login .lineup .peto:nth-child(3) { animation-delay: 160ms; }
+  .login .lineup .peto:nth-child(4) { animation-delay: 240ms; }
+  @keyframes drop { from { transform: translateY(-16px); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .login .lineup .peto { animation: none; } }
+  .login .title { font-size: var(--bf-font-size-8); line-height: 0.95; }
+  .login .lead { font-size: var(--bf-font-size-2); max-width: 30ch; margin-top: var(--bf-space-3); }
+  .login .error { margin-top: var(--bf-space-4); padding: var(--bf-space-3); border-left: 3px solid var(--bf-color-danger); color: var(--bf-color-danger-text); background: var(--bf-color-surface); font-size: 15px; }
+  .login .btn { margin-top: var(--bf-space-6); }
+  .g { width: 20px; height: 20px; }
+
+  /* ---------- Escritorio lg ---------- */
+  .desk {
+    width: 1120px; height: 640px; border-radius: 12px; overflow: hidden;
+    background: var(--bf-color-bg); color: var(--bf-color-text); display: grid; grid-template-columns: 248px 1fr;
+    box-shadow: 0 0 0 1px #1d1b18, 0 20px 40px rgb(0 0 0 / 0.25);
+  }
+  .side { border-right: 1px solid var(--bf-color-border); background: var(--bf-color-surface); padding: var(--bf-space-4) var(--bf-space-3); display: flex; flex-direction: column; gap: var(--bf-space-2); }
+  .side .wordmark { padding: var(--bf-space-2) var(--bf-space-2) var(--bf-space-4); }
+  .side .switcher { padding: 0 var(--bf-space-2); margin-bottom: var(--bf-space-3); }
+  .side a { display: flex; align-items: center; gap: var(--bf-space-3); min-height: 44px; padding: 0 var(--bf-space-3); border-radius: var(--bf-radius-control); color: var(--bf-color-text-muted); font-weight: 500; text-decoration: none; position: relative; }
+  .side a svg { width: 22px; height: 22px; }
+  .side a.active { color: var(--bf-color-brand-text); font-weight: 600; background: var(--bf-color-brand-subtle); }
+  .side .me { margin-top: auto; display: flex; align-items: center; gap: var(--bf-space-3); padding: var(--bf-space-2); font-size: 15px; }
+  .desk main { padding: var(--bf-space-6) var(--bf-space-7); overflow: hidden; }
+  .cols { display: grid; grid-template-columns: 1fr 340px; gap: var(--bf-space-6); margin-top: var(--bf-space-5); }
+  .desk .pitch { margin-top: 0; height: 440px; background: repeating-linear-gradient(to bottom, var(--bf-color-pitch) 0 44px, var(--bf-color-pitch-stripe) 44px 88px); }
+  .squad h3 { font: 700 var(--bf-font-size-4)/1.1 var(--bf-font-display); margin: 0 0 var(--bf-space-3); }
+  .squad ul { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--bf-color-border); }
+  .squad li { display: flex; align-items: center; gap: var(--bf-space-3); min-height: 52px; border-bottom: 1px solid var(--bf-color-border); }
+  .squad .pn { flex: 1; font-weight: 500; }
+  .squad .pv { font: 600 var(--bf-font-size-3)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; }
+  .squad .btn { margin-top: var(--bf-space-5); width: auto; }
+
+  /* ---------- Muestras ---------- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; max-width: 1100px; }
+  .sw { background: #fff; border-radius: 8px; overflow: hidden; font-size: 13px; }
+  .sw i { display: block; height: 56px; }
+  .sw div { padding: 8px 10px; line-height: 1.35; }
+  .scale { background: #fff; border-radius: 8px; padding: 16px 24px; max-width: 1100px; }
+  .scale div { display: flex; align-items: baseline; gap: 24px; border-bottom: 1px solid #eee; padding: 6px 0; }
+  .scale span:first-child { width: 120px; flex: none; font-size: 13px; color: #66615a; font-family: var(--bf-font-text); }
+  .points { display: flex; gap: 16px; align-items: baseline; }
+  .pos { color: var(--bf-color-brand-text); } .neg { color: var(--bf-color-danger-text); }
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Dirección visual de Buddy Fantasy</h1>
+  <p>Boceto de referencia de la dirección visual (FE-28), descrita en <code>frontend/src/app/ui/README.md</code>. Los colores son aproximados: los reales salen de <code>palette.mjs</code>. Las fuentes vienen de Google Fonts solo en este boceto; la app las sirve con <code>@fontsource</code>. Los datos son de ejemplo.</p>
+
+  <h2>Pantallas</h2>
+  <div class="row" id="screens">
+
+    <!-- Login -->
+    <figure>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <div class="login">
+          <div class="wordmark">Buddy<b>Fantasy</b></div>
+          <div class="lineup" aria-hidden="true">
+            <div class="peto gk l">1</div><div class="peto df l">4</div><div class="peto mf l">8</div><div class="peto fw l">9</div>
+          </div>
+          <h1 class="title">El fantasy de tu equipo</h1>
+          <p class="lead">Valora a los jugadores después de cada partido y compite con tu alineación.</p>
+          <div class="error">No se pudo entrar con Google. Vuelve a intentarlo.</div>
+          <button class="btn btn-google">
+            <svg class="g" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.6 12.2c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.3-4.8 3.3-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.8c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.2v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.8 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.2a11 11 0 0 0 0 9.8z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.2 1.6l3.1-3.1A11 11 0 0 0 2.2 7.1l3.6 2.8C6.7 7.3 9.1 5.4 12 5.4z"/></svg>
+            Entrar con Google
+          </button>
+        </div>
+      </div>
+      <figcaption>Login con el error de <code>?error</code>. Los cuatro petos con los dorsales clásicos de cada puesto caen en secuencia al cargar: el único movimiento no pedido de la app.</figcaption>
+    </figure>
+
+    <!-- Mis ligas -->
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar">
+          <span class="wordmark">Buddy<b>Fantasy</b></span>
+          <span class="spacer"></span>
+          <span class="avatar-hit"><span class="avatar">XB</span></span>
+        </header>
+        <div class="content">
+          <h1 class="title">Tus ligas</h1>
+          <ul class="list">
+            <li><div style="flex:1"><div class="name">Os Domingueiros</div><div class="meta"><span class="tag">Admin</span></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></li>
+            <li><div style="flex:1"><div class="name">Veteranos do Sar</div><div class="meta">Manager</div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></li>
+            <li><div style="flex:1"><div class="name">Fútbol 7 Martes Noche</div><div class="meta">Manager</div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></li>
+          </ul>
+        </div>
+        <div class="dock">
+          <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Crear liga</button>
+          <p class="hint">¿Te han invitado? Abre el enlace que te pasaron.</p>
+        </div>
+      </div>
+      <figcaption>Mis ligas: filas a todo lo ancho, sin tarjetas. El rol solo se destaca cuando administras. La acción principal, abajo.</figcaption>
+    </figure>
+
+    <!-- Mis ligas vacío -->
+    <figure>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar">
+          <span class="wordmark">Buddy<b>Fantasy</b></span>
+          <span class="spacer"></span>
+          <span class="avatar-hit"><span class="avatar">XB</span></span>
+        </header>
+        <div class="content">
+          <h1 class="title">Tus ligas</h1>
+          <div class="empty">
+            <div class="ghost-wrap" aria-hidden="true"><svg viewBox="0 0 44 50" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" style="color:var(--bf-color-border-strong)"><path d="M1 5.4 13.2 1 22 8.2 30.8 1 43 5.4V49H1z"/></svg></div>
+            <p>Aún no juegas en ninguna liga. Crea la de tu equipo o pide el enlace de invitación a quien la lleve.</p>
+          </div>
+        </div>
+        <div class="dock">
+          <button class="btn btn-primary btn focus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Crear liga</button>
+        </div>
+      </div>
+      <figcaption>Estado vacío (con el botón en foco de teclado, anillo lavanda). Un peto sin dorsal: hueco por llenar.</figcaption>
+    </figure>
+
+    <!-- Alineación -->
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar">
+          <button class="switcher">Os Domingueiros<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <span class="spacer"></span>
+          <span class="avatar-hit"><span class="avatar">XB</span></span>
+        </header>
+        <div class="content" style="padding-top: var(--bf-space-4)">
+          <div class="heading"><h1 class="title-s">Jornada 12</h1><span class="deadline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Se bloquea en 1 d 4 h</span></div>
+          <p class="match">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+          <div class="figures">
+            <div class="figure"><div class="value">87,4 <small>/ 100 M</small></div><div class="label">Presupuesto</div></div>
+            <div class="figure"><div class="value">1 <small>de 2</small></div><div class="label">Cambios</div></div>
+          </div>
+          <div class="pitch">
+            <div class="clip"><div class="line half"></div><div class="line circle"></div><div class="line box"></div><div class="line goalbox"></div></div>
+            <div class="player" style="left:50%;top:15%"><div class="peto-wrap selected"><div class="peto fw">9</div></div><span class="pname">Pablo</span><span class="pval">15,2 M</span></div>
+            <div class="player" style="left:18%;top:36%"><div class="peto mf">10</div><span class="pname">Óscar</span><span class="pval">13,8 M</span></div>
+            <div class="player" style="left:50%;top:43%"><div class="peto mf">8</div><span class="pname">Martín</span><span class="pval">12,0 M</span></div>
+            <div class="player" style="left:82%;top:36%"><div class="peto mf">6</div><span class="pname">Iago</span><span class="pval">10,5 M</span></div>
+            <div class="player" style="left:30%;top:65%"><div class="peto df">4</div><span class="pname">Brais</span><span class="pval">11,1 M</span></div>
+            <div class="player" style="left:70%;top:65%"><div class="peto df">5</div><span class="pname">Xurxo</span><span class="pval">9,6 M</span></div>
+            <div class="player" style="left:50%;top:85%"><div class="peto gk">1</div><span class="pname">Diego</span><span class="pval">15,2 M</span></div>
+          </div>
+        </div>
+        <div class="dock" style="padding-top:0"><button class="btn btn-primary">Guardar alineación</button></div>
+        <nav class="tabbar">
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Jornada</span>
+          <span class="tab active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>Alineación</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>Valorar</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>Clasificación</span>
+          <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Liga</span>
+        </nav>
+      </div>
+      <figcaption>Boceto de la alineación con el shell completo. Césped oscuro a franjas, el mismo en los dos temas, para que los petos (uno por posición) pasen de 3:1. Pablo está seleccionado para un cambio (lavanda).</figcaption>
+    </figure>
+
+    <!-- Cambio de liga -->
+    <figure>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar">
+          <button class="switcher">Os Domingueiros<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <span class="spacer"></span>
+          <span class="avatar-hit"><span class="avatar">XB</span></span>
+        </header>
+        <div class="content">
+          <h1 class="title-s">Jornada 12</h1>
+          <p class="match">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+        </div>
+        <div class="scrim"></div>
+        <div class="sheet" role="dialog">
+          <div class="grip"></div>
+          <h3>Cambiar de liga</h3>
+          <ul class="list">
+            <li class="current"><div style="flex:1"><div class="name">Os Domingueiros</div><div class="meta">Admin</div></div><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></li>
+            <li><div style="flex:1"><div class="name">Veteranos do Sar</div><div class="meta">Manager</div></div></li>
+            <li><div style="flex:1"><div class="name">Fútbol 7 Martes Noche</div><div class="meta">Manager</div></div></li>
+          </ul>
+          <a class="link">Ver todas tus ligas</a>
+        </div>
+      </div>
+      <figcaption>Cambio de liga en hoja inferior. Las hojas son lo único con sombra y el radio más grande: flotan sobre todo lo demás.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Escritorio (lg ≥ 1024)</h2>
+  <div class="desk theme" data-theme="light">
+    <aside class="side">
+      <span class="wordmark">Buddy<b>Fantasy</b></span>
+      <button class="switcher">Os Domingueiros<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Jornada</a>
+      <a class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>Alineación</a>
+      <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>Valorar</a>
+      <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>Clasificación</a>
+      <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Liga</a>
+      <div class="me"><span class="avatar">XB</span>Xosé Babío</div>
+    </aside>
+    <main>
+      <h1 class="title">Jornada 12</h1>
+      <p class="match">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+      <div class="cols">
+        <div class="pitch">
+          <div class="clip"><div class="line half"></div><div class="line circle"></div><div class="line box"></div><div class="line goalbox"></div></div>
+          <div class="player" style="left:50%;top:13%"><div class="peto fw">9</div><span class="pname">Pablo</span><span class="pval">15,2 M</span></div>
+          <div class="player" style="left:22%;top:40%"><div class="peto mf">10</div><span class="pname">Óscar</span><span class="pval">13,8 M</span></div>
+          <div class="player" style="left:50%;top:44%"><div class="peto mf">8</div><span class="pname">Martín</span><span class="pval">12,0 M</span></div>
+          <div class="player" style="left:78%;top:40%"><div class="peto mf">6</div><span class="pname">Iago</span><span class="pval">10,5 M</span></div>
+          <div class="player" style="left:34%;top:68%"><div class="peto df">4</div><span class="pname">Brais</span><span class="pval">11,1 M</span></div>
+          <div class="player" style="left:66%;top:68%"><div class="peto df">5</div><span class="pname">Xurxo</span><span class="pval">9,6 M</span></div>
+          <div class="player" style="left:50%;top:89%"><div class="peto gk">1</div><span class="pname">Diego</span><span class="pval">15,2 M</span></div>
+        </div>
+        <section class="squad">
+          <span class="deadline" style="margin:0 0 var(--bf-space-4)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Se bloquea en 1 d 4 h</span>
+          <div class="figures" style="margin:0 0 var(--bf-space-5)">
+            <div class="figure"><div class="value">87,4 <small>/ 100 M</small></div><div class="label">Presupuesto</div></div>
+            <div class="figure"><div class="value">1 <small>de 2</small></div><div class="label">Cambios</div></div>
+          </div>
+          <h3>En el banquillo</h3>
+          <ul>
+            <li><div class="peto s df">3</div><span class="pn">Antón</span><span class="pv">8,4 M</span></li>
+            <li><div class="peto s mf">14</div><span class="pn">Roi</span><span class="pv">7,9 M</span></li>
+            <li><div class="peto s fw">11</div><span class="pn">Uxío</span><span class="pv">12,6 M</span></li>
+            <li><div class="peto s gk">13</div><span class="pn">Fran</span><span class="pv">6,0 M</span></li>
+          </ul>
+          <button class="btn btn-primary">Guardar alineación</button>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <h2>Paleta (aprox.)</h2>
+  <div class="swatches">
+    <div class="sw"><i style="background:#00a375"></i><div><b>Marca</b><br>#00A375 · acción, positivos</div></div>
+    <div class="sw"><i style="background:#7a86ee"></i><div><b>Lavanda</b><br>#7A86EE · selección, foco, enlaces</div></div>
+    <div class="sw"><i style="background:#e2794e"></i><div><b>Portero</b><br>#E2794E</div></div>
+    <div class="sw"><i style="background:#009dc2"></i><div><b>Defensa</b><br>#009DC2</div></div>
+    <div class="sw"><i style="background:#84941d"></i><div><b>Medio</b><br>#84941D</div></div>
+    <div class="sw"><i style="background:#de5ea5"></i><div><b>Delantero</b><br>#DE5EA5</div></div>
+    <div class="sw"><i style="background:#d23b32"></i><div><b>Error</b><br>y puntos negativos</div></div>
+    <div class="sw"><i style="background:#f2b33d"></i><div><b>Aviso</b><br>plazos a punto de vencer</div></div>
+    <div class="sw"><i style="background:#f6f5f2;box-shadow:inset 0 -1px #e3e0da"></i><div><b>Fondo claro</b><br>#F6F5F2, superficie #FFF</div></div>
+    <div class="sw"><i style="background:#121211"></i><div><b>Fondo oscuro</b><br>#121211, superficie #1C1B19</div></div>
+  </div>
+
+  <h2>Escala tipográfica (tercera mayor, 1,25)</h2>
+  <div class="scale theme" data-theme="light">
+    <div><span>8 · 61 px</span><span style="font:700 61px/1 var(--bf-font-display)">El fantasy de tu equipo</span></div>
+    <div><span>6 · 39 px</span><span style="font:700 39px/1.05 var(--bf-font-display)">Tus ligas</span></div>
+    <div><span>5 · 31 px</span><span style="font:700 31px/1.1 var(--bf-font-display)">Jornada 12</span></div>
+    <div><span>4 · 25 px</span><span style="font:600 25px/1.1 var(--bf-font-display)">Os Domingueiros</span></div>
+    <div><span>3 · 20 px</span><span style="font:600 20px/1.2 var(--bf-font-display)">En el banquillo</span></div>
+    <div><span>2 · 16 px</span><span style="font:400 16px/1.5 var(--bf-font-text)">Texto de Barlow a 16 px: también el mínimo de los inputs.</span></div>
+    <div><span>1 · 13 px</span><span style="font:400 13px/1.4 var(--bf-font-text);color:#66615a">Ayudas, metadatos y etiquetas de la navegación.</span></div>
+    <div><span>Cifras</span><span class="points num" style="font-size:39px;font-weight:700"><span class="pos">+14</span><span class="neg">−3</span><span>87,4 M</span><span>1 de 2</span></span></div>
+  </div>
+</div>
+<script>
+  // Duplica en oscuro las pantallas marcadas, para comparar los dos temas.
+  document.querySelectorAll('[data-dark-twin]').forEach((fig) => {
+    const twin = fig.cloneNode(true);
+    twin.removeAttribute('data-dark-twin');
+    twin.querySelector('.theme').dataset.theme = 'dark';
+    twin.querySelector('figcaption').textContent = 'La misma pantalla en tema oscuro.';
+    fig.after(twin);
+  });
+</script>
+</body>
+</html>
