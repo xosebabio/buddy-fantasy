@@ -79,6 +79,26 @@ class ModularityTests {
     }
 
     @Test
+    @DisplayName("rating depends only on league, match and datadefinition")
+    void ratingDependsOnlyOnLeagueMatchAndDataDefinition() {
+        var rating = modules.getModuleByName("rating").orElseThrow();
+
+        assertThat(rating.getDirectDependencies(modules).uniqueModules().map(ApplicationModule::getName))
+                .isSubsetOf("league", "match", "datadefinition", "shared")
+                .contains("league", "match", "datadefinition");
+    }
+
+    @Test
+    @DisplayName("No module that rating depends on depends back on rating")
+    void noModuleItDependsOnDependsOnRating() {
+        for (String name : new String[] {"league", "match", "datadefinition"}) {
+            var module = modules.getModuleByName(name).orElseThrow();
+
+            assertThat(module.getAllDependencies(modules).containsModuleNamed("rating")).as(name).isFalse();
+        }
+    }
+
+    @Test
     @DisplayName("Writes the module documentation")
     void writesModuleDocumentation() {
         new Documenter(modules).writeModulesAsPlantUml().writeIndividualModulesAsPlantUml();
