@@ -2,7 +2,7 @@
 
 Guía para agentes de `frontend/`. La fuente de verdad son las secciones *Requisitos no funcionales* (RNF-01, RNF-12 a RNF-16) y *Frontend* (FE-01 a FE-35) de `docs/requirements.md`; esto es un resumen para trabajar. Cita los códigos en commits y revisiones, como los RF.
 
-El esqueleto de `frontend/` se monta según `docs/11-frontend-foundation-plan.md`: Angular 22 (zoneless, Vitest con `@angular/build:unit-test`, nombres de fichero de la guía de 2025: `app.ts`, `catalog-page.ts`), TypeScript 6 y Node 26 LTS (`.nvmrc`; Angular 22 no admite Node 25).
+El esqueleto de `frontend/` se monta según `docs/11-frontend-foundation-plan.md`: Angular 22 (zoneless, Vitest con `@angular/build:unit-test`, nombres de fichero de la guía de 2025: `app.ts`, `catalog-page.ts`), TypeScript 6 y Node 26 LTS (`.nvmrc`; Angular 22 no admite Node 25). `openapi-typescript` 7 pide TypeScript 5 como *peer*: un `overrides` de `package.json` le da el 6 del proyecto, con el que genera igual.
 
 ## Qué es
 
@@ -28,10 +28,11 @@ frontend/src/app/
 
 ### Contrato con el backend (FE-05 a FE-11)
 
-- Los tipos salen del OpenAPI: `api/openapi.json` (lo escribe un test del backend) → `npm run api:types` → `core/api/schema.d.ts`. Los dos están versionados y CI falla si no están al día.
+- Los tipos salen del OpenAPI: `api/openapi.json` (lo escribe un test del backend) → `npm run api:types` → `core/api/schema.d.ts`. Los dos están versionados y CI falla si no están al día. Se generan con `--properties-required-by-default`: Jackson escribe siempre todas las propiedades (las vacías como `null`, y el spec las marca `nullable`), así que una propiedad sin `required` en el spec llega igual. La excepción es `Problem`, que solo se lee con `toProblem`.
+- URLs con `apiPath('/api/leagues/{id}', { id })`: solo admite rutas de `paths` con todos sus parámetros, así que un endpoint renombrado rompe la compilación.
 - **Nada de tipos del backend a mano:** alias con el nombre del DTO (`type PlayerResponse = components['schemas']['PlayerResponse']`); un modelo de vista se deriva (`Pick`, `&`) con una función de mapeo probada.
-- Un servicio por módulo del backend (`LeagueApi`, `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi`, `ScoringApi`, `IdentityApi`), un método por endpoint, URLs relativas, sin lógica de negocio.
-- Errores `ProblemDetail`: el interceptor resuelve `401` (login guardando la ruta), `403`, `404`, `5xx` y la red; los `400` y `409` los trata la pantalla: los `violations` (campo obligatorio que falta), en su campo; el `code` (todo `409` y los `400` de un límite o regla de negocio), con su texto de un `Record<ErrorCode, string>` exhaustivo sobre el enum `ErrorCode` del spec.
+- Un servicio por módulo del backend (`LeagueApi`, `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi`, `ScoringApi`, `IdentityApi`), un método por endpoint, URLs relativas, sin lógica de negocio. Las lecturas que dependen de un signal (la liga o el token de la ruta) devuelven un `httpResource` y reciben `() => string | undefined` (con `undefined` no piden nada): se llaman en un contexto de inyección, como un inicializador de campo de la página. Las demás devuelven un `Observable`, y una respuesta `204`, `Observable<null>`.
+- Errores `ProblemDetail`: el interceptor (`core/http`, solo en `/api/`) resuelve `401` (login guardando la ruta), `403` y `404` (su página, sin cambiar la URL), y `5xx` y la red (la petición espera en `FailedRequests` a que el usuario reintente o desista); los `400` y `409` los trata la pantalla con `toProblem(error)`: los `violations` (campo obligatorio que falta), en su campo; el `code` (todo `409` y los `400` de un límite o regla de negocio), con su texto de `ERROR_TEXTS`, un `Record<ErrorCode, string>` exhaustivo sobre el enum `ErrorCode` del spec. Una pantalla que trata ella misma un estado global (el `404` de una invitación caducada) pasa `handling(404)` como `HttpContext` al método del servicio.
 - **Plazos y límites en el servidor** (RNF-03): las cuentas atrás son orientativas y un `409` refresca y explica. Ningún límite ni valor por defecto de negocio como constante en el front: se lee del API o valida solo el servidor.
 - Sesión: `GET /api/me` al arrancar; login con navegación completa a `/oauth2/authorization/google` (ruta de vuelta en `sessionStorage`: el backend vuelve siempre a `/`, o a `/login?error` si falla); logout con `POST /api/logout`. Los guards solo ocultan: autoriza el backend.
 - **Anonimato** (RF-21): nunca se muestran ni deducen votos individuales de otros.

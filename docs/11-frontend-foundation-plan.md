@@ -197,7 +197,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 | 4 | Vuelta tras el login, cabeceras de proxy y `SessionTests`; redirect URI local y CORS en `commands.md`; `/login/oauth2` en `requirements.md` y `frontend.md` (§3.3, §3.5, decisión 3) | Login listo para el front (RF-01, FE-10) | ✅ |
 | 5 | Login de pruebas con perfil `e2e` y sus tests (§3.4) | Sesión para E2E (FE-34) | ✅ |
 | 6 | `ng new`, TypeScript estricto, `angular.json`, ESLint, Prettier, Stylelint, Vitest, scripts y estructura de carpetas (§4, §5) | Esqueleto que compila, pasa lint y tests (FE-01, FE-02, FE-21, FE-22, FE-32, FE-35) | ✅ |
-| 7 | Tipos generados, ruta tipada, `IdentityApi`, `LeagueApi`, CSRF, interceptor y textos de `ErrorCode` (§6) | Contrato con el backend (FE-05 a FE-09) | |
+| 7 | Tipos generados, ruta tipada, `IdentityApi`, `LeagueApi`, CSRF, interceptor y textos de `ErrorCode` (§6) | Contrato con el backend (FE-05 a FE-09) | ✅ |
 | 8 | Dirección visual con la skill, revisada con el usuario; `ui/README.md` (§7.1) | Identidad cerrada (FE-28) | |
 | 9 | Paleta, tokens, temas, tipografía, iconos y test de contraste (§7.2, §7.3) | Sistema de diseño base (FE-24 a FE-27, RNF-12) | |
 | 10 | Componentes de `ui/` de §7.4 y `/_ui` | Catálogo inicial (FE-17, FE-18, FE-20) | |
