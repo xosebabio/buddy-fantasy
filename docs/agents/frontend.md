@@ -2,7 +2,7 @@
 
 Guía para agentes de `frontend/`. La fuente de verdad son las secciones *Requisitos no funcionales* (RNF-01, RNF-12 a RNF-16) y *Frontend* (FE-01 a FE-35) de `docs/requirements.md`; esto es un resumen para trabajar. Cita los códigos en commits y revisiones, como los RF.
 
-Aún no existe `frontend/`: el esqueleto, el export del spec y el resto del trabajo de backend que se desprende van en `docs/11-frontend-foundation-plan.md`.
+El esqueleto de `frontend/` se monta según `docs/11-frontend-foundation-plan.md`: Angular 22 (zoneless, Vitest con `@angular/build:unit-test`, nombres de fichero de la guía de 2025: `app.ts`, `catalog-page.ts`), TypeScript 6 y Node 26 LTS (`.nvmrc`; Angular 22 no admite Node 25).
 
 ## Qué es
 
@@ -48,7 +48,7 @@ frontend/src/app/
 - **Reutilizar antes de crear**; un patrón que aparece en dos pantallas se extrae.
 - Standalone, `OnPush`, `inject()`, prefijo `bf-`, guía de estilo oficial de Angular; accesibles de serie con `@angular/cdk/a11y`.
 - Catálogos iniciales: FE-18 (`ui/`) y FE-19 (`shared/`). Lo demás se añade cuando lo pida una pantalla.
-- Cada componente de `ui/` aparece en `/_ui` (solo en desarrollo) con todos sus estados y en los dos temas.
+- Cada componente de `ui/` aparece en `/_ui` (solo en desarrollo) con todos sus estados y en los dos temas. Sus rutas están en `app/dev.routes.ts`, que el build de producción sustituye por `dev.routes.prod.ts` (vacío); el catálogo no se traduce, así que el lint de `i18n` no lo revisa.
 
 ### Tipado (FE-21 a FE-23)
 
@@ -70,7 +70,7 @@ frontend/src/app/
 
 - WCAG 2.2 AA en los dos temas, objetivos táctiles de 44 × 44 px, foco visible, teclado y lector de pantalla, `prefers-reduced-motion`.
 - Bundle inicial: aviso a 400 kB y error a 600 kB; LCP < 2,5 s en 4G.
-- Textos con `i18n`/`$localize` e id explícito; fechas, números e importes en `es-ES` y `Europe/Madrid`.
+- Textos con `i18n`/`$localize` e id explícito (`@@<capa o feature>.<pantalla>.<texto>`, lo exige el lint en las plantillas); fechas, números e importes en `es-ES` y `Europe/Madrid`. `npm run i18n:extract` escribe `src/locale/messages.xlf` (versionado) desde el build de producción.
 - Sesión solo en la cookie `HttpOnly`; CSRF con `XSRF-TOKEN`/`X-XSRF-TOKEN`; sin `innerHTML` con contenido de usuario ni `bypassSecurityTrust*`; CSP estricta (`autoCsp`).
 
 ### Calidad (FE-32 a FE-35)

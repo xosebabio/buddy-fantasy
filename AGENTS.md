@@ -8,11 +8,11 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 - **v1 NO incluye:** apps nativas, pagos, chat, varias competiciones por liga, compraventa de jugadores entre managers. No lo implementes sin que se pida.
 - **Objetivo:** un grupo de amigos en un VPS barato, sin bloquear la migración a cloud.
-- **Stack:** Java 21, Spring Boot 3, Spring Modulith, PostgreSQL + Flyway, login solo con Google, `@Scheduled` + ShedLock; Angular web mobile first (aún no existe `frontend/`).
+- **Stack:** Java 21, Spring Boot 3, Spring Modulith, PostgreSQL + Flyway, login solo con Google, `@Scheduled` + ShedLock; Angular web mobile first en `frontend/` (Node 26 LTS).
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. Requisitos del frontend definidos (plan 10); plan 11 (esqueleto de `frontend/`) con las decisiones cerradas; tareas 2 a 5 hechas (spec versionado en `api/openapi.json`, con los códigos de error como enum `ErrorCode`, vuelta tras el login a `/` y login de pruebas con el perfil `e2e`); siguiente: su tarea 6 (`ng new` y herramientas). No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. Requisitos del frontend definidos (plan 10); plan 11 (esqueleto de `frontend/`) con las decisiones cerradas; tareas 2 a 6 hechas (spec versionado en `api/openapi.json`, con los códigos de error como enum `ErrorCode`, vuelta tras el login a `/`, login de pruebas con el perfil `e2e` y esqueleto de `frontend/` con Angular 22, lint, formato y tests); siguiente: su tarea 7 (tipos generados y servicios de API). No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 

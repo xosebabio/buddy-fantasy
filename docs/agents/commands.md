@@ -20,7 +20,25 @@ S3_ENDPOINT=http://localhost:8333 AWS_ACCESS_KEY_ID=buddyfantasy AWS_SECRET_ACCE
 ```
 
 - Docker 29+ exige Testcontainers ≥ 1.21.4 (ya fijado en `pom.xml`).
-- Lint: pendiente.
+- Lint del backend: pendiente.
+
+### Frontend
+
+Con Node 26 LTS (el de `frontend/.nvmrc`; Angular 22 no admite Node 25), desde `frontend/`:
+
+```bash
+npm ci
+npm start              # ng serve en http://localhost:4200; proxy.conf.json manda /api, /oauth2 y /login/oauth2
+                       # a localhost:8080 sin reescribir Host (/login es la pantalla de Angular)
+npm run build          # build de producción en dist/buddy-fantasy/browser (sin /_ui, con autoCsp)
+npm run lint           # ESLint (TS y plantillas, boundaries, i18n con id) y Stylelint (solo tokens), sin avisos
+npm run format         # Prettier sobre TS, HTML, SCSS y JSON
+npm run format:check   # lo mismo, sin escribir (CI)
+npm test               # Vitest con jsdom, una pasada; npm test -- --watch para quedarse mirando
+npm run i18n:extract   # regenera src/locale/messages.xlf (versionado) desde el build de producción
+```
+
+`/_ui` (catálogo de componentes) solo existe con `npm start`.
 
 ## API
 

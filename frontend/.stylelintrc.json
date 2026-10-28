@@ -1,0 +1,40 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "plugins": ["stylelint-declaration-strict-value"],
+  "rules": {
+    "selector-type-no-unknown": [true, { "ignore": ["custom-elements"] }],
+    "scale-unlimited/declaration-strict-value": [
+      [
+        "/color$/",
+        "fill",
+        "stroke",
+        "box-shadow",
+        "/radius$/",
+        "/^(margin|padding)/",
+        "/gap$/",
+        "font-size"
+      ],
+      {
+        "ignoreFunctions": false,
+        "ignoreValues": [
+          "0",
+          "auto",
+          "none",
+          "inherit",
+          "initial",
+          "unset",
+          "transparent",
+          "currentcolor",
+          "/var\\(--bf-/"
+        ],
+        "expandShorthand": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/app/ui/styles/**/*.scss"],
+      "rules": { "scale-unlimited/declaration-strict-value": null }
+    }
+  ]
+}
