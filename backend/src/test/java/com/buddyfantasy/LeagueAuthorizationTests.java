@@ -66,7 +66,7 @@ class LeagueAuthorizationTests {
     UUID admin;
     UUID manager;
     UUID outsider;
-    /** The path variables of the endpoints: the league and a match, player and member of it. */
+    /** The path variables of the endpoints: the league and a match, player and member of it (also as a manager). */
     Map<String, UUID> variables;
 
     /** The lowest role allowed: {@link LeagueRole#MANAGER} for any member, since the admin also plays. */
@@ -87,7 +87,8 @@ class LeagueAuthorizationTests {
                 "id", peña.id(),
                 "matchId", fixtures.schedule(peña, 1, KICKOFF),
                 "playerId", fixtures.player(peña, FORWARD),
-                "memberId", member);
+                "memberId", member,
+                "userId", member);
     }
 
     private Map<Endpoint, Rule> rules() throws Exception {
@@ -138,6 +139,8 @@ class LeagueAuthorizationTests {
         // scoring
         rules.put(endpoint(GET, "/api/leagues/{id}/standings"), member());
         rules.put(endpoint(GET, "/api/leagues/{id}/standings/{matchId}"), member());
+        rules.put(endpoint(GET, "/api/leagues/{id}/managers/{userId}/history"), member());
+        rules.put(endpoint(GET, "/api/leagues/{id}/players/{playerId}/points"), member());
         return rules;
     }
 

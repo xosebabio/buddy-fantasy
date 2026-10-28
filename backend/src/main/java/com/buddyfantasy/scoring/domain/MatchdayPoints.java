@@ -20,6 +20,6 @@ public record MatchdayPoints(UUID matchId, Instant kickoffAt, Map<UUID, Integer>
 
     /** The match counts for a member since {@code memberSince} if they already were one at kickoff. */
     public boolean countsFor(Instant memberSince) {
-        return !memberSince.isAfter(kickoffAt);
+        return Standings.countsFor(kickoffAt, memberSince);
     }
 }

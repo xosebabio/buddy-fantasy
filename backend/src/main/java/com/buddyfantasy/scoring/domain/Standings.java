@@ -51,6 +51,11 @@ public class Standings {
         return ranked(rows, OverallStanding::points, OverallStanding::userId, (position, row) -> row.atPosition(position));
     }
 
+    /** A match counts for a member since {@code memberSince} if they already were one at {@code kickoffAt}. */
+    boolean countsFor(Instant kickoffAt, Instant memberSince) {
+        return !memberSince.isAfter(kickoffAt);
+    }
+
     /** Sorts by points (then by user, only for a stable order) and gives tied rows the same position. */
     private <T> List<T> ranked(List<T> rows, ToIntFunction<T> points, Function<T, UUID> userId,
             BiFunction<Integer, T, T> atPosition) {

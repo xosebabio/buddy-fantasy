@@ -20,11 +20,14 @@ import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.league.ScoringTable;
 import com.buddyfantasy.scoring.application.port.out.MatchScoreRepository;
 import com.buddyfantasy.scoring.domain.ManagerLineup;
+import com.buddyfantasy.scoring.domain.ManagerMatchday;
 import com.buddyfantasy.scoring.domain.ManagerScore;
 import com.buddyfantasy.scoring.domain.MatchScore;
 import com.buddyfantasy.scoring.domain.MatchdayPoints;
+import com.buddyfantasy.scoring.domain.PlayerMatchday;
 import com.buddyfantasy.scoring.domain.PlayerPerformance;
 import com.buddyfantasy.scoring.domain.PlayerScore;
+import com.buddyfantasy.scoring.domain.ScoredLine;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -154,6 +157,72 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
                                 .filter(row -> row.userId() != null)
                                 .collect(Collectors.toMap(ManagerPointsRow::userId, ManagerPointsRow::points))))
                 .toList();
+    }
+
+    /**
+     * One query for the matches with the manager's lineup, if any, and one for the lineup's players with their sheet
+     * line, null for a player who did not play.
+     */
+    @Override
+    public List<ManagerMatchday> findManagerMatchdays(UUID leagueId, UUID userId) {
+        List<ManagerMatchRow> matches = jdbc.sql("""
+                        select m.match_id, m.matchday, m.kickoff_at, m.rules, l.user_id, l.over_budget, l.points
+                        from scoring_match m
+                        left join scoring_lineup l on l.match_id = m.match_id and l.user_id = :userId
+                        where m.league_id = :leagueId and m.scored_at is not null
+                        order by m.kickoff_at, m.match_id""")
+                .param("leagueId", leagueId)
+                .param("userId", userId)
+                .query((rs, rowNum) -> new ManagerMatchRow(rs.getObject("match_id", UUID.class),
+                        rs.getInt("matchday"), instant(rs, "kickoff_at"), toRules(rs.getString("rules")),
+                        rs.getObject("user_id", UUID.class), rs.getBoolean("over_budget"), rs.getInt("points")))
+                .list();
+        Map<UUID, List<LinedUpRow>> players = jdbc.sql("""
+                        select lp.match_id, lp.player_id, s.position, s.goals, s.penalty_goals, s.penalties_saved,
+                               s.penalties_missed, s.assists, s.own_goals, s.yellow_card, s.double_yellow, s.red_card,
+                               s.action_points, s.rating_points
+                        from scoring_lineup l
+                        join scoring_match m on m.match_id = l.match_id
+                        join scoring_lineup_player lp on lp.match_id = l.match_id and lp.user_id = l.user_id
+                        left join scoring_player_score s on s.match_id = lp.match_id and s.player_id = lp.player_id
+                        where l.league_id = :leagueId and l.user_id = :userId and m.scored_at is not null
+                        order by lp.match_id, lp.player_id""")
+                .param("leagueId", leagueId)
+                .param("userId", userId)
+                .query((rs, rowNum) -> new LinedUpRow(rs.getObject("match_id", UUID.class),
+                        rs.getObject("player_id", UUID.class),
+                        rs.getString("position") == null ? null : toPlayerRow(rs, rowNum).line()))
+                .list().stream()
+                .collect(Collectors.groupingBy(LinedUpRow::matchId));
+        return matches.stream()
+                .map(match -> {
+                    List<LinedUpRow> lineup = players.getOrDefault(match.matchId(), List.of());
+                    return new ManagerMatchday(match.matchId(), match.matchday(), match.kickoffAt(), match.rules(),
+                            match.userId() == null ? null : new ManagerLineup(match.userId(),
+                                    lineup.stream().map(LinedUpRow::playerId).toList(), match.overBudget()),
+                            match.points(),
+                            lineup.stream()
+                                    .filter(row -> row.line() != null)
+                                    .collect(Collectors.toMap(LinedUpRow::playerId, LinedUpRow::line)));
+                })
+                .toList();
+    }
+
+    @Override
+    public List<PlayerMatchday> findPlayerMatchdays(UUID leagueId, UUID playerId) {
+        return jdbc.sql("""
+                        select m.match_id, m.matchday, m.kickoff_at, m.rules, s.player_id, s.position, s.goals,
+                               s.penalty_goals, s.penalties_saved, s.penalties_missed, s.assists, s.own_goals,
+                               s.yellow_card, s.double_yellow, s.red_card, s.action_points, s.rating_points
+                        from scoring_player_score s
+                        join scoring_match m on m.match_id = s.match_id
+                        where s.league_id = :leagueId and s.player_id = :playerId and m.scored_at is not null
+                        order by m.kickoff_at, m.match_id""")
+                .param("leagueId", leagueId)
+                .param("playerId", playerId)
+                .query((rs, rowNum) -> new PlayerMatchday(rs.getObject("match_id", UUID.class), rs.getInt("matchday"),
+                        instant(rs, "kickoff_at"), toRules(rs.getString("rules")), toPlayerRow(rs, rowNum).line()))
+                .list();
     }
 
     @Override
@@ -300,6 +369,10 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
         PlayerScore score() {
             return new PlayerScore(performance.playerId(), performance.position(), actionPoints, ratingPoints);
         }
+
+        ScoredLine line() {
+            return new ScoredLine(performance, actionPoints, ratingPoints);
+        }
     }
 
     /** {@code points} is only read if the match is scored, when it is not null. */
@@ -307,5 +380,14 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
     }
 
     private record ManagerPointsRow(UUID matchId, Instant kickoffAt, UUID userId, int points) {
+    }
+
+    /** {@code userId} is null if the manager had no lineup in the match. */
+    private record ManagerMatchRow(UUID matchId, int matchday, Instant kickoffAt, ScoringTable rules, UUID userId,
+                                   boolean overBudget, int points) {
+    }
+
+    /** {@code line} is null if the player did not play. */
+    private record LinedUpRow(UUID matchId, UUID playerId, ScoredLine line) {
     }
 }

@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.buddyfantasy.scoring.domain.ManagerMatchday;
 import com.buddyfantasy.scoring.domain.MatchScore;
 import com.buddyfantasy.scoring.domain.MatchdayPoints;
+import com.buddyfantasy.scoring.domain.PlayerMatchday;
 
 /**
  * scoring's matches with their copies of the sheet and locked lineups and their points. Every write first locks the
@@ -31,6 +33,15 @@ public interface MatchScoreRepository {
      * match without lineups is there too, with no points.
      */
     List<MatchdayPoints> findScoredMatchdayPoints(UUID leagueId);
+
+    /**
+     * Every scored match of the league as seen by {@code userId}, with their lineup in it if they had one and the
+     * sheet lines of its players, in two queries, in chronological order.
+     */
+    List<ManagerMatchday> findManagerMatchdays(UUID leagueId, UUID userId);
+
+    /** The scored matches of the league with {@code playerId} in the sheet, in a single query, in chronological order. */
+    List<PlayerMatchday> findPlayerMatchdays(UUID leagueId, UUID playerId);
 
     /** Replaces the stored match, copies and points included, with {@code score}. */
     void save(MatchScore score);

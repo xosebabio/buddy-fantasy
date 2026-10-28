@@ -94,7 +94,9 @@ class ApiSecurityTests {
     void scanCoversTheScoringEndpoints() {
         assertThat(apiEndpoints()).contains(
                 new Endpoint(HttpMethod.GET, "/api/leagues/{id}/standings"),
-                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/standings/{matchId}"));
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/standings/{matchId}"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/managers/{userId}/history"),
+                new Endpoint(HttpMethod.GET, "/api/leagues/{id}/players/{playerId}/points"));
     }
 
     @Test
