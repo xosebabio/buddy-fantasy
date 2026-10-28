@@ -7,11 +7,8 @@ import java.util.UUID;
 import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.getmatch.GetMatchQuery;
-import com.buddyfantasy.match.application.usecases.getmatch.MatchView;
 import com.buddyfantasy.match.application.usecases.listmatchaudit.ListMatchAuditQuery;
-import com.buddyfantasy.match.application.usecases.listmatchaudit.MatchAuditEntryView;
 import com.buddyfantasy.match.application.usecases.listmatches.ListMatchesQuery;
-import com.buddyfantasy.match.application.usecases.listmatches.MatchSummaryView;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
 import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
@@ -19,6 +16,15 @@ import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.match.domain.MatchSheetWarning;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
+import com.buddyfantasy.shared.web.ApiExamples;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,49 +37,150 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Partidos", description = """
+        El calendario del equipo real, el acta de cada partido y su cierre (RF-12 a RF-16). Cada cambio del \
+        administrador queda en la auditoría del partido (RNF-04).""")
 @RestController
 @RequiredArgsConstructor
 class MatchesController {
 
+    private static final String MATCHDAY_TAKEN = """
+            {"type": "about:blank", "title": "Conflict", "status": 409, "detail": "Matchday already has a match",
+             "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"}""";
+    private static final String INVALID_MATCH = """
+            {"type": "about:blank", "title": "Bad Request", "status": 400, "detail": "Matchday must be >= 1",
+             "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"}""";
+
     private final CommandBus bus;
 
+    @Operation(summary = "Programar un partido",
+            description = "Rol mínimo: administrador. Añade un partido al calendario, en estado `SCHEDULED` "
+                    + "(RF-12). Una jornada tiene un único partido.")
+    @ApiResponse(responseCode = "201", description = "Partido programado. La cabecera `Location` apunta a él.",
+            headers = @Header(name = "Location", description = "Ruta del partido creado.",
+                    schema = @Schema(type = "string",
+                            example = "/api/leagues/" + ApiExamples.LEAGUE_ID + "/matches/" + ApiExamples.MATCH_ID)))
+    @ApiResponse(responseCode = "400", description = "Jornada, rival u hora fuera de sus límites (`match.limits`).",
+            content = @Content(examples = @ExampleObject(value = INVALID_MATCH)))
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
+    @ApiResponse(responseCode = "409", description = "La jornada ya tiene partido, u otro partido empieza a la misma "
+            + "hora.", content = @Content(examples = @ExampleObject(value = MATCHDAY_TAKEN)))
     @PostMapping("/api/leagues/{id}/matches")
-    ResponseEntity<MatchView> schedule(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
-                                       @Valid @RequestBody MatchRequest request) {
+    ResponseEntity<MatchResponse> schedule(@AuthenticationPrincipal CurrentUser user,
+                                           @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                                           @PathVariable UUID id,
+                                           @Valid @RequestBody MatchRequest request) {
         MatchId matchId = bus.dispatch(new ScheduleMatchCommand(user.userId(), id, request.matchday(),
                 request.opponent(), request.venue(), request.kickoffAt()));
         return ResponseEntity.created(URI.create("/api/leagues/" + id + "/matches/" + matchId.value()))
                 .body(get(user, id, matchId.value()));
     }
 
+    @Operation(summary = "Ver el calendario",
+            description = "Rol mínimo: miembro. Todos los partidos de la liga por jornada. Un manager solo ve el "
+                    + "resultado de los partidos cerrados.")
+    @ApiResponse(responseCode = "200", description = "Los partidos de la liga.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es miembro de la liga (o no existe).")
     @GetMapping("/api/leagues/{id}/matches")
-    List<MatchSummaryView> list(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {
-        return bus.ask(new ListMatchesQuery(user.userId(), id));
+    List<MatchSummaryResponse> list(@AuthenticationPrincipal CurrentUser user,
+                                    @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                                    @PathVariable UUID id) {
+        return bus.ask(new ListMatchesQuery(user.userId(), id)).stream().map(MatchSummaryResponse::from).toList();
     }
 
+    @Operation(summary = "Ver un partido",
+            description = "Rol mínimo: miembro. Un manager no ve el acta hasta que el partido se cierra; el "
+                    + "administrador la ve siempre, con sus avisos de coherencia.")
+    @ApiResponse(responseCode = "200", description = "El partido.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es miembro de la liga (o no existe).")
+    @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
     @GetMapping("/api/leagues/{id}/matches/{matchId}")
-    MatchView get(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @PathVariable UUID matchId) {
-        return bus.ask(new GetMatchQuery(user.userId(), id, matchId));
+    MatchResponse get(@AuthenticationPrincipal CurrentUser user,
+                      @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                      @PathVariable UUID id,
+                      @Parameter(description = "Id del partido.", example = ApiExamples.MATCH_ID)
+                      @PathVariable UUID matchId) {
+        return MatchResponse.from(bus.ask(new GetMatchQuery(user.userId(), id, matchId)));
     }
 
+    @Operation(summary = "Editar o aplazar un partido",
+            description = """
+                    Rol mínimo: administrador. Reemplaza jornada, rival, campo y hora. Cambiar la jornada o la hora \
+                    es un aplazamiento (RF-12): si las alineaciones ya estaban bloqueadas y la nueva hora de bloqueo \
+                    aún no ha llegado, se desbloquean. En un partido \
+                    cerrado solo se pueden cambiar rival y campo.""")
+    @ApiResponse(responseCode = "200", description = "El partido editado.")
+    @ApiResponse(responseCode = "400", description = "Jornada, rival u hora fuera de sus límites (`match.limits`).",
+            content = @Content(examples = @ExampleObject(value = INVALID_MATCH)))
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
+    @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
+    @ApiResponse(responseCode = "409", description = "La jornada ya tiene partido, otro partido empieza a la misma "
+            + "hora, o se cambia la jornada o la hora de un partido cerrado.",
+            content = @Content(examples = @ExampleObject(value = """
+                    {"type": "about:blank", "title": "Conflict", "status": 409,
+                     "detail": "The matchday and kickoff of a closed match cannot change",
+                     "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"}""")))
     @PutMapping("/api/leagues/{id}/matches/{matchId}")
-    MatchView update(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @PathVariable UUID matchId,
-                     @Valid @RequestBody MatchRequest request) {
+    MatchResponse update(@AuthenticationPrincipal CurrentUser user,
+                         @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                         @PathVariable UUID id,
+                         @Parameter(description = "Id del partido.", example = ApiExamples.MATCH_ID)
+                         @PathVariable UUID matchId,
+                         @Valid @RequestBody MatchRequest request) {
         bus.dispatch(new UpdateMatchCommand(user.userId(), id, matchId, request.matchday(), request.opponent(),
                 request.venue(), request.kickoffAt()));
         return get(user, id, matchId);
     }
 
+    @Operation(summary = "Borrar un partido",
+            description = "Rol mínimo: administrador. Solo un partido sin cerrar, por ejemplo uno suspendido que no "
+                    + "se va a jugar: no hay estado «cancelado».")
+    @ApiResponse(responseCode = "204", description = "Partido borrado.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
+    @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
+    @ApiResponse(responseCode = "409", description = "El partido está cerrado.",
+            content = @Content(examples = @ExampleObject(value = """
+                    {"type": "about:blank", "title": "Conflict", "status": 409,
+                     "detail": "A closed match cannot be deleted",
+                     "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"}""")))
     @DeleteMapping("/api/leagues/{id}/matches/{matchId}")
-    ResponseEntity<Void> delete(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
+    ResponseEntity<Void> delete(@AuthenticationPrincipal CurrentUser user,
+                                @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                                @PathVariable UUID id,
+                                @Parameter(description = "Id del partido.", example = ApiExamples.MATCH_ID)
                                 @PathVariable UUID matchId) {
         bus.dispatch(new DeleteMatchCommand(user.userId(), id, matchId));
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Guardar el acta",
+            description = """
+                    Rol mínimo: administrador. Reemplaza el acta entera: resultado y estadísticas de los jugadores \
+                    que jugaron (RF-13, RF-14). Antes del cierre es un borrador que puede ir sin resultado. Después \
+                    es una corrección (RF-16): debe seguir completa, recalcula los puntos y los jugadores que se \
+                    quitan pierden sus valoraciones. Guardar la misma acta no hace nada.""")
+    @ApiResponse(responseCode = "200", description = "Acta guardada, con sus avisos de coherencia.")
+    @ApiResponse(responseCode = "400", description = """
+            Resultado a medias, un jugador repetido, que no es de la plantilla o dado de baja (si no estaba ya en \
+            el acta), doble amarilla junto a otra tarjeta, o algún valor fuera de `match.limits`.""",
+            content = @Content(examples = @ExampleObject(value = """
+                    {"type": "about:blank", "title": "Bad Request", "status": 400,
+                     "detail": "A double yellow excludes the yellow card and the straight red",
+                     "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"}""")))
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
+    @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
+    @ApiResponse(responseCode = "409", description = "Corrección de un partido cerrado sin resultado o sin jugadores.",
+            content = @Content(examples = @ExampleObject(value = """
+                    {"type": "about:blank", "title": "Conflict", "status": 409,
+                     "detail": "A closed match needs a result and at least one player",
+                     "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"}""")))
     @PutMapping("/api/leagues/{id}/matches/{matchId}/sheet")
-    MatchSheetResponse recordSheet(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
-                                   @PathVariable UUID matchId, @Valid @RequestBody MatchSheetRequest request) {
+    MatchSheetResponse recordSheet(@AuthenticationPrincipal CurrentUser user,
+                                   @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                                   @PathVariable UUID id,
+                                   @Parameter(description = "Id del partido.", example = ApiExamples.MATCH_ID)
+                                   @PathVariable UUID matchId,
+                                   @Valid @RequestBody MatchSheetRequest request) {
         MatchResultRequest result = request.result();
         List<MatchSheetWarning> warnings = bus.dispatch(new RecordMatchSheetCommand(user.userId(), id, matchId,
                 result == null ? null : result.goalsFor(), result == null ? null : result.goalsAgainst(),
@@ -81,15 +188,43 @@ class MatchesController {
         return new MatchSheetResponse(warnings);
     }
 
+    @Operation(summary = "Cerrar un partido",
+            description = """
+                    Rol mínimo: administrador. Desde la hora de inicio y con el acta completa (resultado y al menos \
+                    un jugador). Bloquea las alineaciones si aún no lo estaban, abre la ventana de valoración y \
+                    puntúa la jornada (RF-15, RF-17). Cerrarlo otra vez no hace nada.""")
+    @ApiResponse(responseCode = "200", description = "El partido cerrado.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
+    @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
+    @ApiResponse(responseCode = "409", description = "Aún no ha empezado, o al acta le falta el resultado o los "
+            + "jugadores.", content = @Content(examples = @ExampleObject(value = """
+                    {"type": "about:blank", "title": "Conflict", "status": 409,
+                     "detail": "A match cannot be closed before kickoff",
+                     "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/close"}""")))
     @PostMapping("/api/leagues/{id}/matches/{matchId}/close")
-    MatchView close(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @PathVariable UUID matchId) {
+    MatchResponse close(@AuthenticationPrincipal CurrentUser user,
+                        @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                        @PathVariable UUID id,
+                        @Parameter(description = "Id del partido.", example = ApiExamples.MATCH_ID)
+                        @PathVariable UUID matchId) {
         bus.dispatch(new CloseMatchCommand(user.userId(), id, matchId));
         return get(user, id, matchId);
     }
 
+    @Operation(summary = "Ver la auditoría de un partido",
+            description = "Rol mínimo: administrador. Cada cambio del administrador en el partido, del más reciente "
+                    + "al más antiguo, con su estado antes y después (RNF-04).")
+    @ApiResponse(responseCode = "200", description = "El historial del partido.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
+    @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
     @GetMapping("/api/leagues/{id}/matches/{matchId}/audit")
-    List<MatchAuditEntryView> audit(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
-                                    @PathVariable UUID matchId) {
-        return bus.ask(new ListMatchAuditQuery(user.userId(), id, matchId));
+    List<MatchAuditEntryResponse> audit(@AuthenticationPrincipal CurrentUser user,
+                                        @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                                        @PathVariable UUID id,
+                                        @Parameter(description = "Id del partido.", example = ApiExamples.MATCH_ID)
+                                        @PathVariable UUID matchId) {
+        return bus.ask(new ListMatchAuditQuery(user.userId(), id, matchId)).stream()
+                .map(MatchAuditEntryResponse::from)
+                .toList();
     }
 }

@@ -31,4 +31,11 @@ class HexagonalArchitectureTests {
     static final ArchRule applicationIsFreeOfPersistenceAndWeb = noClasses().that().resideInAPackage("..application..")
             .should().dependOnClassesThat().resideInAnyPackage("jakarta.persistence..", "org.springframework.web..")
             .allowEmptyShould(true);
+
+    /** The API is documented on the web DTOs and controllers, which copy the views instead of exposing them. */
+    @ArchTest
+    static final ArchRule openApiStaysInTheWebAdapters = noClasses()
+            .that().resideInAnyPackage("..domain..", "..application..")
+            .should().dependOnClassesThat().resideInAnyPackage("io.swagger..", "org.springdoc..")
+            .allowEmptyShould(true);
 }

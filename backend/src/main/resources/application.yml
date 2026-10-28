@@ -139,5 +139,8 @@ management:
         enabled: true
 
 springdoc:
+  api-docs:
+    version: openapi_3_0 # 3.0 para los generadores de clientes y para "nullable" en los campos que pueden ser null
+  default-produces-media-type: application/json
   swagger-ui:
     enabled: ${SWAGGER_UI_ENABLED:false}
