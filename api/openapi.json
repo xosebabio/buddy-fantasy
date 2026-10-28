@@ -196,6 +196,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "League name must be 1-100 characters",
+                  "code" : "INVALID_LEAGUE_NAME",
                   "instance" : "/api/leagues"
                 },
                 "schema" : {
@@ -203,7 +204,7 @@
                 }
               }
             },
-            "description" : "Nombre vacío o más largo que `league.limits.name-max-length`."
+            "description" : "Nombre más largo que `league.limits.name-max-length` (`code`: `INVALID_LEAGUE_NAME`), o vacío (`violations`)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -628,6 +629,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "The lineups of match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f are not locked yet",
+                  "code" : "LINEUPS_NOT_LOCKED",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/lineups/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
                 },
                 "schema" : {
@@ -635,7 +637,7 @@
                 }
               }
             },
-            "description" : "Las alineaciones del partido aún no están bloqueadas."
+            "description" : "Las alineaciones del partido aún no están bloqueadas (`code`: `LINEUPS_NOT_LOCKED`)."
           }
         },
         "summary" : "Ver las alineaciones bloqueadas de un partido",
@@ -841,6 +843,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "Matchday must be >= 1",
+                  "code" : "INVALID_MATCHDAY",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"
                 },
                 "schema" : {
@@ -848,7 +851,7 @@
                 }
               }
             },
-            "description" : "Jornada, rival u hora fuera de sus límites (`match.limits`)."
+            "description" : "Jornada o rival fuera de sus límites; `code` dice cuál: `INVALID_MATCHDAY` (menor que `match.limits.matchday-min`) o `INVALID_OPPONENT` (más largo que `match.limits.opponent-max-length`)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -882,6 +885,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "Matchday already has a match",
+                  "code" : "MATCHDAY_TAKEN",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"
                 },
                 "schema" : {
@@ -889,7 +893,7 @@
                 }
               }
             },
-            "description" : "La jornada ya tiene partido, u otro partido empieza a la misma hora."
+            "description" : "La jornada ya tiene partido (`code`: `MATCHDAY_TAKEN`), u otro partido empieza a la misma hora (`KICKOFF_TAKEN`)."
           }
         },
         "security" : [ {
@@ -982,6 +986,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "A closed match cannot be deleted",
+                  "code" : "MATCH_CLOSED",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
                 },
                 "schema" : {
@@ -989,7 +994,7 @@
                 }
               }
             },
-            "description" : "El partido está cerrado."
+            "description" : "El partido está cerrado (`code`: `MATCH_CLOSED`)."
           }
         },
         "security" : [ {
@@ -1136,6 +1141,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "Matchday must be >= 1",
+                  "code" : "INVALID_MATCHDAY",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"
                 },
                 "schema" : {
@@ -1143,7 +1149,7 @@
                 }
               }
             },
-            "description" : "Jornada, rival u hora fuera de sus límites (`match.limits`)."
+            "description" : "Jornada o rival fuera de sus límites; `code` dice cuál: `INVALID_MATCHDAY` (menor que `match.limits.matchday-min`) o `INVALID_OPPONENT` (más largo que `match.limits.opponent-max-length`)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -1198,6 +1204,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "The matchday and kickoff of a closed match cannot change",
+                  "code" : "MATCH_CLOSED",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"
                 },
                 "schema" : {
@@ -1205,7 +1212,7 @@
                 }
               }
             },
-            "description" : "La jornada ya tiene partido, otro partido empieza a la misma hora, o se cambia la jornada o la hora de un partido cerrado."
+            "description" : "La jornada ya tiene partido (`code`: `MATCHDAY_TAKEN`), otro partido empieza a la misma hora (`KICKOFF_TAKEN`), o se cambia la jornada o la hora de un partido cerrado (`MATCH_CLOSED`)."
           }
         },
         "security" : [ {
@@ -1394,6 +1401,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "A match cannot be closed before kickoff",
+                  "code" : "MATCH_NOT_STARTED",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/close"
                 },
                 "schema" : {
@@ -1401,7 +1409,7 @@
                 }
               }
             },
-            "description" : "Aún no ha empezado, o al acta le falta el resultado o los jugadores."
+            "description" : "Aún no ha empezado (`code`: `MATCH_NOT_STARTED`), o al acta le falta el resultado o los jugadores (`MATCH_SHEET_INCOMPLETE`)."
           }
         },
         "security" : [ {
@@ -1466,6 +1474,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "A double yellow excludes the yellow card and the straight red",
+                  "code" : "INVALID_CARDS",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"
                 },
                 "schema" : {
@@ -1473,7 +1482,7 @@
                 }
               }
             },
-            "description" : "Resultado a medias, un jugador repetido, que no es de la plantilla o dado de baja (si no estaba ya en el acta), doble amarilla junto a otra tarjeta, o algún valor fuera de `match.limits`."
+            "description" : "El acta no es válida; `code` dice por qué: `INVALID_GOALS` (más que `match.limits.goals-max`), `INVALID_STAT_COUNT` (alguna estadística negativa o más que `match.limits.stat-count-max`), `INVALID_CARDS` (doble amarilla junto a otra tarjeta), `SHEET_TOO_LARGE` (más de `match.limits.sheet-players-max` jugadores), `DUPLICATE_PLAYER`, `UNKNOWN_PLAYER` (no es de la plantilla) o `INACTIVE_PLAYER` (dado de baja, si no estaba ya en el acta). Un resultado a medias no lleva `code`: es un campo que falta (`violations`)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -1528,6 +1537,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "A closed match needs a result and at least one player",
+                  "code" : "MATCH_SHEET_INCOMPLETE",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"
                 },
                 "schema" : {
@@ -1535,7 +1545,7 @@
                 }
               }
             },
-            "description" : "Corrección de un partido cerrado sin resultado o sin jugadores."
+            "description" : "Corrección de un partido cerrado sin resultado o sin jugadores (`code`: `MATCH_SHEET_INCOMPLETE`)."
           }
         },
         "security" : [ {
@@ -1655,6 +1665,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "The league admin cannot be removed or leave the league",
+                  "code" : "ADMIN_CANNOT_LEAVE",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/members/me"
                 },
                 "schema" : {
@@ -1662,7 +1673,7 @@
                 }
               }
             },
-            "description" : "El usuario es el administrador de la liga."
+            "description" : "El usuario es el administrador de la liga (`code`: `ADMIN_CANNOT_LEAVE`)."
           }
         },
         "security" : [ {
@@ -1755,6 +1766,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "The league admin cannot be removed or leave the league",
+                  "code" : "ADMIN_CANNOT_LEAVE",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/members/me"
                 },
                 "schema" : {
@@ -1762,7 +1774,7 @@
                 }
               }
             },
-            "description" : "Se intenta expulsar al administrador."
+            "description" : "Se intenta expulsar al administrador (`code`: `ADMIN_CANNOT_LEAVE`)."
           }
         },
         "security" : [ {
@@ -1893,6 +1905,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "Shirt number must be 0-99",
+                  "code" : "INVALID_SHIRT_NUMBER",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
                 },
                 "schema" : {
@@ -1900,7 +1913,7 @@
                 }
               }
             },
-            "description" : "Nombre, dorsal o valor fuera de sus límites (`squad.limits`)."
+            "description" : "Nombre, dorsal o valor fuera de sus límites; `code` dice cuál: `INVALID_PLAYER_NAME` (más largo que `squad.limits.name-max-length`), `INVALID_SHIRT_NUMBER` (fuera de `squad.limits.shirt-number-min` a `-max`) o `INVALID_INITIAL_VALUE` (no positivo o con demasiadas cifras)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -1934,6 +1947,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "Shirt number already taken by an active player",
+                  "code" : "SHIRT_NUMBER_TAKEN",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
                 },
                 "schema" : {
@@ -1941,7 +1955,7 @@
                 }
               }
             },
-            "description" : "Otro jugador activo ya tiene ese dorsal."
+            "description" : "Otro jugador activo ya tiene ese dorsal (`code`: `SHIRT_NUMBER_TAKEN`)."
           }
         },
         "security" : [ {
@@ -2171,6 +2185,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "Shirt number must be 0-99",
+                  "code" : "INVALID_SHIRT_NUMBER",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
                 },
                 "schema" : {
@@ -2178,7 +2193,7 @@
                 }
               }
             },
-            "description" : "Nombre, dorsal o valor fuera de sus límites (`squad.limits`)."
+            "description" : "Nombre, dorsal o valor fuera de sus límites; `code` dice cuál: `INVALID_PLAYER_NAME` (más largo que `squad.limits.name-max-length`), `INVALID_SHIRT_NUMBER` (fuera de `squad.limits.shirt-number-min` a `-max`) o `INVALID_INITIAL_VALUE` (no positivo o con demasiadas cifras)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -2233,6 +2248,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "Shirt number already taken by an active player",
+                  "code" : "SHIRT_NUMBER_TAKEN",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
                 },
                 "schema" : {
@@ -2240,7 +2256,7 @@
                 }
               }
             },
-            "description" : "Otro jugador activo ya tiene ese dorsal, o el jugador está dado de baja."
+            "description" : "Otro jugador activo ya tiene ese dorsal (`code`: `SHIRT_NUMBER_TAKEN`), o el jugador está dado de baja (`PLAYER_RETIRED`)."
           }
         },
         "security" : [ {
@@ -2386,6 +2402,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "No photo was uploaded under that key",
+                  "code" : "PHOTO_NOT_UPLOADED",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"
                 },
                 "schema" : {
@@ -2393,7 +2410,7 @@
                 }
               }
             },
-            "description" : "La clave no es de este jugador, no se subió nada con ella o la imagen subida no cumple los límites."
+            "description" : "No se subió nada con la clave (`code`: `PHOTO_NOT_UPLOADED`), la imagen subida no cumple los límites (`INVALID_PHOTO_FORMAT` o `INVALID_PHOTO_SIZE`), o la clave no es de este jugador (sin `code`: no la pidió la interfaz)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -2448,6 +2465,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "A retired player cannot be edited",
+                  "code" : "PLAYER_RETIRED",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"
                 },
                 "schema" : {
@@ -2455,7 +2473,7 @@
                 }
               }
             },
-            "description" : "El jugador está dado de baja."
+            "description" : "El jugador está dado de baja (`code`: `PLAYER_RETIRED`)."
           }
         },
         "security" : [ {
@@ -2520,6 +2538,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "Player photos must be image/webp",
+                  "code" : "INVALID_PHOTO_FORMAT",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo/upload"
                 },
                 "schema" : {
@@ -2527,7 +2546,7 @@
                 }
               }
             },
-            "description" : "Tipo distinto de `image/webp` o tamaño fuera de 1 a `squad.limits.photo-max-size`."
+            "description" : "Tipo distinto de `image/webp` (`code`: `INVALID_PHOTO_FORMAT`) o tamaño fuera de 1 a `squad.limits.photo-max-size` (`INVALID_PHOTO_SIZE`)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -2582,6 +2601,7 @@
                   "title" : "Conflict",
                   "status" : 409,
                   "detail" : "A retired player cannot be edited",
+                  "code" : "PLAYER_RETIRED",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"
                 },
                 "schema" : {
@@ -2589,7 +2609,7 @@
                 }
               }
             },
-            "description" : "El jugador está dado de baja."
+            "description" : "El jugador está dado de baja (`code`: `PLAYER_RETIRED`)."
           }
         },
         "security" : [ {
@@ -3193,6 +3213,7 @@
                   "title" : "Bad Request",
                   "status" : 400,
                   "detail" : "lineup minimums per position cannot add up to more than lineupSize",
+                  "code" : "INVALID_LINEUP_MINIMUMS",
                   "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
                 },
                 "schema" : {
@@ -3200,7 +3221,7 @@
                 }
               }
             },
-            "description" : "Algún parámetro fuera de su rango, o falta alguna acción o posición en la tabla de puntos."
+            "description" : "Algún parámetro fuera de su rango; `code` dice cuál: `INVALID_RATING_WINDOW_HOURS`, `INVALID_RATING_FORMAT`, `INVALID_RATING_CONVERSION` (un factor o una base), `INVALID_RATING_MIN_VOTES`, `INVALID_DEFAULT_RATING`, `INVALID_LINEUP_LOCK_HOURS` (hasta `league.limits.lineup-lock-hours-max`), `INVALID_LINEUP_MAX_CHANGES`, `INVALID_LINEUP_SIZE`, `INVALID_LINEUP_MINIMUMS` (alguno negativo o suman más que `lineupSize`), `INVALID_LINEUP_BUDGET`, `INVALID_MARKET_K`, `INVALID_MARKET_MAX_CHANGE`, `INVALID_MARKET_MIN_VALUE` o `SCORING_TABLE_INCOMPLETE` (falta alguna acción o posición en la tabla de puntos)."
           },
           "401" : {
             "description" : "No hay sesión iniciada."
@@ -3491,6 +3512,12 @@
           }
         },
         "description" : "Liga creada, con su primer enlace de invitación."
+      },
+      "ErrorCode" : {
+        "type" : "string",
+        "description" : "Motivo de un error para la interfaz. Siempre en los `409` y en los `400` que puede provocar un formulario (un campo obligatorio que falta va en `violations`, sin código); cada endpoint documenta los suyos. Un mismo código significa lo mismo en cualquier endpoint.",
+        "example" : "MAX_CHANGES_EXCEEDED",
+        "enum" : [ "ADMIN_CANNOT_LEAVE", "DUPLICATE_PLAYER", "FORMATION", "INACTIVE_PLAYER", "INVALID_CARDS", "INVALID_DEFAULT_RATING", "INVALID_GOALS", "INVALID_INITIAL_VALUE", "INVALID_LEAGUE_NAME", "INVALID_LINEUP_BUDGET", "INVALID_LINEUP_LOCK_HOURS", "INVALID_LINEUP_MAX_CHANGES", "INVALID_LINEUP_MINIMUMS", "INVALID_LINEUP_SIZE", "INVALID_MARKET_K", "INVALID_MARKET_MAX_CHANGE", "INVALID_MARKET_MIN_VALUE", "INVALID_MATCHDAY", "INVALID_OPPONENT", "INVALID_PHOTO_FORMAT", "INVALID_PHOTO_SIZE", "INVALID_PLAYER_NAME", "INVALID_RATING", "INVALID_RATING_CONVERSION", "INVALID_RATING_FORMAT", "INVALID_RATING_MIN_VOTES", "INVALID_RATING_WINDOW_HOURS", "INVALID_SHIRT_NUMBER", "INVALID_STAT_COUNT", "KICKOFF_TAKEN", "LINEUPS_NOT_LOCKED", "LOCK_NOT_DUE", "MATCHDAY_TAKEN", "MATCH_CLOSED", "MATCH_NOT_CLOSED", "MATCH_NOT_SCORED", "MATCH_NOT_STARTED", "MATCH_SHEET_INCOMPLETE", "MAX_CHANGES_EXCEEDED", "OVER_BUDGET", "PHOTO_NOT_UPLOADED", "PLAYER_NOT_IN_SHEET", "PLAYER_RETIRED", "RATER_EXCLUDED", "RATING_WINDOW_CLOSED", "SCORING_TABLE_INCOMPLETE", "SHEET_TOO_LARGE", "SHIRT_NUMBER_TAKEN", "SIZE", "UNKNOWN_PLAYER" ]
       },
       "InvitationPreviewResponse" : {
         "type" : "object",
@@ -5119,10 +5146,11 @@
         "type" : "object",
         "properties" : {
           "code" : {
-            "type" : "string",
-            "description" : "Motivo para la interfaz cuando debe distinguirlo; cada endpoint documenta los suyos.",
+            "description" : "Motivo para la interfaz: siempre en los `409` y en los `400` que puede provocar un formulario; null en el resto. Cada endpoint documenta los suyos.",
             "nullable" : true,
-            "example" : "MAX_CHANGES_EXCEEDED"
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ErrorCode"
+            } ]
           },
           "detail" : {
             "type" : "string",

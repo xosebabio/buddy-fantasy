@@ -2,6 +2,7 @@ package com.buddyfantasy.lineup.application.usecases.getlockedlineups;
 
 import com.buddyfantasy.league.LeagueAccess;
 import com.buddyfantasy.lineup.application.port.out.MatchLineupLockRepository;
+import com.buddyfantasy.lineup.domain.LineupError;
 import com.buddyfantasy.lineup.domain.MatchLineupLock;
 import com.buddyfantasy.match.MatchApi;
 import com.buddyfantasy.shared.application.QueryHandler;
@@ -35,7 +36,8 @@ class GetLockedLineupsHandler implements QueryHandler<GetLockedLineupsQuery, Loc
         if (matches.findMatches(query.leagueId()).stream().noneMatch(match -> match.id().equals(query.matchId()))) {
             throw notInLeague(query);
         }
-        throw new ConflictException("The lineups of match " + query.matchId() + " are not locked yet");
+        throw new ConflictException(LineupError.LINEUPS_NOT_LOCKED,
+                "The lineups of match " + query.matchId() + " are not locked yet");
     }
 
     private static NotFoundException notInLeague(GetLockedLineupsQuery query) {

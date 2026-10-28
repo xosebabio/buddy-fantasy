@@ -41,11 +41,11 @@ class PlayersController {
 
     private static final String SHIRT_NUMBER_TAKEN = """
             {"type": "about:blank", "title": "Conflict", "status": 409,
-             "detail": "Shirt number already taken by an active player",
+             "detail": "Shirt number already taken by an active player", "code": "SHIRT_NUMBER_TAKEN",
              "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"}""";
     private static final String INVALID_PLAYER = """
             {"type": "about:blank", "title": "Bad Request", "status": 400,
-             "detail": "Shirt number must be 0-99",
+             "detail": "Shirt number must be 0-99", "code": "INVALID_SHIRT_NUMBER",
              "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"}""";
 
     private final CommandBus bus;
@@ -56,10 +56,14 @@ class PlayersController {
             headers = @Header(name = "Location", description = "Ruta del jugador creado.",
                     schema = @Schema(type = "string",
                             example = "/api/leagues/" + ApiExamples.LEAGUE_ID + "/players/" + ApiExamples.PLAYER_ID)))
-    @ApiResponse(responseCode = "400", description = "Nombre, dorsal o valor fuera de sus límites (`squad.limits`).",
+    @ApiResponse(responseCode = "400", description = "Nombre, dorsal o valor fuera de sus límites; `code` dice cuál: "
+            + "`INVALID_PLAYER_NAME` (más largo que `squad.limits.name-max-length`), `INVALID_SHIRT_NUMBER` "
+            + "(fuera de `squad.limits.shirt-number-min` a `-max`) o `INVALID_INITIAL_VALUE` (no positivo o con "
+            + "demasiadas cifras).",
             content = @Content(examples = @ExampleObject(value = INVALID_PLAYER)))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
-    @ApiResponse(responseCode = "409", description = "Otro jugador activo ya tiene ese dorsal.",
+    @ApiResponse(responseCode = "409", description = "Otro jugador activo ya tiene ese dorsal "
+            + "(`code`: `SHIRT_NUMBER_TAKEN`).",
             content = @Content(examples = @ExampleObject(value = SHIRT_NUMBER_TAKEN)))
     @PostMapping("/api/leagues/{id}/players")
     ResponseEntity<PlayerResponse> register(@AuthenticationPrincipal CurrentUser user,
@@ -106,12 +110,16 @@ class PlayersController {
             description = "Rol mínimo: administrador. Reemplaza nombre, dorsal, posición y valor inicial (RF-10). "
                     + "Un jugador dado de baja no se puede editar.")
     @ApiResponse(responseCode = "200", description = "El jugador editado.")
-    @ApiResponse(responseCode = "400", description = "Nombre, dorsal o valor fuera de sus límites (`squad.limits`).",
+    @ApiResponse(responseCode = "400", description = "Nombre, dorsal o valor fuera de sus límites; `code` dice cuál: "
+            + "`INVALID_PLAYER_NAME` (más largo que `squad.limits.name-max-length`), `INVALID_SHIRT_NUMBER` "
+            + "(fuera de `squad.limits.shirt-number-min` a `-max`) o `INVALID_INITIAL_VALUE` (no positivo o con "
+            + "demasiadas cifras).",
             content = @Content(examples = @ExampleObject(value = INVALID_PLAYER)))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @ApiResponse(responseCode = "404", description = "El jugador no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "Otro jugador activo ya tiene ese dorsal, o el jugador está "
-            + "dado de baja.", content = @Content(examples = @ExampleObject(value = SHIRT_NUMBER_TAKEN)))
+    @ApiResponse(responseCode = "409", description = "Otro jugador activo ya tiene ese dorsal "
+            + "(`code`: `SHIRT_NUMBER_TAKEN`), o el jugador está dado de baja (`PLAYER_RETIRED`).",
+            content = @Content(examples = @ExampleObject(value = SHIRT_NUMBER_TAKEN)))
     @PutMapping("/api/leagues/{id}/players/{playerId}")
     PlayerResponse update(@AuthenticationPrincipal CurrentUser user,
                           @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)

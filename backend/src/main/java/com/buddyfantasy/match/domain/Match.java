@@ -63,7 +63,8 @@ public class Match extends AggregateRoot {
             return;
         }
         if (isClosed()) {
-            throw new ConflictException("The matchday and kickoff of a closed match cannot change");
+            throw new ConflictException(MatchError.MATCH_CLOSED,
+                    "The matchday and kickoff of a closed match cannot change");
         }
         Instant previousKickoffAt = kickoffAt;
         matchday = newMatchday;
@@ -84,7 +85,8 @@ public class Match extends AggregateRoot {
         }
         limits.requireValid(newSheet);
         if (isClosed() && !newSheet.isComplete()) {
-            throw new ConflictException("A closed match needs a result and at least one player");
+            throw new ConflictException(MatchError.MATCH_SHEET_INCOMPLETE,
+                    "A closed match needs a result and at least one player");
         }
         sheet = newSheet;
         if (isClosed()) {
@@ -102,10 +104,11 @@ public class Match extends AggregateRoot {
             return;
         }
         if (now.isBefore(kickoffAt)) {
-            throw new ConflictException("A match cannot be closed before kickoff");
+            throw new ConflictException(MatchError.MATCH_NOT_STARTED, "A match cannot be closed before kickoff");
         }
         if (!sheet.isComplete()) {
-            throw new ConflictException("A match needs a result and at least one player to be closed");
+            throw new ConflictException(MatchError.MATCH_SHEET_INCOMPLETE,
+                    "A match needs a result and at least one player to be closed");
         }
         status = MatchStatus.CLOSED;
         closedAt = now;
@@ -115,7 +118,7 @@ public class Match extends AggregateRoot {
     /** Only a scheduled match can be deleted (suspended and not replayed); publishes {@link MatchDeleted}. */
     public void delete(Instant now) {
         if (isClosed()) {
-            throw new ConflictException("A closed match cannot be deleted");
+            throw new ConflictException(MatchError.MATCH_CLOSED, "A closed match cannot be deleted");
         }
         register(new MatchDeleted(leagueId, id.value(), matchday.value(), now));
     }

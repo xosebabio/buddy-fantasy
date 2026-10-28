@@ -30,7 +30,8 @@ public record MatchSheet(MatchResult result, List<PlayerPerformance> performance
                 throw new DomainValidationException("Performances must not contain nulls");
             }
             if (!players.add(performance.playerId())) {
-                throw new DomainValidationException("A player appears twice in the match sheet");
+                throw new DomainValidationException(MatchError.DUPLICATE_PLAYER,
+                        "A player appears twice in the match sheet");
             }
         }
         List<PlayerPerformance> sorted = new ArrayList<>(performances);

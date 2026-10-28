@@ -31,7 +31,7 @@ frontend/src/app/
 - Los tipos salen del OpenAPI: `api/openapi.json` (lo escribe un test del backend) → `npm run api:types` → `core/api/schema.d.ts`. Los dos están versionados y CI falla si no están al día.
 - **Nada de tipos del backend a mano:** alias con el nombre del DTO (`type PlayerResponse = components['schemas']['PlayerResponse']`); un modelo de vista se deriva (`Pick`, `&`) con una función de mapeo probada.
 - Un servicio por módulo del backend (`LeagueApi`, `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi`, `ScoringApi`, `IdentityApi`), un método por endpoint, URLs relativas, sin lógica de negocio.
-- Errores `ProblemDetail`: el interceptor resuelve `401` (login guardando la ruta), `403`, `404`, `5xx` y la red; los `400` (`violations` en su campo) y los `409` (`code` con su texto de un `Record<ErrorCode, string>` exhaustivo) los trata la pantalla.
+- Errores `ProblemDetail`: el interceptor resuelve `401` (login guardando la ruta), `403`, `404`, `5xx` y la red; los `400` y `409` los trata la pantalla: los `violations` (campo obligatorio que falta), en su campo; el `code` (todo `409` y los `400` de un límite o regla de negocio), con su texto de un `Record<ErrorCode, string>` exhaustivo sobre el enum `ErrorCode` del spec.
 - **Plazos y límites en el servidor** (RNF-03): las cuentas atrás son orientativas y un `409` refresca y explica. Ningún límite ni valor por defecto de negocio como constante en el front: se lee del API o valida solo el servidor.
 - Sesión: `GET /api/me` al arrancar; login con navegación completa a `/oauth2/authorization/google` (ruta de vuelta en `sessionStorage`); logout con `POST /api/logout`. Los guards solo ocultan: autoriza el backend.
 - **Anonimato** (RF-21): nunca se muestran ni deducen votos individuales de otros.

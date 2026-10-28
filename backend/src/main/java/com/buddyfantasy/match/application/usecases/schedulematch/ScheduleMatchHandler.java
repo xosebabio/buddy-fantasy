@@ -11,6 +11,7 @@ import com.buddyfantasy.match.application.port.out.MatchRepository;
 import com.buddyfantasy.match.application.port.out.MatchSnapshot;
 import com.buddyfantasy.match.domain.Match;
 import com.buddyfantasy.match.domain.MatchAuditAction;
+import com.buddyfantasy.match.domain.MatchError;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.match.domain.Matchday;
 import com.buddyfantasy.shared.application.CommandHandler;
@@ -37,10 +38,10 @@ class ScheduleMatchHandler implements CommandHandler<ScheduleMatchCommand, Match
         Match match = Match.schedule(command.leagueId(), new Matchday(command.matchday()), command.opponent().strip(),
                 command.venue(), command.kickoffAt(), now, limits.get());
         if (matches.existsMatchday(command.leagueId(), match.matchday())) {
-            throw new ConflictException("Matchday already has a match");
+            throw new ConflictException(MatchError.MATCHDAY_TAKEN, "Matchday already has a match");
         }
         if (matches.existsKickoff(command.leagueId(), match.kickoffAt())) {
-            throw new ConflictException("Another match already starts at that time");
+            throw new ConflictException(MatchError.KICKOFF_TAKEN, "Another match already starts at that time");
         }
         matches.save(match);
         audit.append(new MatchAuditEntry(command.leagueId(), match.id().value(), command.userId(),

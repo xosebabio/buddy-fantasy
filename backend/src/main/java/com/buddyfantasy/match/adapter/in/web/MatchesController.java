@@ -46,10 +46,10 @@ class MatchesController {
 
     private static final String MATCHDAY_TAKEN = """
             {"type": "about:blank", "title": "Conflict", "status": 409, "detail": "Matchday already has a match",
-             "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"}""";
+             "code": "MATCHDAY_TAKEN", "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"}""";
     private static final String INVALID_MATCH = """
             {"type": "about:blank", "title": "Bad Request", "status": 400, "detail": "Matchday must be >= 1",
-             "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"}""";
+             "code": "INVALID_MATCHDAY", "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"}""";
 
     private final CommandBus bus;
 
@@ -60,11 +60,14 @@ class MatchesController {
             headers = @Header(name = "Location", description = "Ruta del partido creado.",
                     schema = @Schema(type = "string",
                             example = "/api/leagues/" + ApiExamples.LEAGUE_ID + "/matches/" + ApiExamples.MATCH_ID)))
-    @ApiResponse(responseCode = "400", description = "Jornada, rival u hora fuera de sus límites (`match.limits`).",
+    @ApiResponse(responseCode = "400", description = "Jornada o rival fuera de sus límites; `code` dice cuál: "
+            + "`INVALID_MATCHDAY` (menor que `match.limits.matchday-min`) o `INVALID_OPPONENT` (más largo "
+            + "que `match.limits.opponent-max-length`).",
             content = @Content(examples = @ExampleObject(value = INVALID_MATCH)))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
-    @ApiResponse(responseCode = "409", description = "La jornada ya tiene partido, u otro partido empieza a la misma "
-            + "hora.", content = @Content(examples = @ExampleObject(value = MATCHDAY_TAKEN)))
+    @ApiResponse(responseCode = "409", description = "La jornada ya tiene partido (`code`: `MATCHDAY_TAKEN`), u otro "
+            + "partido empieza a la misma hora (`KICKOFF_TAKEN`).",
+            content = @Content(examples = @ExampleObject(value = MATCHDAY_TAKEN)))
     @PostMapping("/api/leagues/{id}/matches")
     ResponseEntity<MatchResponse> schedule(@AuthenticationPrincipal CurrentUser user,
                                            @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
@@ -110,15 +113,18 @@ class MatchesController {
                     aún no ha llegado, se desbloquean. En un partido \
                     cerrado solo se pueden cambiar rival y campo.""")
     @ApiResponse(responseCode = "200", description = "El partido editado.")
-    @ApiResponse(responseCode = "400", description = "Jornada, rival u hora fuera de sus límites (`match.limits`).",
+    @ApiResponse(responseCode = "400", description = "Jornada o rival fuera de sus límites; `code` dice cuál: "
+            + "`INVALID_MATCHDAY` (menor que `match.limits.matchday-min`) o `INVALID_OPPONENT` (más largo "
+            + "que `match.limits.opponent-max-length`).",
             content = @Content(examples = @ExampleObject(value = INVALID_MATCH)))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "La jornada ya tiene partido, otro partido empieza a la misma "
-            + "hora, o se cambia la jornada o la hora de un partido cerrado.",
+    @ApiResponse(responseCode = "409", description = "La jornada ya tiene partido (`code`: `MATCHDAY_TAKEN`), otro "
+            + "partido empieza a la misma hora (`KICKOFF_TAKEN`), o se cambia la jornada o la hora de un partido "
+            + "cerrado (`MATCH_CLOSED`).",
             content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Conflict", "status": 409,
-                     "detail": "The matchday and kickoff of a closed match cannot change",
+                     "detail": "The matchday and kickoff of a closed match cannot change", "code": "MATCH_CLOSED",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"}""")))
     @PutMapping("/api/leagues/{id}/matches/{matchId}")
     MatchResponse update(@AuthenticationPrincipal CurrentUser user,
@@ -138,10 +144,10 @@ class MatchesController {
     @ApiResponse(responseCode = "204", description = "Partido borrado.")
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "El partido está cerrado.",
+    @ApiResponse(responseCode = "409", description = "El partido está cerrado (`code`: `MATCH_CLOSED`).",
             content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Conflict", "status": 409,
-                     "detail": "A closed match cannot be deleted",
+                     "detail": "A closed match cannot be deleted", "code": "MATCH_CLOSED",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"}""")))
     @DeleteMapping("/api/leagues/{id}/matches/{matchId}")
     ResponseEntity<Void> delete(@AuthenticationPrincipal CurrentUser user,
@@ -161,18 +167,23 @@ class MatchesController {
                     quitan pierden sus valoraciones. Guardar la misma acta no hace nada.""")
     @ApiResponse(responseCode = "200", description = "Acta guardada, con sus avisos de coherencia.")
     @ApiResponse(responseCode = "400", description = """
-            Resultado a medias, un jugador repetido, que no es de la plantilla o dado de baja (si no estaba ya en \
-            el acta), doble amarilla junto a otra tarjeta, o algún valor fuera de `match.limits`.""",
+            El acta no es válida; `code` dice por qué: `INVALID_GOALS` (más que `match.limits.goals-max`), \
+            `INVALID_STAT_COUNT` (alguna estadística negativa o más que `match.limits.stat-count-max`), \
+            `INVALID_CARDS` (doble amarilla junto a otra tarjeta), `SHEET_TOO_LARGE` (más de \
+            `match.limits.sheet-players-max` jugadores), `DUPLICATE_PLAYER`, `UNKNOWN_PLAYER` (no es de la \
+            plantilla) o `INACTIVE_PLAYER` (dado de baja, si no estaba ya en el acta). Un resultado a medias no \
+            lleva `code`: es un campo que falta (`violations`).""",
             content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Bad Request", "status": 400,
-                     "detail": "A double yellow excludes the yellow card and the straight red",
+                     "detail": "A double yellow excludes the yellow card and the straight red", "code": "INVALID_CARDS",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"}""")))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "Corrección de un partido cerrado sin resultado o sin jugadores.",
-            content = @Content(examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "409", description = "Corrección de un partido cerrado sin resultado o sin jugadores "
+            + "(`code`: `MATCH_SHEET_INCOMPLETE`).", content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Conflict", "status": 409,
                      "detail": "A closed match needs a result and at least one player",
+                     "code": "MATCH_SHEET_INCOMPLETE",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/sheet"}""")))
     @PutMapping("/api/leagues/{id}/matches/{matchId}/sheet")
     MatchSheetResponse recordSheet(@AuthenticationPrincipal CurrentUser user,
@@ -196,10 +207,11 @@ class MatchesController {
     @ApiResponse(responseCode = "200", description = "El partido cerrado.")
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "Aún no ha empezado, o al acta le falta el resultado o los "
-            + "jugadores.", content = @Content(examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "409", description = "Aún no ha empezado (`code`: `MATCH_NOT_STARTED`), o al acta "
+            + "le falta el resultado o los jugadores (`MATCH_SHEET_INCOMPLETE`).",
+            content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Conflict", "status": 409,
-                     "detail": "A match cannot be closed before kickoff",
+                     "detail": "A match cannot be closed before kickoff", "code": "MATCH_NOT_STARTED",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f/close"}""")))
     @PostMapping("/api/leagues/{id}/matches/{matchId}/close")
     MatchResponse close(@AuthenticationPrincipal CurrentUser user,

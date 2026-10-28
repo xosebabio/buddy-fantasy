@@ -43,15 +43,18 @@ Vienen cerradas las de `docs/10-frontend-requirements-plan.md` §2 y las reglas 
 ### 3.2 Códigos de error en el spec (FE-08)
 
 - `OpenApiConfig` ya pone el esquema `Problem` en toda respuesta de error. Falta que `code` sea un **enum**: la unión de los nombres de todas las implementaciones de `ErrorCode`, encontradas por escaneo del classpath (sin que `shared` dependa de los módulos, así que Modulith sigue limpio).
-- Hoy solo `rating`, `lineup` y `scoring` tienen códigos. Se añaden `MatchError`, `SquadError` y `LeagueError` para los `409` (todos) y los `400` de dominio que puede provocar un formulario. Propuesta inicial, que se cierra al implementar:
+- Hoy solo `rating`, `lineup` y `scoring` tienen códigos. Se añaden `MatchError`, `SquadError` y `LeagueError` para los `409` (todos) y los `400` de dominio que puede provocar un formulario. Cerrados al implementar:
 
   | Módulo | `409` | `400` de formulario |
   | --- | --- | --- |
-  | `match` | `MATCHDAY_TAKEN`, `KICKOFF_TAKEN`, `MATCH_CLOSED` (cambiar jornada u hora, o borrar uno cerrado), `MATCH_NOT_STARTED`, `MATCH_SHEET_INCOMPLETE` | rangos de jornada, goles y estadísticas; jugador fuera de la plantilla o retirado; doble amarilla incompatible |
-  | `squad` | `SHIRT_NUMBER_TAKEN`, `PLAYER_RETIRED` | longitud del nombre, rango del dorsal, valor inicial, foto (formato, tamaño, no subida) |
-  | `league` | `ADMIN_CANNOT_LEAVE` | longitud del nombre, horas de bloqueo y demás parámetros |
+  | `match` | `MATCHDAY_TAKEN`, `KICKOFF_TAKEN`, `MATCH_CLOSED` (cambiar jornada u hora, o borrar uno cerrado), `MATCH_NOT_STARTED`, `MATCH_SHEET_INCOMPLETE` | `INVALID_OPPONENT`, `INVALID_MATCHDAY`, `INVALID_GOALS`, `INVALID_STAT_COUNT`, `INVALID_CARDS`, `SHEET_TOO_LARGE`, y los de `lineup` `DUPLICATE_PLAYER`, `UNKNOWN_PLAYER` e `INACTIVE_PLAYER` con el mismo significado |
+  | `squad` | `SHIRT_NUMBER_TAKEN`, `PLAYER_RETIRED` | `INVALID_PLAYER_NAME`, `INVALID_SHIRT_NUMBER`, `INVALID_INITIAL_VALUE`, `INVALID_PHOTO_FORMAT`, `INVALID_PHOTO_SIZE`, `PHOTO_NOT_UPLOADED` |
+  | `league` | `ADMIN_CANNOT_LEAVE` | `INVALID_LEAGUE_NAME` y uno por parámetro: `INVALID_RATING_WINDOW_HOURS`, `INVALID_RATING_FORMAT`, `INVALID_RATING_CONVERSION`, `INVALID_RATING_MIN_VOTES`, `INVALID_DEFAULT_RATING`, `INVALID_LINEUP_LOCK_HOURS`, `INVALID_LINEUP_MAX_CHANGES`, `INVALID_LINEUP_SIZE`, `INVALID_LINEUP_MINIMUMS`, `INVALID_LINEUP_BUDGET`, `INVALID_MARKET_K`, `INVALID_MARKET_MAX_CHANGE`, `INVALID_MARKET_MIN_VALUE`, `SCORING_TABLE_INCOMPLETE` |
+  | `lineup` | `LINEUPS_NOT_LOCKED` (ver las de un partido sin bloquear) y `LOCK_NOT_DUE` (bloqueo antes de hora, que solo ocurre en una carrera del job con un aplazamiento y no llega al API) | — |
 
-- Un test comprueba que el enum del spec contiene todos los códigos, y `ApiErrorsTests` se amplía para que los `409` lleven siempre `code`.
+- `ConflictException` exige el código (todo `409` lo lleva). Un campo obligatorio que falta sigue respondiendo `400` con `violations` y sin código (lo rechaza la validación del DTO): por eso un resultado a medias en el acta no tiene código propio. Tampoco lo tiene lo que la interfaz nunca envía (una clave de foto de otro jugador, una lista nula).
+
+- Un test comprueba que el enum del spec contiene todos los códigos (`OpenApiDocumentationTests`, contra los enums importados con ArchUnit), y `ApiErrorsTests` se amplía para que los `409` lleven siempre `code`; los tests de endpoints de cada módulo comprueban el `code` de sus `400` y `409`.
 - Los límites no se exponen en el API (FE-09): el formulario no valida antes de enviar; el `code` del `400` dice qué campo falla.
 
 ### 3.3 Vuelta tras el login
@@ -190,7 +193,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 | --- | --- | --- | --- |
 | 1 | Revisar este plan con el usuario y cerrar las propuestas (§2) | Decisiones cerradas | ✅ |
 | 2 | `OpenApiSpecTests`, spec determinista y `api/openapi.json` (§3.1) | Spec versionado (FE-05) | ✅ |
-| 3 | `ErrorCode` como enum en el spec; `MatchError`, `SquadError` y `LeagueError`; tests (§3.2) | Códigos en el contrato (FE-08) | |
+| 3 | `ErrorCode` como enum en el spec; `MatchError`, `SquadError` y `LeagueError`; tests (§3.2) | Códigos en el contrato (FE-08) | ✅ |
 | 4 | Vuelta tras el login, cabeceras de proxy y `SessionTests`; redirect URI local y CORS en `commands.md`; `/login/oauth2` en `requirements.md` y `frontend.md` (§3.3, §3.5, decisión 3) | Login listo para el front (RF-01, FE-10) | |
 | 5 | Login de pruebas con perfil `e2e` y sus tests (§3.4) | Sesión para E2E (FE-34) | |
 | 6 | `ng new`, TypeScript estricto, `angular.json`, ESLint, Prettier, Stylelint, Vitest, scripts y estructura de carpetas (§4, §5) | Esqueleto que compila, pasa lint y tests (FE-01, FE-02, FE-21, FE-22, FE-32, FE-35) | |

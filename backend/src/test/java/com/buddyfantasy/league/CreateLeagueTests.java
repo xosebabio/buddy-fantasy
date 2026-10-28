@@ -130,11 +130,15 @@ class CreateLeagueTests {
     void blankOrTooLongNameIs400() throws Exception {
         UUID ana = fixtures.user("ana");
 
-        for (String body : List.of("{\"name\":\"  \"}", "{}", "{\"name\":\"" + "x".repeat(101) + "\"}")) {
+        for (String body : List.of("{\"name\":\"  \"}", "{}")) {
             mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
                             .contentType(APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest());
         }
+        mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
+                        .contentType(APPLICATION_JSON).content("{\"name\":\"" + "x".repeat(101) + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_LEAGUE_NAME"));
         assertThat(count("league_league")).isZero();
     }
 

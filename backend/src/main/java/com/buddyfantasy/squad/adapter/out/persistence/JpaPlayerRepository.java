@@ -10,6 +10,7 @@ import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.ShirtNumber;
+import com.buddyfantasy.squad.domain.SquadError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
@@ -53,7 +54,8 @@ class JpaPlayerRepository implements PlayerRepository {
             jpa.saveAndFlush(PlayerMapper.toEntity(player));
         } catch (DataIntegrityViolationException e) {
             if (e.getMessage() != null && e.getMessage().contains(SHIRT_NUMBER_INDEX)) {
-                throw new ConflictException("Shirt number already taken by an active player");
+                throw new ConflictException(SquadError.SHIRT_NUMBER_TAKEN,
+                        "Shirt number already taken by an active player");
             }
             throw e;
         }

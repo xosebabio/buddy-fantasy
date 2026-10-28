@@ -4,7 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
+import com.buddyfantasy.shared.domain.ErrorCode;
 import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.buddyfantasy.shared.web.ApiExamples;
 import com.buddyfantasy.shared.web.ApiProblem;
@@ -20,6 +23,7 @@ import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -27,14 +31,19 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.PropertyCustomizer;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.util.ClassUtils;
 
 /**
  * The API description served at {@code /v3/api-docs}. Each controller documents its own operations, parameters and
  * responses; this adds what every operation shares, so the controllers do not repeat it: the session and CSRF
  * requirements, the {@code 401} without a session, and the {@link ApiProblem} body and a generic example on every
- * error response that does not bring its own. The server is the relative {@code /}, not the one springdoc deduces from
+ * error response that does not bring its own, with its {@code code} as the {@code ErrorCode} enum: the codes of every
+ * module (FE-08). The server is the relative {@code /}, not the one springdoc deduces from
  * the request, so the document is the same whatever the host and port (it is versioned in {@code api/openapi.json}).
  */
 @Configuration
@@ -42,6 +51,9 @@ class OpenApiConfig {
 
     private static final String SESSION = "session";
     private static final String CSRF = "csrf";
+    private static final String ERROR_CODE = "ErrorCode";
+    /** Each module keeps its {@link ErrorCode} enum in its domain package; anything else (tests) is left out. */
+    private static final Pattern ERROR_CODE_TYPE = Pattern.compile("com\\.buddyfantasy\\.\\w+\\.domain\\.\\w+");
     private static final String PROBLEM_JSON = org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
     private static final Set<PathItem.HttpMethod> MUTATING = Set.of(PathItem.HttpMethod.POST, PathItem.HttpMethod.PUT,
             PathItem.HttpMethod.PATCH, PathItem.HttpMethod.DELETE);
@@ -91,6 +103,7 @@ class OpenApiConfig {
             // swagger-core copies the nullable of the first property that uses a schema to the schema itself
             openApi.getComponents().getSchemas().values().forEach(schema -> schema.setNullable(null));
             ModelConverters.getInstance().read(ApiProblem.class).forEach(openApi.getComponents()::addSchemas);
+            withErrorCodes(openApi.getComponents());
             Schema<?> problem = new Schema<>().$ref("#/components/schemas/Problem");
             openApi.getPaths().values().forEach(path -> path.readOperationsMap().forEach((method, operation) -> {
                 if (MUTATING.contains(method)) {
@@ -128,6 +141,48 @@ class OpenApiConfig {
                             .nullable(annotation.nullable() ? Boolean.TRUE : null))
                     .orElse(property);
         };
+    }
+
+    /**
+     * Publishes the codes as the {@code ErrorCode} enum and makes the {@code code} of the problem reference it, so
+     * the client can have a text for each one. Found by scanning the classpath, so {@code shared} does not depend on
+     * the modules; a code repeated in several modules means the same in all of them and appears once.
+     */
+    private static void withErrorCodes(Components components) {
+        components.addSchemas(ERROR_CODE, new StringSchema()
+                ._enum(errorCodes())
+                .description("Motivo de un error para la interfaz. Siempre en los `409` y en los `400` que puede "
+                        + "provocar un formulario (un campo obligatorio que falta va en `violations`, sin código); "
+                        + "cada endpoint documenta los suyos. Un mismo código significa lo mismo en cualquier "
+                        + "endpoint.")
+                .example("MAX_CHANGES_EXCEEDED"));
+        Map<String, Schema> properties = components.getSchemas().get("Problem").getProperties();
+        Schema<?> code = properties.get("code");
+        properties.put("code", new ComposedSchema()
+                .addAllOfItem(new Schema<>().$ref("#/components/schemas/" + ERROR_CODE))
+                .description(code.getDescription())
+                .nullable(code.getNullable()));
+    }
+
+    /** The names of every {@link ErrorCode}, sorted so the document does not depend on the scan order. */
+    static List<String> errorCodes() {
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AssignableTypeFilter(ErrorCode.class));
+        return scanner.findCandidateComponents("com.buddyfantasy").stream()
+                .map(BeanDefinition::getBeanClassName)
+                .filter(name -> ERROR_CODE_TYPE.matcher(name).matches())
+                .flatMap(name -> constants(ClassUtils.resolveClassName(name, OpenApiConfig.class.getClassLoader())))
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    private static Stream<String> constants(Class<?> type) {
+        Object[] constants = type.getEnumConstants();
+        if (constants == null) {
+            throw new UnexpectedException(type.getName() + " implements ErrorCode but is not an enum");
+        }
+        return Arrays.stream(constants).map(ErrorCode.class::cast).map(ErrorCode::name);
     }
 
     /**

@@ -179,25 +179,38 @@ class LeagueSettingsEndpointsTests {
     @Test
     @DisplayName("Invalid values are answered with 400 and nothing changes")
     void invalidValuesAre400AndNothingChanges() throws Exception {
-        update(admin, currentSettings().put("lineupSize", 0)).andExpect(status().isBadRequest());
-        update(admin, currentSettings().put("marketMaxChangePct", 101)).andExpect(status().isBadRequest());
-        update(admin, currentSettings().put("defaultRating", 5)).andExpect(status().isBadRequest()); // SPADES max is 4
+        update(admin, currentSettings().put("lineupSize", 0)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_LINEUP_SIZE"));
+        update(admin, currentSettings().put("marketMaxChangePct", 101)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_MARKET_MAX_CHANGE"));
+        update(admin, currentSettings().put("defaultRating", 5)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_DEFAULT_RATING")); // SPADES max is 4
         update(admin, currentSettings().put("ratingFormat", "BOGUS")).andExpect(status().isBadRequest());
-        update(admin, currentSettings().put("ratingSpadesFactor", 0)).andExpect(status().isBadRequest());
-        update(admin, currentSettings().put("ratingDecimalFactor", 100000)).andExpect(status().isBadRequest());
-        update(admin, currentSettings().putNull("ratingSpadesBase")).andExpect(status().isBadRequest());
-        update(admin, currentSettings().put("ratingMinVotes", 0)).andExpect(status().isBadRequest());
-        update(admin, currentSettings().put("lineupLockHours", 169)).andExpect(status().isBadRequest());
-        update(admin, currentSettings().put("lineupMinDefenders", -1)).andExpect(status().isBadRequest());
+        update(admin, currentSettings().put("ratingSpadesFactor", 0)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_RATING_CONVERSION"));
+        update(admin, currentSettings().put("ratingDecimalFactor", 100000)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_RATING_CONVERSION"));
+        update(admin, currentSettings().putNull("ratingSpadesBase")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_RATING_CONVERSION"));
+        update(admin, currentSettings().put("ratingMinVotes", 0)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_RATING_MIN_VOTES"));
+        update(admin, currentSettings().put("lineupLockHours", 169)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_LINEUP_LOCK_HOURS"));
+        update(admin, currentSettings().put("lineupMinDefenders", -1)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_LINEUP_MINIMUMS"));
         update(admin, currentSettings().put("lineupFormationEnabled", true).put("lineupMinMidfielders", 5))
-                .andExpect(status().isBadRequest()); // 1 + 1 + 5 + 1 > 7
-        update(admin, currentSettings().putNull("ratingFormat")).andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_LINEUP_MINIMUMS")); // 1 + 1 + 5 + 1 > 7
+        update(admin, currentSettings().putNull("ratingFormat")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_RATING_FORMAT"));
         ObjectNode incomplete = currentSettings();
         ((ObjectNode) incomplete.get("scoringRules")).remove("RED_CARD");
-        update(admin, incomplete).andExpect(status().isBadRequest());
+        update(admin, incomplete).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("SCORING_TABLE_INCOMPLETE"));
         ObjectNode noRules = currentSettings();
         noRules.remove("scoringRules");
-        update(admin, noRules).andExpect(status().isBadRequest());
+        update(admin, noRules).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("SCORING_TABLE_INCOMPLETE"));
 
         assertThat(jdbc.queryForObject("select lineup_size from league_settings", Integer.class)).isEqualTo(7);
     }

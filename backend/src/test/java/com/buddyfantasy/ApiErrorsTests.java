@@ -183,6 +183,22 @@ class ApiErrorsTests {
     }
 
     @Test
+    @DisplayName("A conflict always carries its code")
+    void aConflictAlwaysCarriesItsCode() throws Exception {
+        String sameMatchday = """
+                {"matchday": 1, "opponent": "Os Ninguéns", "venue": "HOME", "kickoffAt": "2026-01-18T10:00:00Z"}""";
+
+        for (ResultActions conflict : List.of(
+                perform(MockMvcRequestBuilders.delete("/api/leagues/{id}/members/me", peña.id())),
+                perform(post("/api/leagues/{id}/matches", peña.id()).contentType(APPLICATION_JSON)
+                        .content(sameMatchday)),
+                perform(get("/api/leagues/{id}/lineups/{matchId}", peña.id(), variables.get("matchId"))))) {
+            isProblem(conflict, 409);
+            conflict.andExpect(jsonPath("$.code").isString());
+        }
+    }
+
+    @Test
     @DisplayName("The scan finds the endpoints that take a body")
     void scanFindsTheEndpointsWithABody() {
         assertThat(ApiEndpoints.withBody(mappings))

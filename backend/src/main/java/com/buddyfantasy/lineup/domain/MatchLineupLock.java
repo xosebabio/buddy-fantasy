@@ -47,7 +47,8 @@ public class MatchLineupLock extends AggregateRoot {
             Collection<LineupVersion> lineups, Map<UUID, LineupPlayer> players, Instant now) {
         Instant lockAt = LineupTimeline.lockAt(match.kickoffAt(), settings.lockHours());
         if (now.isBefore(lockAt)) {
-            throw new ConflictException("The lineups of a match cannot be locked before " + lockAt);
+            throw new ConflictException(LineupError.LOCK_NOT_DUE,
+                    "The lineups of a match cannot be locked before " + lockAt);
         }
         LineupRules rules = new LineupRules(settings);
         Set<UUID> users = new HashSet<>();

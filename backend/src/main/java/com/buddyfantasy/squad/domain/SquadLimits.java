@@ -23,20 +23,23 @@ public record SquadLimits(int nameMaxLength, int shirtNumberMin, int shirtNumber
 
     public void requireValidName(String name) {
         if (name == null || name.isBlank() || name.length() > nameMaxLength) {
-            throw new DomainValidationException("Player name must be 1-" + nameMaxLength + " characters");
+            throw new DomainValidationException(SquadError.INVALID_PLAYER_NAME,
+                    "Player name must be 1-" + nameMaxLength + " characters");
         }
     }
 
     /** {@code null} (no shirt number) is always valid. */
     public void requireValid(ShirtNumber shirtNumber) {
         if (shirtNumber != null && (shirtNumber.value() < shirtNumberMin || shirtNumber.value() > shirtNumberMax)) {
-            throw new DomainValidationException("Shirt number must be " + shirtNumberMin + "-" + shirtNumberMax);
+            throw new DomainValidationException(SquadError.INVALID_SHIRT_NUMBER,
+                    "Shirt number must be " + shirtNumberMin + "-" + shirtNumberMax);
         }
     }
 
     public void requirePhotoSize(long sizeBytes) {
         if (sizeBytes <= 0 || sizeBytes > photoMaxSizeBytes) {
-            throw new DomainValidationException("Player photos must be 1-" + photoMaxSizeBytes + " bytes");
+            throw new DomainValidationException(SquadError.INVALID_PHOTO_SIZE,
+                    "Player photos must be 1-" + photoMaxSizeBytes + " bytes");
         }
     }
 }

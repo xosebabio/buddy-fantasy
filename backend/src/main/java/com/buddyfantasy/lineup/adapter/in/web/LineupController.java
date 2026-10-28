@@ -80,10 +80,11 @@ class LineupController {
     @ApiResponse(responseCode = "200", description = "Las alineaciones bloqueadas.")
     @ApiResponse(responseCode = "403", description = "El usuario no es miembro de la liga (o no existe).")
     @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "Las alineaciones del partido aún no están bloqueadas.",
-            content = @Content(examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "409", description = "Las alineaciones del partido aún no están bloqueadas "
+            + "(`code`: `LINEUPS_NOT_LOCKED`).", content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Conflict", "status": 409,
                      "detail": "The lineups of match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f are not locked yet",
+                     "code": "LINEUPS_NOT_LOCKED",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/lineups/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"}""")))
     @GetMapping("/api/leagues/{id}/lineups/{matchId}")
     LockedLineupsResponse locked(@AuthenticationPrincipal CurrentUser user,

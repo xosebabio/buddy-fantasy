@@ -14,7 +14,8 @@ public record ShirtNumber(int value) {
 
     public ShirtNumber {
         if (value < MIN || value > MAX) {
-            throw new DomainValidationException("Shirt number must be " + MIN + "-" + MAX);
+            throw new DomainValidationException(SquadError.INVALID_SHIRT_NUMBER,
+                    "Shirt number must be " + MIN + "-" + MAX);
         }
     }
 

@@ -46,7 +46,9 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     ProblemDetail handleConflict(ConflictException e) {
-        return withCode(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage()), e.code());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+        problem.setProperty("code", e.code().name());
+        return problem;
     }
 
     /** Thrown by the per-league checks of the handlers. */

@@ -12,7 +12,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. Requisitos del frontend definidos (plan 10); plan 11 (esqueleto de `frontend/`) con las decisiones cerradas; tarea 2 hecha (spec versionado en `api/openapi.json`); siguiente: su tarea 3. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. Requisitos del frontend definidos (plan 10); plan 11 (esqueleto de `frontend/`) con las decisiones cerradas; tareas 2 y 3 hechas (spec versionado en `api/openapi.json`, con los códigos de error como enum `ErrorCode`); siguiente: su tarea 4. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 
@@ -31,7 +31,7 @@ Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): sol
 
 1. **Límites y defaults en configuración.** Todo valor por defecto o límite de negocio va en `application.yml` (`<módulo>.defaults` / `<módulo>.limits`) y se lee por su puerto (`*DefaultsRepository` / `*LimitsRepository`). Se comprueba en el dominio en cada escritura, nunca al cargar. Nada de constantes en código, anotaciones `@Size`/`@Max` ni límites en la BD.
 2. **Modulith.** Cero accesos a internals de otros módulos: solo la API pública del paquete raíz o eventos de dominio. Cada módulo es dueño de sus tablas; nada de joins entre módulos.
-3. **Excepciones.** Usa las de `shared/domain` (`DomainValidationException`, `ForbiddenException`, `NotFoundException`, `ConflictException` con `ErrorCode`, `UnexpectedException`), que `ApiExceptionHandler` traduce a `ProblemDetail`. Nunca las genéricas del JDK ni excepciones comprobadas.
+3. **Excepciones.** Usa las de `shared/domain` (`DomainValidationException`, `ForbiddenException`, `NotFoundException`, `ConflictException` siempre con `ErrorCode`, `UnexpectedException`), que `ApiExceptionHandler` traduce a `ProblemDetail`. Nunca las genéricas del JDK ni excepciones comprobadas.
 4. **Constructores.** `@RequiredArgsConstructor` sobre campos `private final`; sin `@Autowired` en producción. A mano solo si tienen lógica, en entidades JPA o con `@AllArgsConstructor` en agregados que se reconstruyen.
 5. **OpenAPI.** Todo endpoint nuevo o modificado se documenta en el mismo cambio con springdoc (`@Operation`, `@Parameter`, `@Schema`, `@ApiResponse`), con DTO web `*Request`/`*Response` propios.
 6. **Plazos en el servidor** con un `Clock` inyectable (nunca `Instant.now()`); fechas en UTC (`Instant`/`timestamptz`).

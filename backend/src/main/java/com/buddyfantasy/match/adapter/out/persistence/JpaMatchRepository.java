@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.buddyfantasy.match.application.port.out.MatchRepository;
 import com.buddyfantasy.match.domain.Match;
+import com.buddyfantasy.match.domain.MatchError;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.match.domain.Matchday;
 import com.buddyfantasy.shared.domain.ConflictException;
@@ -45,10 +46,10 @@ class JpaMatchRepository implements MatchRepository {
         } catch (DataIntegrityViolationException e) {
             String message = e.getMessage() == null ? "" : e.getMessage();
             if (message.contains(MATCHDAY_INDEX)) {
-                throw new ConflictException("Matchday already has a match");
+                throw new ConflictException(MatchError.MATCHDAY_TAKEN, "Matchday already has a match");
             }
             if (message.contains(KICKOFF_INDEX)) {
-                throw new ConflictException("Another match already starts at that time");
+                throw new ConflictException(MatchError.KICKOFF_TAKEN, "Another match already starts at that time");
             }
             throw e;
         }

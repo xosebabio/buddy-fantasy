@@ -22,23 +22,25 @@ public record MatchLimits(int opponentMaxLength, int matchdayMin, int goalsMax, 
 
     public void requireValidOpponent(String opponent) {
         require(opponent != null && !opponent.isBlank() && opponent.length() <= opponentMaxLength,
-                "Opponent must be 1-" + opponentMaxLength + " characters");
+                MatchError.INVALID_OPPONENT, "Opponent must be 1-" + opponentMaxLength + " characters");
     }
 
     public void requireValid(Matchday matchday) {
-        require(matchday == null || matchday.value() >= matchdayMin, "Matchday must be >= " + matchdayMin);
+        require(matchday == null || matchday.value() >= matchdayMin, MatchError.INVALID_MATCHDAY,
+                "Matchday must be >= " + matchdayMin);
     }
 
     /** Lets callers reject an oversized sheet before doing any work with its lines. */
     public void requireSheetSize(int players) {
-        require(players <= sheetPlayersMax, "A match sheet has at most " + sheetPlayersMax + " players");
+        require(players <= sheetPlayersMax, MatchError.SHEET_TOO_LARGE,
+                "A match sheet has at most " + sheetPlayersMax + " players");
     }
 
     public void requireValid(MatchSheet sheet) {
         requireSheetSize(sheet.performances().size());
         MatchResult result = sheet.result();
         require(result == null || (result.goalsFor() <= goalsMax && result.goalsAgainst() <= goalsMax),
-                "Goals must be 0-" + goalsMax);
+                MatchError.INVALID_GOALS, "Goals must be 0-" + goalsMax);
         for (PlayerPerformance p : sheet.performances()) {
             requireCount("goals", p.goals());
             requireCount("penalty goals", p.penaltyGoals());
@@ -50,12 +52,20 @@ public record MatchLimits(int opponentMaxLength, int matchdayMin, int goalsMax, 
     }
 
     private void requireCount(String name, int value) {
-        require(value <= statCountMax, "Number of " + name + " must be 0-" + statCountMax);
+        require(value <= statCountMax, MatchError.INVALID_STAT_COUNT, "Number of " + name + " must be 0-"
+                + statCountMax);
     }
 
+    /** An invalid configuration, which only stops the application from starting, has no code. */
     private static void require(boolean condition, String message) {
         if (!condition) {
             throw new DomainValidationException(message);
+        }
+    }
+
+    private static void require(boolean condition, MatchError code, String message) {
+        if (!condition) {
+            throw new DomainValidationException(code, message);
         }
     }
 }

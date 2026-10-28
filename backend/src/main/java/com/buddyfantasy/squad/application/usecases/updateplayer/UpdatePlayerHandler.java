@@ -9,6 +9,7 @@ import com.buddyfantasy.squad.application.port.out.SquadLimitsRepository;
 import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.ShirtNumber;
+import com.buddyfantasy.squad.domain.SquadError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,8 @@ class UpdatePlayerHandler implements CommandHandler<UpdatePlayerCommand, Void> {
         // keeping their own number is not a clash
         if (shirtNumber != null && !shirtNumber.equals(player.shirtNumber())
                 && players.existsActiveShirtNumber(command.leagueId(), shirtNumber)) {
-            throw new ConflictException("Shirt number already taken by an active player");
+            throw new ConflictException(SquadError.SHIRT_NUMBER_TAKEN,
+                    "Shirt number already taken by an active player");
         }
         player.update(command.name().strip(), shirtNumber, command.position(), command.initialValue(), limits.get());
         players.save(player);

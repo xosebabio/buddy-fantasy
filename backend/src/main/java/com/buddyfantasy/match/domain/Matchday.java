@@ -14,7 +14,7 @@ public record Matchday(int value) {
 
     public Matchday {
         if (value < MIN || value > MAX) {
-            throw new DomainValidationException("Matchday must be " + MIN + "-" + MAX);
+            throw new DomainValidationException(MatchError.INVALID_MATCHDAY, "Matchday must be " + MIN + "-" + MAX);
         }
     }
 }

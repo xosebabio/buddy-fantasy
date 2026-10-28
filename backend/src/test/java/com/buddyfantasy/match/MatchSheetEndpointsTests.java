@@ -223,22 +223,26 @@ class MatchSheetEndpointsTests {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String[] tooMany = IntStream.range(0, 31).mapToObj(i -> line(UUID.randomUUID(), "")).toArray(String[]::new);
 
-        for (String request : List.of(
-                sheet(1, 0, line(forward, "\"doubleYellow\": true, \"yellowCard\": true")),
-                sheet(1, 0, line(forward, "\"doubleYellow\": true, \"redCard\": true")),
-                sheet(1, 0, line(forward, "\"goals\": 100")),
-                sheet(1, 0, line(forward, "\"assists\": -1")),
-                sheet(1, 0, line(forward, "\"goals\": 1"), line(forward, "")),
-                sheet(100, 0, line(forward, "")),
-                sheet(1, -1, line(forward, "")),
-                sheet(1, null, line(forward, "")),
-                sheet(1, 0, "{\"goals\": 1}"),
-                sheet(1, 0, "null"),
-                sheet(1, 0, tooMany),
-                "{\"result\": null}",
+        Map<String, String> coded = Map.ofEntries(
+                Map.entry(sheet(1, 0, line(forward, "\"doubleYellow\": true, \"yellowCard\": true")), "INVALID_CARDS"),
+                Map.entry(sheet(1, 0, line(forward, "\"doubleYellow\": true, \"redCard\": true")), "INVALID_CARDS"),
+                Map.entry(sheet(1, 0, line(forward, "\"goals\": 100")), "INVALID_STAT_COUNT"),
+                Map.entry(sheet(1, 0, line(forward, "\"assists\": -1")), "INVALID_STAT_COUNT"),
+                Map.entry(sheet(1, 0, line(forward, "\"goals\": 1"), line(forward, "")), "DUPLICATE_PLAYER"),
+                Map.entry(sheet(100, 0, line(forward, "")), "INVALID_GOALS"),
+                Map.entry(sheet(1, -1, line(forward, "")), "INVALID_GOALS"),
+                Map.entry(sheet(1, 0, tooMany), "SHEET_TOO_LARGE"),
                 // a player of another league and one that does not exist
-                sheet(1, 0, line(foreignPlayer, "")),
-                sheet(1, 0, line(UUID.randomUUID(), "")))) {
+                Map.entry(sheet(1, 0, line(foreignPlayer, "")), "UNKNOWN_PLAYER"),
+                Map.entry(sheet(1, 0, line(UUID.randomUUID(), "")), "UNKNOWN_PLAYER"));
+        for (Map.Entry<String, String> entry : coded.entrySet()) {
+            putSheet(admin, match, entry.getKey())
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(entry.getValue()));
+        }
+        // a missing field is a violation of the request, without code
+        for (String request : List.of(sheet(1, null, line(forward, "")), sheet(1, 0, "{\"goals\": 1}"),
+                sheet(1, 0, "null"), "{\"result\": null}")) {
             putSheet(admin, match, request).andExpect(status().isBadRequest());
         }
 
@@ -257,7 +261,8 @@ class MatchSheetEndpointsTests {
         bus.dispatch(new RetirePlayerCommand(admin, league, defender));
 
         putSheet(admin, match, sheet(2, 0, line(forward, "\"goals\": 2"), line(defender, "")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INACTIVE_PLAYER"));
         putSheet(admin, match, sheet(2, 0, line(forward, "\"goals\": 2"), line(keeper, "")))
                 .andExpect(status().isOk());
 
@@ -341,7 +346,8 @@ class MatchSheetEndpointsTests {
         UUID match = fixtures.schedule(peña, 1, FAR_FUTURE);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
 
-        close(admin, match).andExpect(status().isConflict());
+        close(admin, match).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_NOT_STARTED"));
 
         mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)))
                 .andExpect(jsonPath("$.status").value("SCHEDULED"));
@@ -354,11 +360,14 @@ class MatchSheetEndpointsTests {
     void aMatchCannotBeClosedWithoutResultOrPlayers() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
-        close(admin, match).andExpect(status().isConflict());
+        close(admin, match).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_SHEET_INCOMPLETE"));
         putSheet(admin, match, sheet(1, 0)).andExpect(status().isOk());
-        close(admin, match).andExpect(status().isConflict());
+        close(admin, match).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_SHEET_INCOMPLETE"));
         putSheet(admin, match, sheet(null, null, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
-        close(admin, match).andExpect(status().isConflict());
+        close(admin, match).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_SHEET_INCOMPLETE"));
 
         assertThat(events.stream(MatchClosed.class)).isEmpty();
         assertThat(auditActionsOf(match)).doesNotContain("CLOSED");
@@ -455,8 +464,10 @@ class MatchSheetEndpointsTests {
     void aCorrectionKeepsTheSheetComplete() throws Exception {
         UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1")));
 
-        putSheet(admin, match, sheet(null, null, line(forward, "\"goals\": 1"))).andExpect(status().isConflict());
-        putSheet(admin, match, sheet(1, 0)).andExpect(status().isConflict());
+        putSheet(admin, match, sheet(null, null, line(forward, "\"goals\": 1"))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_SHEET_INCOMPLETE"));
+        putSheet(admin, match, sheet(1, 0)).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_SHEET_INCOMPLETE"));
 
         mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)))
                 .andExpect(jsonPath("$.result.goalsFor").value(1))
@@ -474,7 +485,8 @@ class MatchSheetEndpointsTests {
         bus.dispatch(new RetirePlayerCommand(admin, league, defender));
 
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"), line(defender, "")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INACTIVE_PLAYER"));
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1, \"yellowCard\": true")))
                 .andExpect(status().isOk());
 

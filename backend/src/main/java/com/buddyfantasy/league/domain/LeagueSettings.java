@@ -42,35 +42,39 @@ public record LeagueSettings(
     private static final int CONVERSION_SCALE = 2;
 
     public LeagueSettings {
-        require(ratingWindowHours >= 1, "ratingWindowHours must be >= 1");
-        require(ratingFormat != null, "ratingFormat is required");
+        require(ratingWindowHours >= 1, LeagueError.INVALID_RATING_WINDOW_HOURS, "ratingWindowHours must be >= 1");
+        require(ratingFormat != null, LeagueError.INVALID_RATING_FORMAT, "ratingFormat is required");
         require(isPositive(ratingSpadesFactor) && fitsConversion(ratingSpadesFactor),
+                LeagueError.INVALID_RATING_CONVERSION,
                 "ratingSpadesFactor must be > 0 with up to 4 integer digits and 2 decimals");
-        require(fitsConversion(ratingSpadesBase),
+        require(fitsConversion(ratingSpadesBase), LeagueError.INVALID_RATING_CONVERSION,
                 "ratingSpadesBase is required, with up to 4 integer digits and 2 decimals");
         require(isPositive(ratingDecimalFactor) && fitsConversion(ratingDecimalFactor),
+                LeagueError.INVALID_RATING_CONVERSION,
                 "ratingDecimalFactor must be > 0 with up to 4 integer digits and 2 decimals");
-        require(fitsConversion(ratingDecimalBase),
+        require(fitsConversion(ratingDecimalBase), LeagueError.INVALID_RATING_CONVERSION,
                 "ratingDecimalBase is required, with up to 4 integer digits and 2 decimals");
-        require(ratingMinVotes >= 1, "ratingMinVotes must be >= 1");
+        require(ratingMinVotes >= 1, LeagueError.INVALID_RATING_MIN_VOTES, "ratingMinVotes must be >= 1");
         require(defaultRating == null
                         || (defaultRating.signum() >= 0
                         && defaultRating.compareTo(BigDecimal.valueOf(ratingFormat.maxRating())) <= 0),
-                "defaultRating must be between 0 and " + ratingFormat.maxRating());
-        require(lineupLockHours >= 0, "lineupLockHours must be >= 0");
-        require(lineupMaxChanges >= 0, "lineupMaxChanges must be >= 0");
-        require(lineupSize >= 1, "lineupSize must be >= 1");
+                LeagueError.INVALID_DEFAULT_RATING, "defaultRating must be between 0 and " + ratingFormat.maxRating());
+        require(lineupLockHours >= 0, LeagueError.INVALID_LINEUP_LOCK_HOURS, "lineupLockHours must be >= 0");
+        require(lineupMaxChanges >= 0, LeagueError.INVALID_LINEUP_MAX_CHANGES, "lineupMaxChanges must be >= 0");
+        require(lineupSize >= 1, LeagueError.INVALID_LINEUP_SIZE, "lineupSize must be >= 1");
         require(lineupMinGoalkeepers >= 0 && lineupMinDefenders >= 0 && lineupMinMidfielders >= 0
-                && lineupMinForwards >= 0, "lineup minimums per position must be >= 0");
+                && lineupMinForwards >= 0,
+                LeagueError.INVALID_LINEUP_MINIMUMS, "lineup minimums per position must be >= 0");
         require(!lineupFormationEnabled
                         || lineupMinGoalkeepers + lineupMinDefenders + lineupMinMidfielders + lineupMinForwards
                         <= lineupSize,
+                LeagueError.INVALID_LINEUP_MINIMUMS,
                 "lineup minimums per position cannot add up to more than lineupSize");
-        require(isPositive(lineupBudget), "lineupBudget must be > 0");
-        require(isPositive(marketK), "marketK must be > 0");
+        require(isPositive(lineupBudget), LeagueError.INVALID_LINEUP_BUDGET, "lineupBudget must be > 0");
+        require(isPositive(marketK), LeagueError.INVALID_MARKET_K, "marketK must be > 0");
         require(isPositive(marketMaxChangePct) && marketMaxChangePct.compareTo(HUNDRED) <= 0,
-                "marketMaxChangePct must be in (0, 100]");
-        require(isPositive(marketMinValue), "marketMinValue must be > 0");
+                LeagueError.INVALID_MARKET_MAX_CHANGE, "marketMaxChangePct must be in (0, 100]");
+        require(isPositive(marketMinValue), LeagueError.INVALID_MARKET_MIN_VALUE, "marketMinValue must be > 0");
     }
 
     /** The conversion factor of the current {@link #ratingFormat()}. */
@@ -102,9 +106,9 @@ public record LeagueSettings(
                 && normalized.precision() - normalized.scale() <= CONVERSION_INTEGER_DIGITS;
     }
 
-    private static void require(boolean condition, String message) {
+    private static void require(boolean condition, LeagueError code, String message) {
         if (!condition) {
-            throw new DomainValidationException(message);
+            throw new DomainValidationException(code, message);
         }
     }
 }

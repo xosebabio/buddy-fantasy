@@ -35,7 +35,7 @@ class PlayerPhotoController {
 
     private static final String RETIRED_PLAYER = """
             {"type": "about:blank", "title": "Conflict", "status": 409,
-             "detail": "A retired player cannot be edited",
+             "detail": "A retired player cannot be edited", "code": "PLAYER_RETIRED",
              "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"}""";
 
     private final CommandBus bus;
@@ -46,14 +46,15 @@ class PlayerPhotoController {
                     imagen a WebP, pide aquí una URL prefirmada, la sube directamente al almacenamiento y la \
                     confirma con `PUT .../photo`. Hasta confirmarla, el jugador conserva su foto.""")
     @ApiResponse(responseCode = "200", description = "La URL y las cabeceras de la subida.")
-    @ApiResponse(responseCode = "400", description = "Tipo distinto de `image/webp` o tamaño fuera de 1 a "
-            + "`squad.limits.photo-max-size`.", content = @Content(examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "400", description = "Tipo distinto de `image/webp` (`code`: `INVALID_PHOTO_FORMAT`) "
+            + "o tamaño fuera de 1 a `squad.limits.photo-max-size` (`INVALID_PHOTO_SIZE`).",
+            content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Bad Request", "status": 400,
-                     "detail": "Player photos must be image/webp",
+                     "detail": "Player photos must be image/webp", "code": "INVALID_PHOTO_FORMAT",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo/upload"}""")))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @ApiResponse(responseCode = "404", description = "El jugador no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "El jugador está dado de baja.",
+    @ApiResponse(responseCode = "409", description = "El jugador está dado de baja (`code`: `PLAYER_RETIRED`).",
             content = @Content(examples = @ExampleObject(value = RETIRED_PLAYER)))
     @PostMapping("/api/leagues/{id}/players/{playerId}/photo/upload")
     PhotoUploadResponse requestUpload(@AuthenticationPrincipal CurrentUser user,
@@ -73,14 +74,16 @@ class PlayerPhotoController {
                     límites, la pone como foto del jugador y borra la anterior. Confirmar la foto que ya tiene no \
                     hace nada.""")
     @ApiResponse(responseCode = "200", description = "El jugador con su foto nueva.")
-    @ApiResponse(responseCode = "400", description = "La clave no es de este jugador, no se subió nada con ella o la "
-            + "imagen subida no cumple los límites.", content = @Content(examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "400", description = "No se subió nada con la clave (`code`: `PHOTO_NOT_UPLOADED`), "
+            + "la imagen subida no cumple los límites (`INVALID_PHOTO_FORMAT` o `INVALID_PHOTO_SIZE`), o la clave "
+            + "no es de este jugador (sin `code`: no la pidió la interfaz).",
+            content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Bad Request", "status": 400,
-                     "detail": "No photo was uploaded under that key",
+                     "detail": "No photo was uploaded under that key", "code": "PHOTO_NOT_UPLOADED",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players/c2e4f6a8-1b3d-4e5f-8a7b-6c5d4e3f2a1b/photo"}""")))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @ApiResponse(responseCode = "404", description = "El jugador no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "El jugador está dado de baja.",
+    @ApiResponse(responseCode = "409", description = "El jugador está dado de baja (`code`: `PLAYER_RETIRED`).",
             content = @Content(examples = @ExampleObject(value = RETIRED_PLAYER)))
     @PutMapping("/api/leagues/{id}/players/{playerId}/photo")
     PlayerResponse confirm(@AuthenticationPrincipal CurrentUser user,

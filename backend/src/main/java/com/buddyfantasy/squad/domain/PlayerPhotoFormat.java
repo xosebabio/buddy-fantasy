@@ -15,7 +15,8 @@ public class PlayerPhotoFormat {
 
     public void requireAcceptable(String contentType, long sizeBytes, SquadLimits limits) {
         if (!CONTENT_TYPE.equals(contentType)) {
-            throw new DomainValidationException("Player photos must be " + CONTENT_TYPE);
+            throw new DomainValidationException(SquadError.INVALID_PHOTO_FORMAT,
+                    "Player photos must be " + CONTENT_TYPE);
         }
         limits.requirePhotoSize(sizeBytes);
     }

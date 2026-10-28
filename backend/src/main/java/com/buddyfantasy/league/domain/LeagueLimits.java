@@ -19,13 +19,15 @@ public record LeagueLimits(int nameMaxLength, int lineupLockHoursMax) {
 
     public void requireValidName(String name) {
         if (name == null || name.isBlank() || name.length() > nameMaxLength) {
-            throw new DomainValidationException("League name must be 1-" + nameMaxLength + " characters");
+            throw new DomainValidationException(LeagueError.INVALID_LEAGUE_NAME,
+                    "League name must be 1-" + nameMaxLength + " characters");
         }
     }
 
     public void requireWithin(LeagueSettings settings) {
         if (settings.lineupLockHours() > lineupLockHoursMax) {
-            throw new DomainValidationException("lineupLockHours must be between 0 and " + lineupLockHoursMax);
+            throw new DomainValidationException(LeagueError.INVALID_LINEUP_LOCK_HOURS,
+                    "lineupLockHours must be between 0 and " + lineupLockHoursMax);
         }
     }
 }

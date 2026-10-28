@@ -1,6 +1,7 @@
 package com.buddyfantasy.squad;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
@@ -126,9 +127,19 @@ class PlayerPhotoEndpointsTests {
     @Test
     @DisplayName("Only WebP up to 512 KB is accepted")
     void onlyWebpUpTo512KbIsAccepted() throws Exception {
-        for (String body : List.of(uploadBody("image/jpeg", 30_000L), uploadBody("image/png", 30_000L),
-                uploadBody(WEBP, 0L), uploadBody(WEBP, -1L), uploadBody(WEBP, MAX_BYTES + 1),
-                uploadBody(null, 30_000L), uploadBody(WEBP, null))) {
+        Map<String, String> invalid = Map.of(
+                uploadBody("image/jpeg", 30_000L), "INVALID_PHOTO_FORMAT",
+                uploadBody("image/png", 30_000L), "INVALID_PHOTO_FORMAT",
+                uploadBody(WEBP, 0L), "INVALID_PHOTO_SIZE",
+                uploadBody(WEBP, -1L), "INVALID_PHOTO_SIZE",
+                uploadBody(WEBP, MAX_BYTES + 1), "INVALID_PHOTO_SIZE");
+        for (Map.Entry<String, String> entry : invalid.entrySet()) {
+            mvc.perform(post("/api/leagues/{id}/players/{p}/photo/upload", league, player)
+                            .with(as(admin)).with(csrf()).contentType(APPLICATION_JSON).content(entry.getKey()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(entry.getValue()));
+        }
+        for (String body : List.of(uploadBody(null, 30_000L), uploadBody(WEBP, null))) {
             mvc.perform(post("/api/leagues/{id}/players/{p}/photo/upload", league, player)
                             .with(as(admin)).with(csrf()).contentType(APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest());
@@ -153,7 +164,8 @@ class PlayerPhotoEndpointsTests {
 
         bus.dispatch(new RetirePlayerCommand(admin, league, player));
         mvc.perform(post("/api/leagues/{id}/players/{p}/photo/upload", league, player).with(as(admin)).with(csrf())
-                .contentType(APPLICATION_JSON).content(body)).andExpect(status().isConflict());
+                .contentType(APPLICATION_JSON).content(body)).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PLAYER_RETIRED"));
     }
 
     @Test
@@ -195,8 +207,19 @@ class PlayerPhotoEndpointsTests {
         String tooBig = PlayerPhotoKey.generate(league, new PlayerId(player)).value();
         storage.upload(tooBig, WEBP, MAX_BYTES + 1);
 
-        for (String body : List.of(confirmBody(teammatesKey), confirmBody(otherLeaguesKey), confirmBody(notUploaded),
-                confirmBody(png), confirmBody(tooBig), confirmBody("x"), confirmBody(" "), confirmBody(null))) {
+        Map<String, String> coded = Map.of(
+                confirmBody(notUploaded), "PHOTO_NOT_UPLOADED",
+                confirmBody(png), "INVALID_PHOTO_FORMAT",
+                confirmBody(tooBig), "INVALID_PHOTO_SIZE");
+        for (Map.Entry<String, String> entry : coded.entrySet()) {
+            mvc.perform(put("/api/leagues/{id}/players/{p}/photo", league, player).with(as(admin)).with(csrf())
+                            .contentType(APPLICATION_JSON).content(entry.getKey()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(entry.getValue()));
+        }
+        // keys the interface never asked for have no code
+        for (String body : List.of(confirmBody(teammatesKey), confirmBody(otherLeaguesKey), confirmBody("x"),
+                confirmBody(" "), confirmBody(null))) {
             mvc.perform(put("/api/leagues/{id}/players/{p}/photo", league, player).with(as(admin)).with(csrf())
                     .contentType(APPLICATION_JSON).content(body)).andExpect(status().isBadRequest());
         }
@@ -242,7 +265,8 @@ class PlayerPhotoEndpointsTests {
 
         bus.dispatch(new RetirePlayerCommand(admin, league, player));
         mvc.perform(put("/api/leagues/{id}/players/{p}/photo", league, player).with(as(admin)).with(csrf())
-                .contentType(APPLICATION_JSON).content(confirmBody(key))).andExpect(status().isConflict());
+                .contentType(APPLICATION_JSON).content(confirmBody(key))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PLAYER_RETIRED"));
         assertThat(photoKeyOf(player)).isNull();
     }
 

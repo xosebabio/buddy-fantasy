@@ -18,13 +18,15 @@ public record ScoringRules(Map<ScoringAction, Map<Position, Integer>> points) {
         for (ScoringAction action : ScoringAction.values()) {
             Map<Position, Integer> byPosition = points == null ? null : points.get(action);
             if (byPosition == null) {
-                throw new DomainValidationException("Missing scoring rules for " + action);
+                throw new DomainValidationException(LeagueError.SCORING_TABLE_INCOMPLETE,
+                        "Missing scoring rules for " + action);
             }
             EnumMap<Position, Integer> positionCopy = new EnumMap<>(Position.class);
             for (Position position : Position.values()) {
                 Integer value = byPosition.get(position);
                 if (value == null) {
-                    throw new DomainValidationException("Missing scoring rule for " + action + "/" + position);
+                    throw new DomainValidationException(LeagueError.SCORING_TABLE_INCOMPLETE,
+                            "Missing scoring rule for " + action + "/" + position);
                 }
                 positionCopy.put(position, value);
             }

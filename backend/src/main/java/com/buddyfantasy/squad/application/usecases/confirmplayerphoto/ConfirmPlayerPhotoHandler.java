@@ -13,6 +13,7 @@ import com.buddyfantasy.squad.domain.Player;
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.PlayerPhotoFormat;
 import com.buddyfantasy.squad.domain.PlayerPhotoKey;
+import com.buddyfantasy.squad.domain.SquadError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +42,8 @@ class ConfirmPlayerPhotoHandler implements CommandHandler<ConfirmPlayerPhotoComm
             return null;
         }
         StoredImage stored = images.find(key.value())
-                .orElseThrow(() -> new DomainValidationException("No photo was uploaded under that key"));
+                .orElseThrow(() -> new DomainValidationException(SquadError.PHOTO_NOT_UPLOADED,
+                        "No photo was uploaded under that key"));
         PlayerPhotoFormat.requireAcceptable(stored.contentType(), stored.sizeBytes(), limits.get());
         PlayerPhotoKey previous = player.photoKey();
         player.changePhoto(key);

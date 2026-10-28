@@ -90,7 +90,7 @@ public class Player extends AggregateRoot {
     /** Throws {@link ConflictException} (409) if the player is retired. */
     public void requireActive() {
         if (isRetired()) {
-            throw new ConflictException("A retired player cannot be edited");
+            throw new ConflictException(SquadError.PLAYER_RETIRED, "A retired player cannot be edited");
         }
     }
 
@@ -102,12 +102,13 @@ public class Player extends AggregateRoot {
             throw new DomainValidationException("Player position is required");
         }
         if (initialValue == null || initialValue.signum() <= 0) {
-            throw new DomainValidationException("Player initial value must be > 0");
+            throw new DomainValidationException(SquadError.INVALID_INITIAL_VALUE, "Player initial value must be > 0");
         }
         BigDecimal normalized = initialValue.stripTrailingZeros();
         if (normalized.scale() > VALUE_SCALE || normalized.precision() - normalized.scale() > VALUE_INTEGER_DIGITS) {
-            throw new DomainValidationException("Player initial value must have at most "
-                    + VALUE_INTEGER_DIGITS + " integer digits and " + VALUE_SCALE + " decimals");
+            throw new DomainValidationException(SquadError.INVALID_INITIAL_VALUE,
+                    "Player initial value must have at most " + VALUE_INTEGER_DIGITS + " integer digits and "
+                            + VALUE_SCALE + " decimals");
         }
     }
 }

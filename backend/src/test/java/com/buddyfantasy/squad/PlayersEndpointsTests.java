@@ -2,6 +2,7 @@ package com.buddyfantasy.squad;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
@@ -156,17 +157,22 @@ class PlayersEndpointsTests {
     @Test
     @DisplayName("Invalid data is answered with 400")
     void invalidDataIs400() throws Exception {
-        for (String request : List.of(
-                body("Iago", 10, "COACH", "10"),
-                body("Iago", 10, null, "10"),
-                body("Iago", 10, "FORWARD", "0"),
-                body("Iago", 10, "FORWARD", "-3"),
-                body("Iago", 10, "FORWARD", "1.234"),
-                body("Iago", 10, "FORWARD", null),
-                body("Iago", 100, "FORWARD", "10"),
-                body("Iago", -1, "FORWARD", "10"),
-                body("  ", 10, "FORWARD", "10"),
-                body("x".repeat(101), 10, "FORWARD", "10"))) {
+        Map<String, String> coded = Map.of(
+                body("Iago", 10, "FORWARD", "0"), "INVALID_INITIAL_VALUE",
+                body("Iago", 10, "FORWARD", "-3"), "INVALID_INITIAL_VALUE",
+                body("Iago", 10, "FORWARD", "1.234"), "INVALID_INITIAL_VALUE",
+                body("Iago", 100, "FORWARD", "10"), "INVALID_SHIRT_NUMBER",
+                body("Iago", -1, "FORWARD", "10"), "INVALID_SHIRT_NUMBER",
+                body("x".repeat(101), 10, "FORWARD", "10"), "INVALID_PLAYER_NAME");
+        for (Map.Entry<String, String> entry : coded.entrySet()) {
+            mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
+                            .contentType(APPLICATION_JSON).content(entry.getKey()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(entry.getValue()));
+        }
+        // an unknown or missing value is a violation of the request, without code
+        for (String request : List.of(body("Iago", 10, "COACH", "10"), body("Iago", 10, null, "10"),
+                body("Iago", 10, "FORWARD", null), body("  ", 10, "FORWARD", "10"))) {
             mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
                     .contentType(APPLICATION_JSON).content(request)).andExpect(status().isBadRequest());
         }
@@ -180,7 +186,8 @@ class PlayersEndpointsTests {
 
         mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Otro", 10, "DEFENDER", "10")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("SHIRT_NUMBER_TAKEN"));
         // the same number is free in another league
         mvc.perform(post("/api/leagues/{id}/players", otherLeague).with(as(outsider)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Otro", 10, "DEFENDER", "10")))
@@ -207,7 +214,8 @@ class PlayersEndpointsTests {
 
         mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Otro", 10, "DEFENDER", "10")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("SHIRT_NUMBER_TAKEN"));
         assertThat(playersIn(league)).isEqualTo(1);
     }
 
@@ -320,7 +328,8 @@ class PlayersEndpointsTests {
         // another active player's number is not
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, iago).with(as(admin)).with(csrf())
                 .contentType(APPLICATION_JSON).content(body("Iago", 9, "FORWARD", "11")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("SHIRT_NUMBER_TAKEN"));
         // a retired player's number is free
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, iago).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Iago", 7, "FORWARD", "11")))
@@ -365,7 +374,8 @@ class PlayersEndpointsTests {
 
         mvc.perform(put("/api/leagues/{id}/players/{p}", league, player).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Cambiado", 10, "FORWARD", "10")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PLAYER_RETIRED"));
         assertThat(nameOf(player)).isEqualTo("Iago");
     }
 

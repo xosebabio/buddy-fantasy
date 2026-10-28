@@ -185,14 +185,22 @@ class MatchesEndpointsTests {
     @Test
     @DisplayName("Invalid data is answered with 400")
     void invalidDataIs400() throws Exception {
+        Map<String, String> coded = Map.of(
+                body(0, "Rival", "HOME", "2026-01-11T10:00:00Z"), "INVALID_MATCHDAY",
+                body(-1, "Rival", "HOME", "2026-01-11T10:00:00Z"), "INVALID_MATCHDAY",
+                body(40000, "Rival", "HOME", "2026-01-11T10:00:00Z"), "INVALID_MATCHDAY",
+                body(1, "x".repeat(101), "HOME", "2026-01-11T10:00:00Z"), "INVALID_OPPONENT");
+        for (Map.Entry<String, String> entry : coded.entrySet()) {
+            mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
+                            .contentType(APPLICATION_JSON).content(entry.getKey()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(entry.getValue()));
+        }
+        // a missing field is a violation of the request, without code
         for (String request : List.of(
-                body(0, "Rival", "HOME", "2026-01-11T10:00:00Z"),
-                body(-1, "Rival", "HOME", "2026-01-11T10:00:00Z"),
-                body(40000, "Rival", "HOME", "2026-01-11T10:00:00Z"),
                 body(null, "Rival", "HOME", "2026-01-11T10:00:00Z"),
                 body(1, "  ", "HOME", "2026-01-11T10:00:00Z"),
                 body(1, null, "HOME", "2026-01-11T10:00:00Z"),
-                body(1, "x".repeat(101), "HOME", "2026-01-11T10:00:00Z"),
                 body(1, "Rival", "NEUTRAL", "2026-01-11T10:00:00Z"),
                 body(1, "Rival", null, "2026-01-11T10:00:00Z"),
                 body(1, "Rival", "HOME", null),
@@ -211,10 +219,12 @@ class MatchesEndpointsTests {
 
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Otro", "HOME", "2026-01-18T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCHDAY_TAKEN"));
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(2, "Otro", "HOME", "2026-01-11T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("KICKOFF_TAKEN"));
         // the same matchday and kickoff are free in another league
         mvc.perform(post("/api/leagues/{id}/matches", otherLeague).with(as(outsider)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Otro", "HOME", "2026-01-11T10:00:00Z")))
@@ -234,10 +244,12 @@ class MatchesEndpointsTests {
 
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Otro", "HOME", "2026-01-18T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCHDAY_TAKEN"));
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(2, "Otro", "HOME", "2026-01-11T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("KICKOFF_TAKEN"));
 
         assertThat(matchesIn(league)).isEqualTo(1);
         assertThat(auditEntriesIn(league)).isEqualTo(1);
@@ -406,10 +418,12 @@ class MatchesEndpointsTests {
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-11T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCHDAY_TAKEN"));
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-18T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("KICKOFF_TAKEN"));
         // keeping its own matchday while moving the kickoff is fine
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-12T19:00:00Z")))
@@ -431,10 +445,12 @@ class MatchesEndpointsTests {
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-11T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCHDAY_TAKEN"));
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-18T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("KICKOFF_TAKEN"));
 
         assertThat(auditOf(match)).hasSize(1);
         assertThat(events.stream(MatchRescheduled.class)).isEmpty();
@@ -449,10 +465,12 @@ class MatchesEndpointsTests {
 
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(2, "Rival 1", "HOME", "2026-01-11T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_CLOSED"));
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Rival 1", "HOME", "2026-01-18T10:00:00Z")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_CLOSED"));
         mvc.perform(put("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Os Ninguéns", "AWAY", "2026-01-11T10:00:00Z")))
                 .andExpect(status().isOk())
@@ -521,7 +539,8 @@ class MatchesEndpointsTests {
         close(match);
 
         mvc.perform(delete("/api/leagues/{id}/matches/{m}", league, match).with(as(admin)).with(csrf()))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_CLOSED"));
 
         assertThat(matchesIn(league)).isEqualTo(1);
         assertThat(auditOf(match)).hasSize(1);

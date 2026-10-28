@@ -111,9 +111,11 @@ class MembersEndpointsTests {
     @DisplayName("The admin can neither remove themself nor leave")
     void adminCannotRemoveThemselfNorLeave() throws Exception {
         mvc.perform(delete("/api/leagues/{id}/members/{m}", league, admin).with(as(admin)).with(csrf()))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("ADMIN_CANNOT_LEAVE"));
         mvc.perform(delete("/api/leagues/{id}/members/me", league).with(as(admin)).with(csrf()))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("ADMIN_CANNOT_LEAVE"));
         assertThat(members()).isEqualTo(3);
     }
 

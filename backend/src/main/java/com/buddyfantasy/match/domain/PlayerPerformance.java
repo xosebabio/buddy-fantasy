@@ -42,7 +42,8 @@ public record PlayerPerformance(
         requireCount("assists", assists);
         requireCount("own goals", ownGoals);
         if (doubleYellow && (yellowCard || redCard)) {
-            throw new DomainValidationException("A double yellow excludes the yellow card and the straight red");
+            throw new DomainValidationException(MatchError.INVALID_CARDS,
+                    "A double yellow excludes the yellow card and the straight red");
         }
     }
 
@@ -53,7 +54,8 @@ public record PlayerPerformance(
 
     private static void requireCount(String name, int value) {
         if (value < 0 || value > MAX_STORED_COUNT) {
-            throw new DomainValidationException("Number of " + name + " must be 0-" + MAX_STORED_COUNT);
+            throw new DomainValidationException(MatchError.INVALID_STAT_COUNT,
+                    "Number of " + name + " must be 0-" + MAX_STORED_COUNT);
         }
     }
 }

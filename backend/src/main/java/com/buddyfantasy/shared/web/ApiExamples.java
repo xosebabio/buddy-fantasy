@@ -27,7 +27,7 @@ public final class ApiExamples {
              "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches/5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f"}""";
     public static final String CONFLICT = """
             {"type": "about:blank", "title": "Conflict", "status": 409, "detail": "Matchday already has a match",
-             "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"}""";
+             "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches", "code": "MATCHDAY_TAKEN"}""";
     public static final String INTERNAL_ERROR = """
             {"type": "about:blank", "title": "Internal Server Error", "status": 500, "detail": "Internal error",
              "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/standings"}""";

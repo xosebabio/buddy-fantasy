@@ -28,7 +28,8 @@ public class Membership {
     /** The league always keeps its admin: they can neither be removed nor leave (changing admin is out of v1). */
     public void requireRemovable() {
         if (role == LeagueRole.ADMIN) {
-            throw new ConflictException("The league admin cannot be removed or leave the league");
+            throw new ConflictException(LeagueError.ADMIN_CANNOT_LEAVE,
+                    "The league admin cannot be removed or leave the league");
         }
     }
 }

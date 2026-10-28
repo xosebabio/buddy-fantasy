@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.ProblemDetail;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ApiExceptionHandlerTests {
 
@@ -33,13 +34,17 @@ class ApiExceptionHandlerTests {
     }
 
     @Test
-    @DisplayName("Business errors without a code have no code property")
-    void businessErrorsWithoutACodeHaveNoCodeProperty() {
+    @DisplayName("Validation errors without a code have no code property")
+    void validationErrorsWithoutACodeHaveNoCodeProperty() {
         ProblemDetail invalid = handler.handleDomainValidation(new DomainValidationException("Invalid"));
-        ProblemDetail conflict = handler.handleConflict(new ConflictException("Conflict"));
 
         assertThat(invalid.getProperties()).isNull();
-        assertThat(conflict.getProperties()).isNull();
+    }
+
+    @Test
+    @DisplayName("A conflict always has a code")
+    void aConflictAlwaysHasACode() {
+        assertThatThrownBy(() -> new ConflictException(null, "Conflict")).isInstanceOf(UnexpectedException.class);
     }
 
     @Test

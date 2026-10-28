@@ -23,8 +23,9 @@ public record ApiProblem(
         @Schema(description = "Ruta de la petición.",
                 example = "/api/leagues/" + ApiExamples.LEAGUE_ID + "/lineup")
         String instance,
-        @Schema(description = "Motivo para la interfaz cuando debe distinguirlo; cada endpoint documenta los suyos.",
-                nullable = true, example = "MAX_CHANGES_EXCEEDED")
+        @Schema(description = "Motivo para la interfaz: siempre en los `409` y en los `400` que puede provocar un "
+                + "formulario; null en el resto. Cada endpoint documenta los suyos.", nullable = true,
+                example = "MAX_CHANGES_EXCEEDED")
         String code,
         @ArraySchema(arraySchema = @Schema(description = "Restricciones incumplidas, solo en algunos `400` de "
                 + "validación.", nullable = true, example = "[\"name: must not be blank\"]"))

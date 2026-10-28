@@ -17,6 +17,7 @@ import com.buddyfantasy.match.application.port.out.MatchRepository;
 import com.buddyfantasy.match.application.port.out.MatchSnapshot;
 import com.buddyfantasy.match.domain.Match;
 import com.buddyfantasy.match.domain.MatchAuditAction;
+import com.buddyfantasy.match.domain.MatchError;
 import com.buddyfantasy.match.domain.MatchId;
 import com.buddyfantasy.match.domain.MatchLimits;
 import com.buddyfantasy.match.domain.MatchResult;
@@ -106,14 +107,16 @@ class RecordMatchSheetHandler implements CommandHandler<RecordMatchSheetCommand,
     private static Position position(UUID playerId, Map<UUID, SquadPlayer> players, Map<UUID, Position> recorded) {
         SquadPlayer player = players.get(playerId);
         if (player == null) {
-            throw new DomainValidationException("Player " + playerId + " is not in the league's squad");
+            throw new DomainValidationException(MatchError.UNKNOWN_PLAYER,
+                    "Player " + playerId + " is not in the league's squad");
         }
         Position kept = recorded.get(playerId);
         if (kept != null) {
             return kept;
         }
         if (!player.active()) {
-            throw new DomainValidationException("Retired player " + playerId + " cannot be added to the sheet");
+            throw new DomainValidationException(MatchError.INACTIVE_PLAYER,
+                    "Retired player " + playerId + " cannot be added to the sheet");
         }
         return player.position();
     }

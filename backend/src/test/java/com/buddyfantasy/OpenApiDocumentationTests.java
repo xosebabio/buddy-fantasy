@@ -5,11 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.buddyfantasy.ApiEndpoints.Endpoint;
+import com.buddyfantasy.shared.domain.ErrorCode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tngtech.archunit.core.domain.JavaEnumConstant;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -149,6 +154,25 @@ class OpenApiDocumentationTests {
                 .toList();
 
         assertThat(missing).isEmpty();
+    }
+
+    @Test
+    @DisplayName("The ErrorCode enum has the codes of every module and is the code of every problem")
+    void errorCodeEnumHasEveryCode() {
+        Set<String> codes = new ClassFileImporter()
+                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+                .importPackages("com.buddyfantasy").stream()
+                .filter(type -> type.isEnum() && type.isAssignableTo(ErrorCode.class))
+                .flatMap(type -> type.getEnumConstants().stream().map(JavaEnumConstant::name))
+                .collect(Collectors.toSet());
+        List<String> published = elements(document.at("/components/schemas/ErrorCode/enum"))
+                .map(JsonNode::asText)
+                .toList();
+
+        assertThat(codes).contains("MAX_CHANGES_EXCEEDED", "MATCHDAY_TAKEN", "SHIRT_NUMBER_TAKEN", "ADMIN_CANNOT_LEAVE");
+        assertThat(published).doesNotHaveDuplicates().isSorted().containsExactlyInAnyOrderElementsOf(codes);
+        assertThat(document.at("/components/schemas/Problem/properties/code/allOf/0/$ref").asText())
+                .isEqualTo("#/components/schemas/ErrorCode");
     }
 
     @Test

@@ -43,10 +43,11 @@ class LeagueController {
     @ApiResponse(responseCode = "201", description = "Liga creada. La cabecera `Location` apunta a ella.",
             headers = @Header(name = "Location", description = "Ruta de la liga creada.",
                     schema = @Schema(type = "string", example = "/api/leagues/" + ApiExamples.LEAGUE_ID)))
-    @ApiResponse(responseCode = "400", description = "Nombre vacío o más largo que `league.limits.name-max-length`.",
-            content = @Content(examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "400", description = "Nombre más largo que `league.limits.name-max-length` "
+            + "(`code`: `INVALID_LEAGUE_NAME`), o vacío (`violations`).", content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Bad Request", "status": 400,
-                     "detail": "League name must be 1-100 characters", "instance": "/api/leagues"}""")))
+                     "detail": "League name must be 1-100 characters", "code": "INVALID_LEAGUE_NAME",
+                     "instance": "/api/leagues"}""")))
     @PostMapping("/api/leagues")
     ResponseEntity<CreateLeagueResponse> create(@AuthenticationPrincipal CurrentUser user,
                                                 @Valid @RequestBody CreateLeagueRequest request) {
@@ -82,10 +83,17 @@ class LeagueController {
                     para lo que venga: una ventana de valoración ya abierta y una jornada ya puntuada conservan los \
                     que congelaron.""")
     @ApiResponse(responseCode = "200", description = "Los parámetros guardados.")
-    @ApiResponse(responseCode = "400", description = "Algún parámetro fuera de su rango, o falta alguna acción o "
-            + "posición en la tabla de puntos.", content = @Content(examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "400", description = """
+            Algún parámetro fuera de su rango; `code` dice cuál: `INVALID_RATING_WINDOW_HOURS`, \
+            `INVALID_RATING_FORMAT`, `INVALID_RATING_CONVERSION` (un factor o una base), `INVALID_RATING_MIN_VOTES`, \
+            `INVALID_DEFAULT_RATING`, `INVALID_LINEUP_LOCK_HOURS` (hasta `league.limits.lineup-lock-hours-max`), \
+            `INVALID_LINEUP_MAX_CHANGES`, `INVALID_LINEUP_SIZE`, `INVALID_LINEUP_MINIMUMS` (alguno negativo o suman \
+            más que `lineupSize`), `INVALID_LINEUP_BUDGET`, `INVALID_MARKET_K`, `INVALID_MARKET_MAX_CHANGE`, \
+            `INVALID_MARKET_MIN_VALUE` o `SCORING_TABLE_INCOMPLETE` (falta alguna acción o posición en la tabla de \
+            puntos).""", content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Bad Request", "status": 400,
                      "detail": "lineup minimums per position cannot add up to more than lineupSize",
+                     "code": "INVALID_LINEUP_MINIMUMS",
                      "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"}""")))
     @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga.")
     @PutMapping("/api/leagues/{id}/settings")

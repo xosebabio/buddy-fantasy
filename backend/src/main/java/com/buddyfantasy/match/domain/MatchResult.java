@@ -13,7 +13,7 @@ public record MatchResult(int goalsFor, int goalsAgainst) {
 
     public MatchResult {
         if (goalsFor < 0 || goalsFor > MAX_STORED_GOALS || goalsAgainst < 0 || goalsAgainst > MAX_STORED_GOALS) {
-            throw new DomainValidationException("Goals must be 0-" + MAX_STORED_GOALS);
+            throw new DomainValidationException(MatchError.INVALID_GOALS, "Goals must be 0-" + MAX_STORED_GOALS);
         }
     }
 }
