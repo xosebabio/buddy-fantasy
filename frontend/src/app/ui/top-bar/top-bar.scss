@@ -1,0 +1,24 @@
+:host {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: block;
+  padding-top: env(safe-area-inset-top);
+  border-bottom: 1px solid var(--bf-color-border);
+  background-color: var(--bf-color-surface);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  min-height: 56px;
+  padding: 0 var(--bf-space-2) 0 var(--bf-space-4);
+}
+
+.start {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}

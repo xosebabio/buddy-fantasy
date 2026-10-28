@@ -1,0 +1,85 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-2);
+  min-height: 48px;
+  padding: 0 var(--bf-space-5);
+  border: 1px solid transparent;
+  border-radius: var(--bf-radius-control);
+  background-color: transparent;
+  color: var(--bf-color-text);
+  font-family: var(--bf-font-text);
+  font-size: var(--bf-font-size-2);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--bf-motion-fast) var(--bf-ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:host(.block) {
+  width: 100%;
+}
+
+:host(.primary) {
+  background-color: var(--bf-color-brand);
+  color: var(--bf-color-on-color);
+}
+
+:host(.secondary) {
+  border-color: var(--bf-color-border-strong);
+}
+
+:host(.danger) {
+  border-color: var(--bf-color-danger);
+  color: var(--bf-color-danger-text);
+}
+
+@media (hover: hover) {
+  :host(:hover:not(:disabled)) {
+    background-color: color-mix(in srgb, var(--bf-color-text) 6%, transparent);
+  }
+
+  :host(.primary:hover:not(:disabled)) {
+    background-color: color-mix(in srgb, var(--bf-color-brand) 88%, var(--bf-color-text));
+  }
+}
+
+:host(:active:not(:disabled)) {
+  background-color: color-mix(in srgb, var(--bf-color-text) 10%, transparent);
+}
+
+:host(.primary:active:not(:disabled)) {
+  background-color: color-mix(in srgb, var(--bf-color-brand) 80%, var(--bf-color-text));
+}
+
+:host(:disabled) {
+  cursor: not-allowed;
+}
+
+:host(:disabled:not([aria-busy])) {
+  opacity: 0.45;
+}
+
+:host([aria-busy]) {
+  cursor: progress;
+}
+
+.spinner {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: var(--bf-radius-round);
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}

@@ -25,7 +25,8 @@
           "unset",
           "transparent",
           "currentcolor",
-          "/var\\(--bf-/"
+          "/var\\(--bf-/",
+          "/^env\\(safe-area-inset-[a-z]+\\)$/"
         ],
         "expandShorthand": true
       }

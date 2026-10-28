@@ -1,0 +1,53 @@
+@use 'ui/styles/breakpoints' as bp;
+
+// Above the overlays of the CDK (z-index 1000), so that a toast is seen over an open sheet.
+:host {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1100;
+  padding: 0 var(--bf-space-4) calc(var(--bf-space-4) + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.toasts {
+  display: grid;
+  gap: var(--bf-space-2);
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  min-height: 56px;
+  padding: var(--bf-space-1) var(--bf-space-1) var(--bf-space-1) var(--bf-space-4);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-control);
+  background-color: var(--bf-color-surface);
+  box-shadow: var(--bf-shadow-overlay);
+  pointer-events: auto;
+}
+
+.toast.danger {
+  border-left: 3px solid var(--bf-color-danger);
+}
+
+.icon {
+  flex: none;
+  color: var(--bf-color-danger);
+}
+
+.message {
+  flex: 1;
+  padding-block: var(--bf-space-2);
+}
+
+@include bp.md {
+  :host {
+    padding-bottom: var(--bf-space-5);
+  }
+}

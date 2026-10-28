@@ -49,6 +49,7 @@ frontend/src/app/
 - **Reutilizar antes de crear**; un patrón que aparece en dos pantallas se extrae.
 - Standalone, `OnPush`, `inject()`, prefijo `bf-`, guía de estilo oficial de Angular; accesibles de serie con `@angular/cdk/a11y`.
 - Catálogos iniciales: FE-18 (`ui/`) y FE-19 (`shared/`). Lo demás se añade cuando lo pida una pantalla.
+- Los componentes de `ui/` y su uso están en `ui/README.md` (*Componentes*). La hoja inferior y el diálogo de confirmación usan CDK Dialog (`Sheet`, `Confirm`); los estilos de lo que el CDK pinta fuera de los componentes están en `ui/styles/_overlay.scss`. Un componente sobre un elemento nativo usa selector de atributo (`button[bfButton]`), que el lint admite en camelCase.
 - Cada componente de `ui/` aparece en `/_ui` (solo en desarrollo) con todos sus estados y en los dos temas. Sus rutas están en `app/dev.routes.ts`, que el build de producción sustituye por `dev.routes.prod.ts` (vacío); el catálogo no se traduce, así que el lint de `i18n` no lo revisa.
 
 ### Tipado (FE-21 a FE-23)

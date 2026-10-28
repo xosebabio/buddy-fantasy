@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bf-space-2);
+  box-sizing: border-box;
+  width: 248px;
+  height: 100%;
+  padding: var(--bf-space-4) var(--bf-space-3);
+  border-right: 1px solid var(--bf-color-border);
+  background-color: var(--bf-color-surface);
+}
+
+.header {
+  display: grid;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-2);
+}
+
+nav {
+  display: grid;
+  gap: var(--bf-space-1);
+}
+
+.footer {
+  margin-top: auto;
+}

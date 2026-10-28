@@ -1,0 +1,185 @@
+<h3>Botones</h3>
+<div class="row">
+  <button bfButton type="button" variant="primary">Guardar</button>
+  <button bfButton type="button">Secundario</button>
+  <button bfButton type="button" variant="quiet">Discreto</button>
+  <button bfButton type="button" variant="danger">Expulsar</button>
+</div>
+<div class="row">
+  <button bfButton type="button" variant="primary" disabled>Desactivado</button>
+  <button bfButton type="button" variant="primary" loading>Guardando</button>
+  <button bfButton type="button" variant="danger" disabled>Desactivado</button>
+  <a bfButton routerLink="/_ui">Enlace</a>
+</div>
+<button bfButton type="button" variant="primary" block>
+  <svg lucidePlus [size]="20"></svg>
+  Crear liga
+</button>
+<div class="row">
+  <button bfIconButton type="button" label="Cerrar"><svg lucideX></svg></button>
+  <button bfIconButton type="button" label="Compartir"><svg lucideShare2></svg></button>
+  <button bfIconButton type="button" label="Borrar" disabled><svg lucideTrash></svg></button>
+</div>
+
+<h3>Campos</h3>
+<div class="stack">
+  <bf-field label="Nombre de la liga">
+    <input bfInput type="text" autocomplete="off" />
+  </bf-field>
+  <bf-field label="Nombre de la liga" hint="Lo verán todos los managers.">
+    <input bfInput type="text" autocomplete="off" value="Os Domingueiros" />
+  </bf-field>
+  <bf-field label="Nombre de la liga" error="El nombre de la liga está vacío o es demasiado largo.">
+    <input bfInput type="text" autocomplete="off" />
+  </bf-field>
+  <bf-field label="Correo">
+    <input bfInput type="email" value="no se puede cambiar" disabled />
+  </bf-field>
+  <bf-field label="Notas" hint="Varias líneas.">
+    <textarea bfInput></textarea>
+  </bf-field>
+</div>
+
+<h3>Tarjeta</h3>
+<bf-card>
+  <p class="card-title">Os Domingueiros</p>
+  <p class="muted">Te han invitado a jugar en esta liga.</p>
+</bf-card>
+
+<h3>Lista</h3>
+<ul bfList>
+  <li>
+    <a bfListItem routerLink="/_ui">
+      Os Domingueiros
+      <span bfListItemMeta><bf-badge tone="accent">Admin</bf-badge></span>
+    </a>
+  </li>
+  <li>
+    <a bfListItem routerLink="/_ui">
+      Veteranos do Sar
+      <span bfListItemMeta>Manager</span>
+    </a>
+  </li>
+  <li>
+    <button bfListItem type="button" current>
+      Fútbol 7 Martes Noche
+      <span bfListItemMeta>Manager</span>
+      <svg lucideCheck bfListItemTrailing class="check"></svg>
+    </button>
+  </li>
+</ul>
+<ul bfList>
+  @for (member of members; track member.name) {
+    <li bfListItem size="compact">
+      <bf-avatar bfListItemLeading [name]="member.name" />
+      {{ member.name }}
+      <span bfListItemMeta>{{ member.role }}</span>
+      <button bfIconButton bfListItemTrailing type="button" [label]="'Expulsar a ' + member.name">
+        <svg lucideUserX></svg>
+      </button>
+    </li>
+  }
+</ul>
+
+<h3>Etiquetas</h3>
+<div class="row">
+  <bf-badge>Manager</bf-badge>
+  <bf-badge tone="accent">Admin</bf-badge>
+  <bf-badge tone="brand">Valorado</bf-badge>
+  <bf-badge tone="warning">
+    <svg lucideClock [size]="16"></svg>
+    Se bloquea en 1 d 4 h
+  </bf-badge>
+</div>
+
+<h3>Avatares</h3>
+<div class="row">
+  <bf-avatar name="Xosé Babío" />
+  <bf-avatar name="Xosé Babío" size="medium" />
+  <bf-avatar name="Xosé Babío" size="large" />
+  <bf-avatar name="Iago" size="medium" [src]="picture" />
+  <bf-avatar name="Martín Pérez" size="medium" src="data:image/png;base64,roto" />
+</div>
+<p class="muted">Iniciales en tres tamaños, con foto, y con una foto que no carga.</p>
+
+<h3>Skeleton</h3>
+<div class="stack">
+  <bf-skeleton shape="title" />
+  <div class="skeleton-row">
+    <bf-skeleton shape="avatar" />
+    <div class="stack-tight">
+      <bf-skeleton width="60%" />
+      <bf-skeleton width="30%" />
+    </div>
+  </div>
+  <bf-skeleton shape="block" />
+</div>
+
+<h3>Estado vacío</h3>
+<bf-empty-state>
+  <p>
+    Aún no juegas en ninguna liga. Crea la de tu equipo o pide el enlace de invitación a quien la
+    lleve.
+  </p>
+  <a bfButton bfEmptyStateAction variant="primary" routerLink="/_ui">
+    <svg lucidePlus [size]="20"></svg>
+    Crear liga
+  </a>
+</bf-empty-state>
+
+<h3>Barra superior</h3>
+<div class="frame">
+  <bf-top-bar>
+    <bf-wordmark />
+    <a bfIconButton bfTopBarEnd routerLink="/_ui" label="Perfil">
+      <bf-avatar name="Xosé Babío" />
+    </a>
+  </bf-top-bar>
+</div>
+<div class="frame">
+  <bf-top-bar>
+    <span class="league">Os Domingueiros</span>
+    <a bfIconButton bfTopBarEnd routerLink="/_ui" label="Perfil">
+      <bf-avatar name="Xosé Babío" [src]="picture" />
+    </a>
+  </bf-top-bar>
+</div>
+
+<h3>Navegación inferior</h3>
+<div class="frame">
+  <bf-nav-bar label="Principal">
+    @for (item of navItems; track item.id) {
+      <a
+        bfNavItem
+        routerLink="/_ui"
+        [queryParams]="navParams(item)"
+        [routerLinkActiveOptions]="navActive"
+      >
+        <svg [lucideIcon]="item.icon"></svg>
+        {{ item.label }}
+      </a>
+    }
+  </bf-nav-bar>
+</div>
+
+<h3>Navegación lateral</h3>
+<div class="frame side">
+  <bf-side-nav label="Principal">
+    <bf-wordmark bfSideNavHeader />
+    @for (item of navItems; track item.id) {
+      <a
+        bfNavItem
+        routerLink="/_ui"
+        [queryParams]="navParams(item)"
+        [routerLinkActiveOptions]="navActive"
+      >
+        <svg [lucideIcon]="item.icon"></svg>
+        {{ item.label }}
+      </a>
+    }
+    <div bfSideNavFooter class="me">
+      <bf-avatar name="Xosé Babío" />
+      Xosé Babío
+    </div>
+  </bf-side-nav>
+</div>

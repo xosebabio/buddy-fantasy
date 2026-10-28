@@ -41,7 +41,7 @@ const TEXT: [string, string][] = [
 
 /**
  * Graphics that carry information (focus, selection, the active destination, an error mark, the
- * bibs on the pitch) and their background: 3:1. A bib in a list is decorative, so the position
+ * outline of an input, the bibs on the pitch) and their background: 3:1. A bib in a list is decorative, so the position
  * colors are not checked on bg or surface (FE-25 puts them at about 3:1 on white).
  */
 const GRAPHICS: [string, string][] = [
@@ -53,6 +53,8 @@ const GRAPHICS: [string, string][] = [
   ['accent', 'pitch-stripe'],
   ['brand', 'bg'],
   ['brand', 'surface'],
+  ['border-strong', 'bg'],
+  ['border-strong', 'surface'],
   ['danger', 'bg'],
   ['danger', 'surface'],
   ['position-goalkeeper', 'pitch'],

@@ -200,7 +200,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 | 7 | Tipos generados, ruta tipada, `IdentityApi`, `LeagueApi`, CSRF, interceptor y textos de `ErrorCode` (§6) | Contrato con el backend (FE-05 a FE-09) | ✅ |
 | 8 | Dirección visual con la skill, revisada con el usuario; `ui/README.md` (§7.1) | Identidad cerrada (FE-28) | ✅ |
 | 9 | Paleta, tokens, temas, tipografía, iconos y test de contraste (§7.2, §7.3) | Sistema de diseño base (FE-24 a FE-27, RNF-12) | ✅ |
-| 10 | Componentes de `ui/` de §7.4 y `/_ui` | Catálogo inicial (FE-17, FE-18, FE-20) | |
+| 10 | Componentes de `ui/` de §7.4 y `/_ui` | Catálogo inicial (FE-17, FE-18, FE-20) | ✅ |
 | 11 | Arranque, `SessionStore`, login y logout, guards, rutas, shell, sin conexión, páginas de error y `core/time` (§8) | Shell navegable (FE-03, FE-10, FE-13, FE-29 a FE-31) | |
 | 12 | Pantallas de §9 con sus tests | Entrar, crear liga e invitar (RF-01, RF-02, RF-04 a RF-06, RF-08) | |
 | 13 | `deploy/Caddyfile`, perfil `caddy` en Compose y `cors.json` (§10) | Servido como en producción (RNF-16) | |

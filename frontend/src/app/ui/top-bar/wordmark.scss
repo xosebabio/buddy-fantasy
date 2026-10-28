@@ -1,0 +1,12 @@
+:host {
+  font-family: var(--bf-font-display);
+  font-size: var(--bf-font-size-4);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.accent {
+  color: var(--bf-color-brand-text);
+}

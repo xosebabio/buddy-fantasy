@@ -1,0 +1,57 @@
+// Global (ViewEncapsulation.None), so every selector starts with bf-field or .bf-input.
+bf-field {
+  display: grid;
+  gap: var(--bf-space-1);
+}
+
+.bf-field-label {
+  font-size: var(--bf-font-size-1);
+  font-weight: 600;
+}
+
+.bf-field-hint,
+.bf-field-error {
+  font-size: var(--bf-font-size-1);
+  line-height: 1.4;
+}
+
+.bf-field-hint {
+  color: var(--bf-color-text-muted);
+}
+
+.bf-field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-1);
+  color: var(--bf-color-danger-text);
+
+  svg {
+    flex: none;
+  }
+}
+
+// At least 16 px, from the reset (FE-27), and 48 px high like the buttons.
+.bf-input {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-control);
+  background-color: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  line-height: 1.4;
+
+  &[aria-invalid='true'] {
+    border-color: var(--bf-color-danger);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+textarea.bf-input {
+  min-height: 96px;
+  resize: vertical;
+}

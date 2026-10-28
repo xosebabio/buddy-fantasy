@@ -1,0 +1,62 @@
+// What the CDK puts outside the components: the scrim and the panes of ui/sheet (the bottom sheet
+// and the confirmation dialog), and the visually hidden text of LiveAnnouncer. The CDK loads the
+// structural styles of its overlays by itself.
+@use '@angular/cdk';
+@use 'breakpoints' as bp;
+@use 'typography' as type;
+@include cdk.a11y-visually-hidden;
+
+.bf-scrim {
+  background: var(--bf-color-scrim);
+}
+
+// The pane of a sheet: at the bottom and full width on mobile, floating and narrower from md.
+.bf-sheet {
+  max-height: calc(100dvh - var(--bf-space-7));
+  border-radius: var(--bf-radius-sheet) var(--bf-radius-sheet) 0 0;
+  background: var(--bf-color-surface);
+  color: var(--bf-color-text);
+  box-shadow: var(--bf-shadow-overlay);
+  animation: bf-sheet-in var(--bf-motion-base) var(--bf-ease-out);
+
+  .cdk-dialog-container {
+    overflow-y: auto;
+    padding: var(--bf-space-2) var(--bf-space-4)
+      calc(var(--bf-space-6) + env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  // The grip: a sheet closes with the scrim, Escape or its own buttons, never only by dragging.
+  .cdk-dialog-container::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 0 auto var(--bf-space-3);
+    border-radius: var(--bf-radius-round);
+    background: var(--bf-color-border-strong);
+  }
+
+  @include bp.md {
+    max-width: 480px;
+    margin-bottom: var(--bf-space-5);
+    border-radius: var(--bf-radius-sheet);
+
+    .cdk-dialog-container {
+      padding-bottom: var(--bf-space-5);
+    }
+  }
+}
+
+// The title of a sheet, marked with the bfSheetTitle directive.
+.bf-sheet-title {
+  @include type.display(4);
+
+  margin-bottom: var(--bf-space-3);
+}
+
+@keyframes bf-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}

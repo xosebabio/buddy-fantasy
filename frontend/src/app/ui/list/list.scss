@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--bf-color-border);
+  list-style: none;
+}
+
+:host(.bleed) {
+  margin-inline: calc(var(--bf-space-4) * -1);
+}

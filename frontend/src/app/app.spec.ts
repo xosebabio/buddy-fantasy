@@ -1,16 +1,21 @@
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { render, screen } from '@testing-library/angular';
 
 import { App } from './app';
-import { routes } from './app.routes';
+
+@Component({
+  selector: 'bf-test-page',
+  template: '<h1>Página de prueba</h1>',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+class TestPage {}
 
 describe('App', () => {
   it('renders the routed page', async () => {
-    const { navigate } = await render(App, { routes });
+    const { navigate } = await render(App, { routes: [{ path: 'test', component: TestPage }] });
 
-    await navigate('/_ui');
+    await navigate('/test');
 
-    expect(
-      await screen.findByRole('heading', { name: 'Catálogo de componentes' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Página de prueba' })).toBeInTheDocument();
   });
 });

@@ -14,6 +14,23 @@ h1 {
   color: var(--bf-color-text-muted);
 }
 
+.page-theme,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-4);
+}
+
+.overlays {
+  margin-top: var(--bf-space-6);
+}
+
+.check {
+  flex: none;
+  color: var(--bf-color-brand-text);
+}
+
 .themes {
   display: grid;
   gap: var(--bf-space-5);

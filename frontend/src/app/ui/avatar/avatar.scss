@@ -1,0 +1,39 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--bf-radius-round);
+  background-color: var(--bf-color-accent-subtle);
+  color: var(--bf-color-accent-text);
+  font-family: var(--bf-font-text);
+  font-weight: 600;
+  line-height: 1;
+}
+
+:host(.small) {
+  width: 32px;
+  height: 32px;
+  font-size: var(--bf-font-size-1);
+}
+
+:host(.medium) {
+  width: 40px;
+  height: 40px;
+  font-size: var(--bf-font-size-2);
+}
+
+:host(.large) {
+  @include type.display(4);
+
+  width: 64px;
+  height: 64px;
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -1,0 +1,88 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 72px;
+  margin: 0;
+  padding: var(--bf-space-3) var(--bf-space-2) var(--bf-space-3) var(--bf-space-4);
+  border: 0;
+  border-bottom: 1px solid var(--bf-color-border);
+  background-color: transparent;
+  color: var(--bf-color-text);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+}
+
+:host(.compact) {
+  min-height: 56px;
+}
+
+:host(a),
+:host(button) {
+  cursor: pointer;
+  transition: background-color var(--bf-motion-fast) var(--bf-ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+// A full-width row has no room around it: its focus ring goes inside.
+:host(:focus-visible) {
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  :host(a:hover),
+  :host(button:hover) {
+    background-color: color-mix(in srgb, var(--bf-color-text) 4%, transparent);
+  }
+}
+
+:host(a:active),
+:host(button:active) {
+  background-color: color-mix(in srgb, var(--bf-color-text) 8%, transparent);
+}
+
+.body {
+  display: grid;
+  flex: 1;
+  gap: var(--bf-space-1);
+  min-width: 0;
+}
+
+.title {
+  overflow-wrap: anywhere;
+}
+
+:host(.large) .title {
+  @include type.display(4);
+}
+
+:host(.compact) .title {
+  font-weight: 500;
+}
+
+:host(.current) .title {
+  color: var(--bf-color-brand-text);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}
+
+.meta:empty {
+  display: none;
+}
+
+.chevron {
+  flex: none;
+  color: var(--bf-color-text-muted);
+}

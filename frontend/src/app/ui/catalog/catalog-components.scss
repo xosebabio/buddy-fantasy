@@ -1,0 +1,73 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: block;
+}
+
+h3 {
+  @include type.display(4);
+
+  margin: var(--bf-space-6) 0 var(--bf-space-3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-3);
+  margin-bottom: var(--bf-space-3);
+}
+
+.stack {
+  display: grid;
+  gap: var(--bf-space-4);
+}
+
+.stack-tight {
+  display: grid;
+  flex: 1;
+  gap: var(--bf-space-2);
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+}
+
+.muted {
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}
+
+.card-title {
+  @include type.display(4);
+}
+
+.check {
+  flex: none;
+  color: var(--bf-color-brand-text);
+}
+
+.league {
+  @include type.display(3);
+}
+
+// A piece of a screen, cut out of it.
+.frame {
+  overflow: hidden;
+  margin-bottom: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-control);
+}
+
+.frame.side {
+  height: 440px;
+}
+
+.me {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-2);
+}

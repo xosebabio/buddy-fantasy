@@ -33,7 +33,7 @@ Tiene dominio (la posición), así que vive en `shared/` (`bf-bib`) y llega con 
 | ------------------------------------------- | --------------------------------------------- | ------------------------------------- | ----------------------------------- |
 | `bg`                                        | Fondo de la página                            | neutro cálido muy claro (≈ `#F6F5F2`) | ≈ `#121211`                         |
 | `surface`                                   | Barras, hojas, navegación, campos             | blanco                                | un paso sobre `bg` (≈ `#1C1B19`)    |
-| `border`, `border-strong`                   | Divisores; contornos de controles             | neutros 200 y 300                     | neutros 800 y 700                   |
+| `border`, `border-strong`                   | Divisores; contornos de controles             | neutros 200 y 500                     | neutros 800 y 500                   |
 | `text`, `text-muted`                        | Texto; metadatos y etiquetas                  | casi negro (neutro 900); neutro 600   | casi blanco (neutro 50); neutro 400 |
 | `brand`                                     | Botón principal, pestaña activa               | verde base                            | verde base                          |
 | `brand-text`, `brand-subtle`                | Texto verde; fondo del destino activo         | verde 700; verde 50                   | verde 400; verde 900                |
@@ -51,6 +51,7 @@ Tiene dominio (la posición), así que vive en `shared/` (`bf-bib`) y llega con 
 - El verde de marca es para actuar y para lo positivo; el lavanda, para lo seleccionado y el foco. No se intercambian.
 - El campo es igual en los dos temas: un verde oscuro elegido para que los cuatro colores de posición y el anillo lavanda pasen de 3:1 sobre el césped, y el texto blanco de 10:1.
 - Sin texto sobre el rojo base (3,6:1 con casi negro): un error se marca con `danger` como borde o icono y su texto va en `danger-text`.
+- `border-strong` es el contorno de los inputs, que los identifica: llega a 3:1 en los dos temas (WCAG 1.4.11), y por eso es el neutro 500 en claro y en oscuro.
 - Los colores de posición no llegan a 3:1 sobre `bg` en claro: sirven porque el peto es decorativo y un chip de posición lleva el texto en `on-color`.
 - `styles/contrast.spec.ts` comprueba los pares de texto (4,5:1) y de gráficos con información (3:1) en los dos temas, leyendo los tokens reales. Un par nuevo en un componente se añade allí.
 
@@ -87,6 +88,29 @@ Escala de tercera mayor (1,25) sobre 16 px, en `--bf-font-size-1` a `-8`:
 ## Iconos
 
 Lucide con `@lucide/angular`: un componente por icono, importado por separado (`imports: [LucideHouse]` y `<svg lucideHouse></svg>`). Trazo de 2, en `currentColor`; 24 px en la navegación, 20 px en botones y 16 px junto a texto pequeño (`size`). Sin `title`, el icono queda oculto al lector de pantalla: el texto lo lleva el botón o la etiqueta de al lado.
+
+## Componentes
+
+Los de `ui/` (FE-18) se ven en `/_ui` con todos sus estados y en los dos temas. Cómo se usan:
+
+| Componente                                | Uso                                                                                                                                                                                                                                            |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bfButton`                                | `<button bfButton variant="primary" block>`: `primary` (la acción principal, una por pantalla), `secondary`, `quiet` y `danger` (lo que no se deshace, con contorno y texto rojos); `loading` lo deshabilita con un spinner. También en `<a>`. |
+| `bfIconButton`                            | Solo icono, 44 × 44 px, con su nombre en `label`.                                                                                                                                                                                              |
+| `bf-field` + `bfInput`                    | Etiqueta, control, `hint` y `error` (el texto del `code` del servidor); el campo da el id y `aria-describedby` al control.                                                                                                                     |
+| `bf-card`                                 | Un bloque aparte (la vista previa de una invitación); las listas no son tarjetas.                                                                                                                                                              |
+| `bfList` + `bfListItem`                   | Filas a todo lo ancho (`bleed` anula el margen de la página); `size="large"` o `compact`; slots `bfListItemLeading`, `bfListItemMeta` y `bfListItemTrailing`; `current` para la fila en uso. Una fila enlace lleva chevron.                    |
+| `bf-badge`                                | `neutral`, `brand`, `accent` (_Admin_) y `warning` (plazos).                                                                                                                                                                                   |
+| `bf-avatar`                               | Foto (sin `Referer`, para las de Google) o iniciales si no hay o no carga; decorativo.                                                                                                                                                         |
+| `Sheet`                                   | Hoja inferior modal (CDK Dialog): `bfSheetTitle` la nombra y `bfSheetClose` o `DialogRef.close` la cierran. En móvil sustituye a los diálogos.                                                                                                 |
+| `Confirm`                                 | `confirm.ask({ title, message, confirm, tone })` emite `true` o `false`; empieza con el foco en _Cancelar_.                                                                                                                                    |
+| `Toasts` + `bf-toaster`                   | `toasts.show({ message, tone, action, dismissed })`; se anuncian con `LiveAnnouncer`; sin acción se van a los 5 s, con acción esperan. `bf-toaster` va una vez en el shell.                                                                    |
+| `bf-skeleton`                             | `line`, `title`, `avatar` y `block`, quietos; la página marca la región con `aria-busy`.                                                                                                                                                       |
+| `bf-empty-state`                          | El contorno del peto, el mensaje y su acción (`bfEmptyStateAction`).                                                                                                                                                                           |
+| `bf-top-bar` + `bf-wordmark`              | Barra superior fija con el inicio y `bfTopBarEnd`.                                                                                                                                                                                             |
+| `bf-nav-bar`, `bf-side-nav` + `bfNavItem` | Navegación inferior y lateral; cada destino es un `routerLink` con su icono y texto, activo con `aria-current="page"`.                                                                                                                         |
+
+Los estilos de lo que el CDK pinta fuera de los componentes (velo, hoja y su título) y los de `bf-field` (el control es contenido proyectado) son globales: `styles/_overlay.scss` y `field/field.scss` sin encapsulación.
 
 ## Composición
 

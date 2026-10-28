@@ -34,13 +34,13 @@ module.exports = defineConfig([
           style: 'camelCase',
         },
       ],
+      // Elements, and attributes for components on native elements such as button[bfButton].
       '@angular-eslint/component-selector': [
         'error',
-        {
-          type: 'element',
-          prefix: 'bf',
-          style: 'kebab-case',
-        },
+        [
+          { type: 'element', prefix: 'bf', style: 'kebab-case' },
+          { type: 'attribute', prefix: 'bf', style: 'camelCase' },
+        ],
       ],
       // Components, directives and pipes are classes that may only carry their decorator.
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
@@ -128,8 +128,26 @@ module.exports = defineConfig([
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
     rules: {
-      // RNF-15: every text is translatable and carries an explicit id (@@...).
-      '@angular-eslint/template/i18n': ['error', { checkId: true }],
+      // RNF-15: every text is translatable and carries an explicit id (@@...). Besides the
+      // default ones, these attributes take values that are not text: the inputs of ui/ and
+      // SVG and HTML attributes.
+      '@angular-eslint/template/i18n': [
+        'error',
+        {
+          checkId: true,
+          ignoreAttributes: [
+            'variant',
+            'tone',
+            'size',
+            'shape',
+            'width',
+            'd',
+            'viewBox',
+            'inputmode',
+            'referrerpolicy',
+          ],
+        },
+      ],
     },
   },
   {
@@ -138,8 +156,9 @@ module.exports = defineConfig([
     rules: { '@angular-eslint/template/i18n': 'off' },
   },
   {
-    // /_ui is a development tool, left out of the production build and of the translations.
-    files: ['src/app/ui/catalog/**/*.html'],
+    // /_ui is a development tool, left out of the production build and of the translations, and
+    // so are the host components of the tests.
+    files: ['src/app/ui/catalog/**/*.html', 'src/**/*.spec.ts/*.html'],
     rules: { '@angular-eslint/template/i18n': 'off' },
   },
 ]);

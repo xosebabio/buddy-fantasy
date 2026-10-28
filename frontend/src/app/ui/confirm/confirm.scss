@@ -1,0 +1,9 @@
+.message {
+  color: var(--bf-color-text-muted);
+}
+
+.actions {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

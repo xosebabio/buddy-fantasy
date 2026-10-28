@@ -1,6 +1,36 @@
 <main class="catalog">
   <h1>Catálogo de componentes</h1>
-  <p class="lead">Fundamentos del sistema de diseño en los dos temas. Aún no hay componentes.</p>
+  <p class="lead">
+    El sistema de diseño en los dos temas: fundamentos y componentes de <code>ui/</code>.
+  </p>
+
+  <div class="page-theme" role="group" aria-label="Tema de la página">
+    @for (option of pageThemes; track option.id) {
+      <button
+        bfButton
+        type="button"
+        [variant]="pageTheme() === option.id ? 'primary' : 'secondary'"
+        [attr.aria-pressed]="pageTheme() === option.id"
+        (click)="setPageTheme(option.id)"
+      >
+        {{ option.name }}
+      </button>
+    }
+  </div>
+
+  <section class="overlays" aria-labelledby="overlays">
+    <h2 id="overlays">Superposiciones</h2>
+    <p class="lead">Se abren sobre la página, con su tema: cámbialo arriba para ver el otro.</p>
+    <div class="actions">
+      <button bfButton type="button" (click)="openSheet()">Hoja inferior</button>
+      <button bfButton type="button" (click)="openConfirm()">Confirmación</button>
+      <button bfButton type="button" (click)="showToast()">Aviso</button>
+      <button bfButton type="button" (click)="showErrorToast()">Aviso de error</button>
+    </div>
+    @if (answer(); as answer) {
+      <p class="lead" role="status">{{ answer }}</p>
+    }
+  </section>
 
   <div class="themes">
     @for (theme of themes; track theme.id) {
@@ -42,7 +72,28 @@
           <li><svg lucideChevronDown></svg>Cambiar</li>
           <li><svg lucideClock></svg>Plazo</li>
         </ul>
+
+        <bf-catalog-components />
       </section>
     }
   </div>
+
+  <ng-template #switcher>
+    <h2 bfSheetTitle>Cambiar de liga</h2>
+    <ul bfList bleed>
+      @for (league of leagues; track league.name) {
+        <li>
+          <button bfListItem type="button" [current]="league.current" [bfSheetClose]="league.name">
+            {{ league.name }}
+            <span bfListItemMeta>{{ league.role }}</span>
+            @if (league.current) {
+              <svg lucideCheck bfListItemTrailing class="check"></svg>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  </ng-template>
+
+  <bf-toaster />
 </main>
