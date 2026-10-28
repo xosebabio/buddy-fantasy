@@ -45,6 +45,7 @@ Código, identificadores y commits en **inglés**; textos de la interfaz y de Op
 ## Flujo de trabajo
 
 - **No hagas commits ni push salvo que el usuario lo pida.** Deja los cambios en el árbol de trabajo. Commits en Conventional Commits, citando `RF-xx`/`RNF-xx`.
+- **Autoría:** los commits y PR van solo con la identidad git del usuario (`git config user.name`/`user.email`). Nada de trailers `Co-Authored-By`, `Generated with…` ni enlaces de sesión de ningún agente, y no cambies autor ni committer.
 - **Marca el progreso** en el mismo cambio que completa la tarea: ✅ en la columna `Hecho` del plan, `- [x]` en el roadmap de `docs/requirements.md` cuando el ítem esté completo, y actualiza [status.md](docs/agents/status.md) (y la sección *Estado* de aquí) al cerrar un ítem.
 - Si añades comandos o variables de entorno, actualiza [commands.md](docs/agents/commands.md).
 - **Decisiones abiertas:** ninguna por ahora. Si una tarea depende de una, pregunta o déjala configurable; no la resuelvas por tu cuenta.
