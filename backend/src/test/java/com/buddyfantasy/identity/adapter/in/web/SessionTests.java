@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -55,6 +56,9 @@ class SessionTests {
 
     @Autowired
     JdbcTemplate jdbc;
+
+    @Autowired
+    ApplicationContext context;
 
     /** A browser: keeps its cookies and does not follow redirects. */
     CookieManager cookies;
@@ -224,6 +228,25 @@ class SessionTests {
 
         assertThat(me.statusCode()).isEqualTo(401);
         assertThat(me.headers().firstValue("Location")).isEmpty();
+    }
+
+    /** FE-34: the E2E tests' login only exists with the {@code e2e} profile ({@link E2eLoginTests}). */
+    @Test
+    @DisplayName("Without the e2e profile there is no test login")
+    void withoutTheE2eProfileThereIsNoTestLogin() throws Exception {
+        get("/actuator/health");
+
+        HttpResponse<String> login = browser.send(HttpRequest.newBuilder(url("/api/e2e/login"))
+                        .header("X-XSRF-TOKEN", cookie("XSRF-TOKEN"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"email\":\"ana@x.com\",\"displayName\":\"Ana\"}"))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(context.getBeansOfType(E2eLoginController.class)).isEmpty();
+        assertThat(login.statusCode()).isEqualTo(401);
+        assertThat(sessions()).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from identity_user", Integer.class)).isZero();
     }
 
     /** Caddy sends the public origin in {@code X-Forwarded-*}; Google only accepts the registered redirect URI. */

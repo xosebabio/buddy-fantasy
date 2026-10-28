@@ -48,6 +48,10 @@ Valores por defecto en `backend/src/main/resources/application.yml`.
 
 Las credenciales de S3 salen de la cadena por defecto del AWS SDK (rol IAM en producción, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` en local; las de SeaweedFS están en `deploy/seaweedfs/s3.json` y solo valen en local).
 
+## Login de pruebas (E2E)
+
+Con el perfil `e2e` (`SPRING_PROFILES_ACTIVE=e2e`; solo para los E2E, nunca en producción: al arrancar lo avisa con un `WARN`), `POST /api/e2e/login` con `{"email", "displayName"}` registra o reutiliza al usuario (sujeto `e2e:<email>`) y abre su sesión sin Google, como el login real. Pasa por CSRF: antes, un `GET` cualquiera (`/actuator/health`) da la cookie `XSRF-TOKEN`, cuyo valor va en la cabecera `X-XSRF-TOKEN`. Responde `204`; no está en el spec. Sin el perfil la ruta no existe (`401`).
+
 ## Login con Google
 
 El backend construye el redirect URI con el origen de la petición (`server.forward-headers-strategy: framework`: detrás de Caddy, con `X-Forwarded-Proto` y `X-Forwarded-Host`), así que en el cliente OAuth de Google van autorizados todos los orígenes desde los que se entra:
