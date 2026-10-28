@@ -94,7 +94,11 @@ public class RatingWindow extends AggregateRoot {
 
     /** Whether votes are accepted at {@code now}: not closed and before {@code closesAt}. */
     public boolean isOpen(Instant now) {
-        return closedAt == null && now.isBefore(closesAt);
+        return status(now) == RatingStatus.OPEN;
+    }
+
+    public RatingStatus status(Instant now) {
+        return RatingStatus.of(closesAt, closedAt, now);
     }
 
     /** Throws {@link ConflictException} with {@link RatingError#RATING_WINDOW_CLOSED} unless {@link #isOpen}. */

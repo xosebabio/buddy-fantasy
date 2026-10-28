@@ -149,6 +149,7 @@ class ApiErrorsTests {
         isProblem(perform(get("/api/leagues/{id}/standings/{matchId}", peña.id(), "42")), 400);
         isProblem(perform(get("/api/leagues/{id}/managers/{userId}/history", peña.id(), "42")), 400);
         isProblem(perform(get("/api/leagues/{id}/players/{playerId}/points", peña.id(), "42")), 400);
+        isProblem(perform(get("/api/leagues/{id}/ratings/{matchId}", peña.id(), "42")), 400);
     }
 
     @Test
@@ -186,7 +187,8 @@ class ApiErrorsTests {
                         new Endpoint(HttpMethod.POST, "/api/leagues"),
                         new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/settings"),
                         new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/matches/{matchId}/sheet"),
-                        new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/lineup"))
+                        new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/lineup"),
+                        new Endpoint(HttpMethod.PUT, "/api/leagues/{id}/ratings/{matchId}"))
                 .doesNotContain(
                         new Endpoint(HttpMethod.POST, "/api/leagues/{id}/matches/{matchId}/close"),
                         new Endpoint(HttpMethod.DELETE, "/api/leagues/{id}/players/{playerId}"));

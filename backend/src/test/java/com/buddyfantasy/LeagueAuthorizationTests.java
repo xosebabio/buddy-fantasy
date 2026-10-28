@@ -141,6 +141,11 @@ class LeagueAuthorizationTests {
         rules.put(endpoint(GET, "/api/leagues/{id}/standings/{matchId}"), member());
         rules.put(endpoint(GET, "/api/leagues/{id}/managers/{userId}/history"), member());
         rules.put(endpoint(GET, "/api/leagues/{id}/players/{playerId}/points"), member());
+        // rating
+        rules.put(endpoint(GET, "/api/leagues/{id}/ratings"), member());
+        rules.put(endpoint(GET, "/api/leagues/{id}/ratings/{matchId}"), member());
+        rules.put(endpoint(PUT, "/api/leagues/{id}/ratings/{matchId}"), member("""
+                {"ratings": []}"""));
         return rules;
     }
 

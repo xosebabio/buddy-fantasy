@@ -96,6 +96,8 @@ class RatingWindowTests {
         assertThatCode(() -> window.requireOpen(CLOSES.minusMillis(1))).doesNotThrowAnyException();
         assertThat(window.isOpen(CLOSES.minusMillis(1))).isTrue();
         assertThat(window.isOpen(CLOSES)).isFalse();
+        assertThat(window.status(CLOSES.minusMillis(1))).isEqualTo(RatingStatus.OPEN);
+        assertThat(window.status(CLOSES)).isEqualTo(RatingStatus.CLOSED);
         assertThatThrownBy(() -> window.requireOpen(CLOSES))
                 .isInstanceOf(ConflictException.class)
                 .extracting(e -> ((ConflictException) e).code())

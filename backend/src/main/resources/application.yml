@@ -11,6 +11,9 @@ spring:
       ddl-auto: validate
     properties:
       hibernate.jdbc.time_zone: UTC
+  jackson:
+    deserialization:
+      accept-float-as-int: false # un decimal en un campo entero (2.5 picas) es un 400, no se trunca a 2
   flyway:
     enabled: true
   session:

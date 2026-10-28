@@ -144,7 +144,7 @@ Cada test nuevo se comprueba quitando a mano la defensa que prueba.
 | 1 | `RatingFormat` a `datadefinition`; V13, conversión por formato y `ratingMinVotes` en `LeagueSettings`, defaults, persistencia y API de parámetros; `RatingSettings` y `LeagueSettingsProvider.ratingSettings`, con sus tests | Parámetros de valoración listos (parte de `league` del ítem de RF-22, RF-23) | ✅ |
 | 2 | V14, `RatingRules`, `RatingConversion`, `RatingWindow`, `RatingWindowClosed`, `RatingsCorrected`, con tests unitarios; `allowedDependencies` de `rating` | Dominio verificado (RF-17, RF-19, RF-22, RF-23) | ✅ |
 | 3 | Persistencia, listeners de `MatchClosed` y `MatchCorrected`, `CloseRatingWindowCommand` y `CloseDueRatingWindowsJob`; reenvíos | Ventana abierta y cerrada con job y ShedLock (RF-17) | ✅ |
-| 4 | `SaveMyRatingsCommand`, `GetMatchRatingsQuery`, `ListRatingWindowsQuery` y sus endpoints; anonimato y concurrencia con el cierre | RF-18 a RF-21 | |
+| 4 | `SaveMyRatingsCommand`, `GetMatchRatingsQuery`, `ListRatingWindowsQuery` y sus endpoints; anonimato y concurrencia con el cierre | RF-18 a RF-21 | ✅ |
 | 4b | `rating_exclusion` (en V14), `ExcludeRaterCommand`, `RaterExcluded` y su endpoint; exclusión en las vistas; concurrencia con el voto | RF-41 | |
 | 5 | V15, `applyRatings` y puntuar con valoraciones en `scoring`, `RatingEventsListener`; ampliar `ScoringFlowTests` y reenvíos | RF-22, RF-23, RF-30 completos | |
 | 6 | `ScreenStatementsTests`, `MatchdayFlowTests`, escaneos; `AGENTS.md` (estado, comandos con `RATING_CLOSE_JOB_CRON`), marcar los tres ítems en `requirements.md` y actualizar el de correcciones de la Fase 4 | Ítems de la Fase 2 cerrados | |

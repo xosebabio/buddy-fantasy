@@ -83,8 +83,22 @@ class JdbcRatingWindowRepository implements RatingWindowRepository {
     }
 
     @Override
+    public Optional<RatingWindow> findById(UUID matchId) {
+        return find(matchId, "");
+    }
+
+    @Override
     public Optional<RatingWindow> lock(UUID matchId) {
-        return jdbc.sql(SELECT_WINDOW + " for update")
+        return find(matchId, " for update");
+    }
+
+    @Override
+    public Optional<RatingWindow> share(UUID matchId) {
+        return find(matchId, " for share");
+    }
+
+    private Optional<RatingWindow> find(UUID matchId, String lockClause) {
+        return jdbc.sql(SELECT_WINDOW + lockClause)
                 .param("matchId", matchId)
                 .query(JdbcRatingWindowRepository::toWindowRow)
                 .optional()

@@ -10,7 +10,8 @@ import com.buddyfantasy.rating.domain.RatingWindow;
 /**
  * The rating windows of closed matches with their players and results (RF-17), at most one per match. Every write
  * first locks the window's row until the transaction ends, so a correction of the sheet and the close of the window
- * take turns and the second one sees what the first one wrote.
+ * take turns and the second one sees what the first one wrote. The votes lock it in share mode: they go at once
+ * between them, but never at the same time as a close or a correction.
  */
 public interface RatingWindowRepository {
 
@@ -22,8 +23,17 @@ public interface RatingWindowRepository {
 
     boolean exists(UUID matchId);
 
+    /** The window with its players and results, without locking it; empty if there is none. */
+    Optional<RatingWindow> findById(UUID matchId);
+
     /** Locks the window ({@code for update}) and returns it with its players and results; empty if there is none. */
     Optional<RatingWindow> lock(UUID matchId);
+
+    /**
+     * Locks the window in share mode ({@code for share}), for the votes, and returns it as {@link #lock}: a close or a
+     * correction waits for the votes being saved, and a vote that waited for them sees what they wrote.
+     */
+    Optional<RatingWindow> share(UUID matchId);
 
     /**
      * Updates the stored window with {@code window}: its close, its copy of the sheet and the results. A player no

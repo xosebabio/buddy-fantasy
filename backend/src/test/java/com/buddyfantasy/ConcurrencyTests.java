@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -51,12 +52,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 /**
  * Races against the real database: the same request sent at once (a double tap, two admins), the two paths that
- * lock a match's lineups, the two halves scoring needs to score a match, and the events and job of a rating window. The checks before writing do not see the other transaction, so the unique indexes decide:
- * each race ends in one write and a 409 or nothing, never a 500 nor a duplicate. Each case runs {@link #ROUNDS}
- * times, since a single run may not overlap.
+ * lock a match's lineups, the two halves scoring needs to score a match, the events and job of a rating window, and
+ * the votes against its close. The checks before writing do not see the other transaction, so the unique indexes
+ * and row locks decide: each race ends in one write and a 409 or nothing, never a 500 nor a duplicate. Each case runs
+ * {@link #ROUNDS} times, since a single run may not overlap.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupLockTests
@@ -314,6 +317,48 @@ class ConcurrencyTests {
                     match)).as("matchday %d", matchday).isEqualTo(2);
             assertThat(count("select count(*) from rating_window where match_id = ? and closed_at is not null",
                     match)).as("matchday %d", matchday).isOne();
+        }
+    }
+
+    /**
+     * Votes read the clock just before the window's time is up and the close just after, at once: without locking the
+     * window in share mode, a vote is saved after the close read the votes and is left out of the result. Each vote
+     * is either saved and counted (200) or rejected and not saved (409), never saved and left out.
+     */
+    @Test
+    @DisplayName("Votes and the close of a rating window at once: every saved vote counts, a rejected one is not saved")
+    void votesAndTheCloseAtOnceEverySavedVoteCounts() throws Exception {
+        List<UUID> voters = List.of(admin, fixtures.user("ana"), fixtures.user("bea"));
+        fixtures.join(peña, voters.get(1), voters.get(2));
+        UUID keeper = fixtures.player(peña, GOALKEEPER);
+
+        for (int matchday = 1; matchday <= ROUNDS; matchday++) {
+            Instant kickoff = FIRST_KICKOFF.plus(Duration.ofDays(7L * (matchday - 1)));
+            UUID match = fixtures.schedule(peña, matchday, kickoff);
+            Instant closedAt = kickoff.plus(Duration.ofHours(2));
+            bus.dispatch(new OpenRatingWindowCommand(peña.id(), match, matchday, kickoff,
+                    List.of(new SheetPlayer(keeper, GOALKEEPER)), closedAt));
+            Instant closesAt = closedAt.plus(Duration.ofDays(1));
+            String vote = """
+                    {"ratings": [{"playerId": "%s", "value": 3}]}""".formatted(keeper);
+
+            List<Callable<Object>> race = new ArrayList<>(voters.stream()
+                    .<Callable<Object>>map(voter -> () -> clock.at(closesAt.minusMillis(1), () -> status(voter,
+                            put("/api/leagues/{id}/ratings/{matchId}", peña.id(), match)
+                                    .contentType(APPLICATION_JSON).content(vote))))
+                    .toList());
+            race.add(() -> clock.at(closesAt, () -> bus.dispatch(new CloseRatingWindowCommand(match))));
+            List<Object> results = Concurrently.run(race);
+
+            assertThat(results.getLast()).as("matchday %d", matchday).isEqualTo(true);
+            List<Object> statuses = results.subList(0, voters.size());
+            assertThat(statuses).as("matchday %d", matchday).allMatch(status -> status.equals(200)
+                    || status.equals(409));
+            long saved = statuses.stream().filter(status -> status.equals(200)).count();
+            assertThat(count("select count(*) from rating_vote where match_id = ?", match))
+                    .as("matchday %d: the votes answered 200", matchday).isEqualTo((int) saved);
+            assertThat(count("select votes from rating_player where match_id = ?", match))
+                    .as("matchday %d: the votes counted in the close", matchday).isEqualTo((int) saved);
         }
     }
 }
