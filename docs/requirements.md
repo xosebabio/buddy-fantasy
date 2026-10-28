@@ -203,7 +203,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 ### Fase 2 · Valoraciones
 
-- [ ] Apertura y cierre de la ventana de valoración con job programado y ShedLock (RF-17)
+- [x] Apertura y cierre de la ventana de valoración con job programado y ShedLock (RF-17)
 - [ ] Pantalla de valoración en picas o nota decimal, editable mientras siga abierta, y cancelación de las valoraciones de un manager por el admin (RF-18 a RF-21, RF-41)
 - [ ] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23). Incluye adaptar los parámetros de `league`: sustituir `ratingPointsPerUnit` por una conversión por formato (picas −2/2/6/10/14, nota 1:1) y añadir el mínimo de votos (la parte de `league` ya está hecha: plan 09, tarea 1)
 - [ ] Prueba real: una jornada con los amigos y ajuste de los pesos

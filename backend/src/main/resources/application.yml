@@ -104,6 +104,11 @@ lineup:
     cron: ${LINEUP_LOCK_JOB_CRON:0 * * * * *} # cada minuto; "-" lo desactiva
     margin: 1m # solo bloquea partidos con lockAt <= ahora - margin: los guardados de antes ya están confirmados
 
+rating:
+  # Job de cierre de las ventanas de valoración (RF-17): configuración técnica, no de negocio.
+  close-job:
+    cron: ${RATING_CLOSE_JOB_CRON:0 * * * * *} # cada minuto; "-" lo desactiva
+
 shared:
   events:
     # Reenvío de los eventos cuyo listener falló (RNF-03): configuración técnica, no de negocio.

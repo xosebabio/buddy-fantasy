@@ -1,5 +1,7 @@
 package com.buddyfantasy;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -12,6 +14,14 @@ import com.buddyfantasy.lineup.adapter.in.scheduler.LockDueLineupsJob;
 import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLineupsCommand;
 import com.buddyfantasy.lineup.application.usecases.savelineup.SaveLineupCommand;
 import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
+import com.buddyfantasy.rating.PlayerRatingData;
+import com.buddyfantasy.rating.RatingWindowClosed;
+import com.buddyfantasy.rating.RatingsCorrected;
+import com.buddyfantasy.rating.adapter.in.scheduler.CloseDueRatingWindowsJob;
+import com.buddyfantasy.rating.application.usecases.applycorrectedsheet.ApplyCorrectedSheetCommand;
+import com.buddyfantasy.rating.application.usecases.closeratingwindow.CloseRatingWindowCommand;
+import com.buddyfantasy.rating.application.usecases.openratingwindow.OpenRatingWindowCommand;
+import com.buddyfantasy.rating.domain.SheetPlayer;
 import com.buddyfantasy.scoring.MatchdayScored;
 import com.buddyfantasy.scoring.application.usecases.applylockedlineups.ApplyLockedLineupsCommand;
 import com.buddyfantasy.scoring.application.usecases.applymatchsheet.ApplyMatchSheetCommand;
@@ -44,7 +54,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 /**
  * Races against the real database: the same request sent at once (a double tap, two admins), the two paths that
- * lock a match's lineups and the two halves scoring needs to score a match. The checks before writing do not see the other transaction, so the unique indexes decide:
+ * lock a match's lineups, the two halves scoring needs to score a match, and the events and job of a rating window. The checks before writing do not see the other transaction, so the unique indexes decide:
  * each race ends in one write and a 409 or nothing, never a 500 nor a duplicate. Each case runs {@link #ROUNDS}
  * times, since a single run may not overlap.
  */
@@ -74,6 +84,9 @@ class ConcurrencyTests {
 
     @Autowired
     LockDueLineupsJob lockJob;
+
+    @Autowired
+    CloseDueRatingWindowsJob closeRatingsJob;
 
     @Autowired
     RecordedEvents events;
@@ -218,6 +231,89 @@ class ConcurrencyTests {
                     .as("matchday %d", matchday).isEqualTo(squad.size());
             assertThat(events.stream(MatchdayScored.class).filter(event -> event.matchId().equals(match)))
                     .as("matchday %d", matchday).hasSize(1);
+        }
+    }
+
+    /**
+     * A {@code MatchCorrected} delivered while its {@code MatchClosed} is still being handled: both try to open the
+     * window and the insert decides; the correction, the most recent sheet, is the one kept.
+     */
+    @Test
+    @DisplayName("The close and a correction of a match arriving at once open one window with the corrected sheet")
+    void theCloseAndACorrectionAtOnceOpenOneWindowWithTheCorrectedSheet() {
+        List<UUID> squad = fixtures.squad(peña, GOALKEEPER, DEFENDER);
+
+        for (int matchday = 1; matchday <= ROUNDS; matchday++) {
+            Instant kickoff = FIRST_KICKOFF.plus(Duration.ofDays(7L * (matchday - 1)));
+            UUID match = fixtures.schedule(peña, matchday, kickoff);
+            Instant closedAt = kickoff.plus(Duration.ofHours(2));
+            Instant correctedAt = closedAt.plus(Duration.ofHours(1));
+            int day = matchday;
+
+            Concurrently.<Object>run(List.of(
+                    () -> bus.dispatch(new OpenRatingWindowCommand(peña.id(), match, day, kickoff,
+                            List.of(new SheetPlayer(squad.get(0), GOALKEEPER)), closedAt)),
+                    () -> bus.dispatch(new ApplyCorrectedSheetCommand(peña.id(), match, day, kickoff,
+                            List.of(new SheetPlayer(squad.get(1), DEFENDER)), correctedAt))));
+
+            assertThat(count("select count(*) from rating_window where match_id = ? and sheet_at = ?", match,
+                    Timestamp.from(correctedAt))).as("matchday %d", matchday).isOne();
+            assertThat(jdbc.queryForList("select player_id from rating_player where match_id = ?", UUID.class,
+                    match)).as("matchday %d", matchday).containsExactly(squad.get(1));
+        }
+    }
+
+    /**
+     * The job, a second close and a correction of a window whose time is up, at once: without locking its row, both
+     * closes publish, or the close saves the results of the sheet the correction just replaced. Whatever the order,
+     * the window closes once and the last results published are those of the corrected sheet.
+     */
+    @Test
+    @DisplayName("The close job, another close and a correction of a rating window at once close it once")
+    void theCloseJobAnotherCloseAndACorrectionAtOnceCloseItOnce() {
+        List<UUID> squad = fixtures.squad(peña, GOALKEEPER, DEFENDER, MIDFIELDER);
+        UUID keeper = squad.get(0);
+
+        for (int matchday = 1; matchday <= ROUNDS; matchday++) {
+            Instant kickoff = FIRST_KICKOFF.plus(Duration.ofDays(7L * (matchday - 1)));
+            UUID match = fixtures.schedule(peña, matchday, kickoff);
+            Instant closedAt = kickoff.plus(Duration.ofHours(2));
+            int day = matchday;
+            bus.dispatch(new OpenRatingWindowCommand(peña.id(), match, day, kickoff,
+                    List.of(new SheetPlayer(keeper, GOALKEEPER), new SheetPlayer(squad.get(1), DEFENDER)), closedAt));
+            jdbc.update("insert into rating_vote (match_id, player_id, user_id, value, updated_at)"
+                    + " values (?, ?, ?, 3, ?)", match, keeper, admin, Timestamp.from(closedAt));
+            clock.now = closedAt.plus(Duration.ofDays(1));
+
+            Concurrently.<Object>run(List.of(
+                    () -> {
+                        closeRatingsJob.closeDueRatingWindows();
+                        return null;
+                    },
+                    () -> bus.dispatch(new CloseRatingWindowCommand(match)),
+                    () -> bus.dispatch(new ApplyCorrectedSheetCommand(peña.id(), match, day, kickoff,
+                            List.of(new SheetPlayer(keeper, GOALKEEPER), new SheetPlayer(squad.get(2), MIDFIELDER)),
+                            closedAt.plus(Duration.ofHours(1))))));
+            Listeners.await(jdbc);
+
+            assertThat(events.stream(RatingWindowClosed.class).filter(event -> event.matchId().equals(match)))
+                    .as("matchday %d", matchday).hasSize(1);
+            List<PlayerRatingData> lastPublished = events.all().stream()
+                    .<List<PlayerRatingData>>mapMulti((event, results) -> {
+                        if (event instanceof RatingWindowClosed closed && closed.matchId().equals(match)) {
+                            results.accept(closed.players());
+                        } else if (event instanceof RatingsCorrected corrected && corrected.matchId().equals(match)) {
+                            results.accept(corrected.players());
+                        }
+                    })
+                    .toList().getLast();
+            assertThat(lastPublished).as("matchday %d", matchday).containsExactlyInAnyOrder(
+                    new PlayerRatingData(keeper, 1, new BigDecimal("3.00"), 10),
+                    new PlayerRatingData(squad.get(2), 0, null, 0));
+            assertThat(count("select count(*) from rating_player where match_id = ? and rating_points is not null",
+                    match)).as("matchday %d", matchday).isEqualTo(2);
+            assertThat(count("select count(*) from rating_window where match_id = ? and closed_at is not null",
+                    match)).as("matchday %d", matchday).isOne();
         }
     }
 }

@@ -21,6 +21,8 @@ import com.buddyfantasy.match.MatchRescheduled;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
+import com.buddyfantasy.rating.RatingWindowClosed;
+import com.buddyfantasy.rating.adapter.in.scheduler.CloseDueRatingWindowsJob;
 import com.buddyfantasy.scoring.MatchdayScored;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.infrastructure.ResubmitIncompleteEventsJob;
@@ -113,6 +115,9 @@ class EventResubmissionTests {
 
     @Autowired
     LockDueLineupsJob lockJob;
+
+    @Autowired
+    CloseDueRatingWindowsJob closeRatingsJob;
 
     @Autowired
     RecordedEvents events;
@@ -224,7 +229,7 @@ class EventResubmissionTests {
 
     /**
      * Marks the publications of {@code eventType} incomplete, as if their listeners had failed, and runs the job: the
-     * listeners of the lineup and scoring modules must change no row nor publish anything more.
+     * listeners of the lineup, scoring and rating modules must change no row nor publish anything more.
      */
     private void deliverAgain(Class<?> eventType) {
         Map<String, String> before = rows();
@@ -270,6 +275,25 @@ class EventResubmissionTests {
         fixtures.sheet(peña, match1, 2, 0, played(squad.get(5), 2));
         Listeners.await(jdbc);
         assertThat(events.stream(MatchdayScored.class)).hasSize(2);
+
+        deliverAgain(MatchCorrected.class);
+        deliverAgain(MatchClosed.class);
+    }
+
+    /** Neither reopens the window nor brings back the players the correction removed, with their votes. */
+    @Test
+    @DisplayName("Delivering MatchCorrected or MatchClosed again after the rating window closed changes nothing")
+    void deliveringAgainMatchCorrectedOrMatchClosedAfterTheRatingWindowClosedChangesNothing() {
+        leagueWithALineup();
+        clock.now = KICKOFF_1.plus(Duration.ofHours(2));
+        fixtures.closeWithSheet(peña, match1, 1, 0, played(squad.get(5), 1));
+        clock.now = clock.now.plus(Duration.ofHours(1));
+        fixtures.sheet(peña, match1, 1, 0, played(squad.get(6), 1));
+        Listeners.await(jdbc);
+        clock.now = clock.now.plus(Duration.ofDays(1));
+        closeRatingsJob.closeDueRatingWindows();
+        Listeners.await(jdbc);
+        assertThat(events.stream(RatingWindowClosed.class)).hasSize(1);
 
         deliverAgain(MatchCorrected.class);
         deliverAgain(MatchClosed.class);

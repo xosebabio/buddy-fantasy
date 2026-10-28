@@ -2,6 +2,9 @@
 lineup:
   lock-job:
     cron: "-" # the tests run the job by hand with their own clock
+rating:
+  close-job:
+    cron: "-" # the tests run the job by hand with their own clock
 shared:
   events:
     resubmit-job:
