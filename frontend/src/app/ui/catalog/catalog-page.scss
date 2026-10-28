@@ -1,0 +1,117 @@
+@use 'ui/styles/breakpoints' as bp;
+@use 'ui/styles/typography' as type;
+
+.catalog {
+  padding: var(--bf-space-5) var(--bf-space-4);
+}
+
+h1 {
+  @include type.display(6);
+}
+
+.lead {
+  margin-top: var(--bf-space-2);
+  color: var(--bf-color-text-muted);
+}
+
+.themes {
+  display: grid;
+  gap: var(--bf-space-5);
+  margin-top: var(--bf-space-5);
+
+  @include bp.lg {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.theme {
+  padding: var(--bf-space-5) var(--bf-space-4);
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-control);
+  background: var(--bf-color-bg);
+  color: var(--bf-color-text);
+}
+
+h2 {
+  @include type.display(5);
+}
+
+h3 {
+  @include type.display(4);
+
+  margin-top: var(--bf-space-6);
+}
+
+h4 {
+  @include type.display(3);
+
+  margin-top: var(--bf-space-4);
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--bf-space-3);
+  margin-top: var(--bf-space-2);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-2);
+    font-size: var(--bf-font-size-1);
+  }
+}
+
+.swatch {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--bf-color-border);
+  border-radius: var(--bf-radius-tag);
+}
+
+.type {
+  display: grid;
+  gap: var(--bf-space-3);
+  margin-top: var(--bf-space-3);
+}
+
+@each $step in 8, 7, 6, 5, 4, 3 {
+  .step-#{$step} {
+    @include type.display($step);
+  }
+}
+
+.step-2 {
+  font-size: var(--bf-font-size-2);
+}
+
+.step-1 {
+  font-size: var(--bf-font-size-1);
+}
+
+.figures {
+  @include type.figures;
+
+  color: var(--bf-color-brand-text);
+}
+
+.icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-4);
+  margin-top: var(--bf-space-3);
+
+  li {
+    display: grid;
+    justify-items: center;
+    gap: var(--bf-space-1);
+    color: var(--bf-color-text-muted);
+    font-size: var(--bf-font-size-1);
+  }
+}

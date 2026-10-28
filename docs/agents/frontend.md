@@ -59,10 +59,10 @@ frontend/src/app/
 
 ### Estilo visual y mobile first (FE-24 a FE-31)
 
-- Solo tokens (`--bf-color-*`, `--bf-space-*`, `--bf-radius-*`, `--bf-font-*`, `--bf-shadow-*`) de `ui/styles/`; Stylelint prohíbe colores y medidas literales.
+- Solo tokens (`--bf-color-*`, `--bf-space-*`, `--bf-radius-*`, `--bf-font-*`, `--bf-shadow-*`, `--bf-motion-*`) de `ui/styles/_tokens.scss`; Stylelint prohíbe colores y medidas literales. La paleta (`_palette.scss`) la genera `npm run palette` y solo la usan los tokens; `ui/styles/contrast.spec.ts` comprueba el contraste de los pares de tokens en los dos temas. Los estilos de componente importan mixins con `@use 'ui/styles/typography' as type;` o `'ui/styles/breakpoints'` (`includePaths` apunta a `src/app`).
 - Paleta de FE-25: verde de marca, lavanda secundaria y un color por posición (portero, defensa, medio, delantero), con escalas 50–900, neutros cálidos, rojo de error y ámbar de aviso. En tema claro, texto casi negro sobre los tonos base y tonos 700–800 para texto de color.
-- Tema claro y oscuro: sigue a `prefers-color-scheme`, con interruptor que se guarda en `localStorage` y se aplica antes del primer pintado.
-- Barlow Condensed (títulos y cifras tabulares) y Barlow (texto); inputs de 16 px como mínimo. La dirección visual (peto, césped, escala, radios, movimiento y textos) está en `ui/README.md`, con el boceto en `docs/design/visual-direction.html`: léela antes de construir una pantalla o un componente.
+- Tema claro y oscuro: sigue a `prefers-color-scheme`, con interruptor (`Theme` de `core/theme`, clave `bf.theme` en `localStorage`) que el script de `index.html` aplica como `data-theme` antes del primer pintado. Cualquier elemento con `data-theme` cambia el tema de lo que contiene.
+- Barlow Condensed (títulos y cifras tabulares) y Barlow (texto), de `@fontsource`; inputs de 16 px como mínimo. Iconos con `@lucide/angular`, un componente por icono (`<svg lucideHouse></svg>`). La dirección visual (peto, césped, escala, radios, movimiento y textos) está en `ui/README.md`, con el boceto en `docs/design/visual-direction.html`: léela antes de construir una pantalla o un componente.
 - Puntos de corte: base (< 600), `md` (≥ 600) y `lg` (≥ 1024: navegación lateral y dos columnas), siempre con `min-width`.
 - Acción principal abajo; navegación inferior de 4–5 destinos; *safe areas* y `dvh`; `type` e `inputmode` correctos; nada solo con hover y todo gesto con alternativa de botón.
 - Sin conexión: aviso y envíos deshabilitados.

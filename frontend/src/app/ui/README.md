@@ -27,29 +27,32 @@ Tiene dominio (la posición), así que vive en `shared/` (`bf-bib`) y llega con 
 
 ## Color
 
-Las escalas 50–900 las genera `scripts/palette.mjs` (tarea 9) a partir de los seis colores de FE-25. Los componentes solo usan los tokens semánticos; los valores aproximados son los del boceto.
+`npm run palette` (`scripts/palette.mjs`) genera `styles/_palette.scss`: los seis colores de FE-25, el rojo y el ámbar, cada uno con su escala 50–900 en OKLCH (la misma luminosidad por paso en todos los tonos, así que un paso da el mismo contraste en cualquiera), y los neutros cálidos (50–950). `styles/_tokens.scss` construye con ellos los tokens semánticos de la tabla, y `styles/_themes.scss` los aplica: claro en `:root`, oscuro con `data-theme="dark"` o con `prefers-color-scheme` si no hay elección guardada. Los componentes solo usan los tokens semánticos, nunca la paleta.
 
-| Token                                       | Uso                                           | Claro                                 | Oscuro                           |
-| ------------------------------------------- | --------------------------------------------- | ------------------------------------- | -------------------------------- |
-| `bg`                                        | Fondo de la página                            | neutro cálido muy claro (≈ `#F6F5F2`) | ≈ `#121211`                      |
-| `surface`                                   | Barras, hojas, navegación, campos             | blanco                                | un paso sobre `bg` (≈ `#1C1B19`) |
-| `border`, `border-strong`                   | Divisores; contornos de controles             | neutros 200 y 300                     | neutros 800 y 700                |
-| `text`, `text-muted`                        | Texto; metadatos y etiquetas                  | casi negro; neutro 600                | casi blanco; neutro 300          |
-| `brand`                                     | Botón principal, pestaña activa               | verde base                            | verde base                       |
-| `brand-text`, `brand-subtle`                | Texto verde; fondo del destino activo         | verde 700; verde 50                   | verde 400; verde 900             |
-| `on-color`                                  | Texto sobre cualquier tono base (botón, peto) | casi negro                            | casi negro                       |
-| `accent`, `accent-text`, `accent-subtle`    | Selección, enlaces, etiqueta _Admin_          | lavanda base, 700, 50                 | lavanda base, 300, 900           |
-| `focus`                                     | Anillo de foco de teclado                     | lavanda 600                           | lavanda 300                      |
-| `danger`, `danger-text`                     | Errores y puntos negativos                    | rojo base, 700                        | rojo base, 300                   |
-| `warning`, `warning-text`, `warning-subtle` | Plazos a punto de vencer                      | ámbar base, 800, 50                   | ámbar base, base, 900            |
-| `position-*`                                | Petos y chips de posición                     | tonos base                            | tonos base                       |
-| `pitch`, `pitch-stripe`, `pitch-line`       | Césped a franjas y sus líneas                 | `#123D29`, `#164530`, blanco al 55 %  | iguales                          |
-| `on-pitch`, `on-pitch-muted`                | Nombre y valor del jugador en el campo        | blanco; blanco al 78 %                | iguales                          |
-| `scrim`                                     | Velo bajo hojas y diálogos                    | casi negro al 45 %                    | negro al 60 %                    |
+| Token                                       | Uso                                           | Claro                                 | Oscuro                              |
+| ------------------------------------------- | --------------------------------------------- | ------------------------------------- | ----------------------------------- |
+| `bg`                                        | Fondo de la página                            | neutro cálido muy claro (≈ `#F6F5F2`) | ≈ `#121211`                         |
+| `surface`                                   | Barras, hojas, navegación, campos             | blanco                                | un paso sobre `bg` (≈ `#1C1B19`)    |
+| `border`, `border-strong`                   | Divisores; contornos de controles             | neutros 200 y 300                     | neutros 800 y 700                   |
+| `text`, `text-muted`                        | Texto; metadatos y etiquetas                  | casi negro (neutro 900); neutro 600   | casi blanco (neutro 50); neutro 400 |
+| `brand`                                     | Botón principal, pestaña activa               | verde base                            | verde base                          |
+| `brand-text`, `brand-subtle`                | Texto verde; fondo del destino activo         | verde 700; verde 50                   | verde 400; verde 900                |
+| `on-color`                                  | Texto sobre cualquier tono base (botón, peto) | casi negro                            | casi negro                          |
+| `accent`, `accent-text`, `accent-subtle`    | Selección, enlaces, etiqueta _Admin_          | lavanda base, 700, 50                 | lavanda base, 300, 900              |
+| `focus`                                     | Anillo de foco de teclado                     | lavanda 600                           | lavanda 300                         |
+| `danger`, `danger-text`                     | Errores y puntos negativos                    | rojo base, 700                        | rojo base, 300                      |
+| `warning`, `warning-text`, `warning-subtle` | Plazos a punto de vencer                      | ámbar base, 800, 50                   | ámbar base, base, 900               |
+| `position-*`                                | Petos y chips de posición                     | tonos base                            | tonos base                          |
+| `pitch`, `pitch-stripe`, `pitch-line`       | Césped a franjas y sus líneas                 | `#123D29`, `#164530`, blanco al 55 %  | iguales                             |
+| `on-pitch`, `on-pitch-muted`                | Nombre y valor del jugador en el campo        | blanco; blanco al 78 %                | iguales                             |
+| `scrim`                                     | Velo bajo hojas y diálogos                    | casi negro al 45 %                    | negro al 60 %                       |
 
 - El botón principal lleva **texto casi negro sobre el verde** (FE-25), también en oscuro.
 - El verde de marca es para actuar y para lo positivo; el lavanda, para lo seleccionado y el foco. No se intercambian.
-- El campo es igual en los dos temas: un verde oscuro elegido para que los cuatro colores de posición y el anillo lavanda pasen de 3:1 sobre el césped, y el texto blanco de 10:1. Si cambia la paleta, el test de contraste (tarea 9) lo vuelve a comprobar.
+- El campo es igual en los dos temas: un verde oscuro elegido para que los cuatro colores de posición y el anillo lavanda pasen de 3:1 sobre el césped, y el texto blanco de 10:1.
+- Sin texto sobre el rojo base (3,6:1 con casi negro): un error se marca con `danger` como borde o icono y su texto va en `danger-text`.
+- Los colores de posición no llegan a 3:1 sobre `bg` en claro: sirven porque el peto es decorativo y un chip de posición lleva el texto en `on-color`.
+- `styles/contrast.spec.ts` comprueba los pares de texto (4,5:1) y de gráficos con información (3:1) en los dos temas, leyendo los tokens reales. Un par nuevo en un componente se añade allí.
 
 ## Tipografía
 
@@ -66,7 +69,8 @@ Escala de tercera mayor (1,25) sobre 16 px, en `--bf-font-size-1` a `-8`:
 | 2    | 16 px  | Barlow 400 / 600                 | Texto, botones, inputs (nunca menos)                         |
 | 1    | 13 px  | Barlow 400 / 600                 | Metadatos, ayudas, etiquetas                                 |
 
-- Pesos que se cargan: Barlow 400, 500 y 600; Barlow Condensed 500, 600 y 700; solo latín.
+- Pesos que se cargan: Barlow 400, 500 y 600; Barlow Condensed 500, 600 y 700; solo latín (`styles/_fonts.scss`).
+- En los estilos de un componente, `@use 'ui/styles/typography' as type;` da `type.display(3)` a `type.display(8)` (fuente, peso, tamaño e interlineado de la tabla) y `type.figures` (condensed con números tabulares). Los puntos de corte, en `ui/styles/breakpoints` (`bp.md`, `bp.lg`).
 - Todas las cifras con `font-variant-numeric: tabular-nums`. Los puntos llevan signo (`+14`, `−3` con el signo menos tipográfico), en `brand-text` o `danger-text`.
 - Una cifra va con su unidad o contexto más pequeño y apagado al lado (`87,4 / 100 M`, `1 de 2`) y la etiqueta debajo.
 - Sin mayúsculas sostenidas en etiquetas, sin sobretítulos y sin resaltar una palabra suelta en un titular. Texto en frases de menos de 80 caracteres.
@@ -77,8 +81,12 @@ Escala de tercera mayor (1,25) sobre 16 px, en `--bf-font-size-1` a `-8`:
 - **Radios por jerarquía:** `tag` 4 px (etiquetas, petos, campo), `control` 10 px (botones, inputs, anillos de selección), `sheet` 20 px (esquinas superiores de hojas) y `round` (avatares). Las filas de lista no tienen radio.
 - **Sombras:** solo en lo que flota sobre la página: `overlay` (hojas, toasts) y `raised` (menús). Nada de sombras en filas ni en tarjetas.
 - **Movimiento:** `--bf-motion-fast` 120 ms (cambios de estado), `--bf-motion-base` 220 ms (hojas que entran) con `ease-out`. La única animación que no responde a una acción es la caída de los cuatro petos (1, 4, 8, 9) en el login; lo demás solo contesta a algo que hace la persona. Con `prefers-reduced-motion`, sin desplazamientos.
-- **Foco:** contorno de 2 px en `focus` separado 2 px, en todo lo que se pueda enfocar.
+- **Foco:** contorno de 2 px en `focus` separado 2 px, en todo lo que se pueda enfocar (global, en `styles/_reset.scss`).
 - **Objetivos táctiles** de 44 px como mínimo; botones de 48 px de alto.
+
+## Iconos
+
+Lucide con `@lucide/angular`: un componente por icono, importado por separado (`imports: [LucideHouse]` y `<svg lucideHouse></svg>`). Trazo de 2, en `currentColor`; 24 px en la navegación, 20 px en botones y 16 px junto a texto pequeño (`size`). Sin `title`, el icono queda oculto al lector de pantalla: el texto lo lleva el botón o la etiqueta de al lado.
 
 ## Composición
 

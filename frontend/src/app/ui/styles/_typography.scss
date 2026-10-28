@@ -1,0 +1,50 @@
+// Type styles of the scale in ui/README.md, for component styles: @include type.display(6).
+@use 'sass:list';
+@use 'sass:map';
+
+// Weight and line height of each Barlow Condensed step; 1 and 2 are Barlow, the body text.
+$display: (
+  8: (
+    700,
+    0.95,
+  ),
+  7: (
+    700,
+    1,
+  ),
+  6: (
+    700,
+    1.05,
+  ),
+  5: (
+    700,
+    1.1,
+  ),
+  4: (
+    600,
+    1.15,
+  ),
+  3: (
+    600,
+    1.2,
+  ),
+);
+
+@mixin display($step) {
+  $style: map.get($display, $step);
+
+  @if not $style {
+    @error 'There is no display step #{$step}: use one of #{map.keys($display)}.';
+  }
+
+  font-family: var(--bf-font-display);
+  font-size: var(--bf-font-size-#{$step});
+  font-weight: list.nth($style, 1);
+  line-height: list.nth($style, 2);
+}
+
+// Points, values, matchdays and deadlines: condensed with tabular figures.
+@mixin figures {
+  font-family: var(--bf-font-display);
+  font-variant-numeric: tabular-nums;
+}

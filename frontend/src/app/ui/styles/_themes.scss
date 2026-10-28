@@ -1,0 +1,30 @@
+// Light and dark themes with the same tokens (FE-26). The light one is the default; the dark one
+// follows prefers-color-scheme unless <html> carries the user's choice in data-theme, which the
+// script of index.html sets before the first paint. Any element with data-theme switches its
+// subtree, as /_ui does to show both themes side by side.
+@use 'tokens';
+
+:root {
+  @include tokens.base;
+}
+
+:root,
+[data-theme='light'] {
+  @include tokens.light;
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  @include tokens.dark;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    @include tokens.dark;
+
+    color-scheme: dark;
+  }
+}

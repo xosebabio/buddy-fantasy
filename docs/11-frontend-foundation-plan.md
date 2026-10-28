@@ -184,7 +184,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 - **E2E de humo** (FE-34) en `e2e/`, móvil en Chromium y WebKit, en los dos temas, con `@axe-core/playwright` en cada pantalla: un usuario sin sesión abre una invitación y vuelve a ella tras el login; el admin entra, crea una liga, genera la invitación, otro usuario se une, el admin lo ve y lo expulsa, y el otro ya no ve la liga. El login usa `POST /api/e2e/login`.
 - **CI** (`.github/workflows/ci.yml`):
   - `backend`: igual que ahora; incluye `OpenApiSpecTests`.
-  - `frontend`: Node de `.nvmrc`, `npm ci`, `api:types` e `i18n:extract` con `git diff --exit-code` sobre `api/`, `schema.d.ts` y `messages.xlf`, `lint`, `format:check`, `test` y `build`.
+  - `frontend`: Node de `.nvmrc`, `npm ci`, `api:types`, `palette` e `i18n:extract` con `git diff --exit-code` sobre `api/`, `schema.d.ts`, `_palette.scss` y `messages.xlf`, `lint`, `format:check`, `test` y `build`.
   - `e2e` (tras los dos): Postgres como servicio, backend con el perfil `e2e`, build del front servido por Caddy, Playwright (Chromium y WebKit); sube el informe si falla.
 
 ## 12. Orden de ejecución
@@ -199,7 +199,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 | 6 | `ng new`, TypeScript estricto, `angular.json`, ESLint, Prettier, Stylelint, Vitest, scripts y estructura de carpetas (§4, §5) | Esqueleto que compila, pasa lint y tests (FE-01, FE-02, FE-21, FE-22, FE-32, FE-35) | ✅ |
 | 7 | Tipos generados, ruta tipada, `IdentityApi`, `LeagueApi`, CSRF, interceptor y textos de `ErrorCode` (§6) | Contrato con el backend (FE-05 a FE-09) | ✅ |
 | 8 | Dirección visual con la skill, revisada con el usuario; `ui/README.md` (§7.1) | Identidad cerrada (FE-28) | ✅ |
-| 9 | Paleta, tokens, temas, tipografía, iconos y test de contraste (§7.2, §7.3) | Sistema de diseño base (FE-24 a FE-27, RNF-12) | |
+| 9 | Paleta, tokens, temas, tipografía, iconos y test de contraste (§7.2, §7.3) | Sistema de diseño base (FE-24 a FE-27, RNF-12) | ✅ |
 | 10 | Componentes de `ui/` de §7.4 y `/_ui` | Catálogo inicial (FE-17, FE-18, FE-20) | |
 | 11 | Arranque, `SessionStore`, login y logout, guards, rutas, shell, sin conexión, páginas de error y `core/time` (§8) | Shell navegable (FE-03, FE-10, FE-13, FE-29 a FE-31) | |
 | 12 | Pantallas de §9 con sus tests | Entrar, crear liga e invitar (RF-01, RF-02, RF-04 a RF-06, RF-08) | |

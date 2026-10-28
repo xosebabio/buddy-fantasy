@@ -1,0 +1,13 @@
+// Breakpoints (FE-29), always min-width: the base is mobile (< 600 px).
+@mixin md {
+  @media (width >= 600px) {
+    @content;
+  }
+}
+
+// Side navigation and two columns.
+@mixin lg {
+  @media (width >= 1024px) {
+    @content;
+  }
+}

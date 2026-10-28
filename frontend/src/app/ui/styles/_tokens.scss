@@ -1,0 +1,122 @@
+// Design tokens (FE-24): the only values components use, as CSS custom properties. Their use is in
+// ui/README.md; _themes.scss applies them. The contrast test reads the color mixins, so a color
+// token is always a palette variable, optionally with an alpha through color.change.
+@use 'sass:color';
+@use 'palette' as p;
+
+// Tokens that do not change with the theme.
+@mixin base {
+  --bf-font-display: 'Barlow Condensed', system-ui, sans-serif;
+  --bf-font-text: 'Barlow', system-ui, sans-serif;
+
+  // Major third (1.25) over 16 px.
+  --bf-font-size-1: 0.8125rem;
+  --bf-font-size-2: 1rem;
+  --bf-font-size-3: 1.25rem;
+  --bf-font-size-4: 1.5625rem;
+  --bf-font-size-5: 1.9375rem;
+  --bf-font-size-6: 2.4375rem;
+  --bf-font-size-7: 3.0625rem;
+  --bf-font-size-8: 3.8125rem;
+
+  // Spacing in base 4; the page margin on mobile is space-4.
+  --bf-space-1: 4px;
+  --bf-space-2: 8px;
+  --bf-space-3: 12px;
+  --bf-space-4: 16px;
+  --bf-space-5: 24px;
+  --bf-space-6: 32px;
+  --bf-space-7: 48px;
+  --bf-space-8: 64px;
+
+  // Radii by hierarchy: tags and bibs, controls, the top corners of sheets, avatars.
+  --bf-radius-tag: 4px;
+  --bf-radius-control: 10px;
+  --bf-radius-sheet: 20px;
+  --bf-radius-round: 999px;
+
+  // State changes and sheets coming in.
+  --bf-motion-fast: 120ms;
+  --bf-motion-base: 220ms;
+  --bf-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@mixin light {
+  --bf-color-bg: #{p.$neutral-50};
+  --bf-color-surface: #{p.$white};
+  --bf-color-border: #{p.$neutral-200};
+  --bf-color-border-strong: #{p.$neutral-300};
+  --bf-color-text: #{p.$neutral-900};
+  --bf-color-text-muted: #{p.$neutral-600};
+  --bf-color-brand: #{p.$green};
+  --bf-color-brand-text: #{p.$green-700};
+  --bf-color-brand-subtle: #{p.$green-50};
+  --bf-color-on-color: #{p.$neutral-900};
+  --bf-color-accent: #{p.$lavender};
+  --bf-color-accent-text: #{p.$lavender-700};
+  --bf-color-accent-subtle: #{p.$lavender-50};
+  --bf-color-focus: #{p.$lavender-600};
+  --bf-color-danger: #{p.$red};
+  --bf-color-danger-text: #{p.$red-700};
+  --bf-color-warning: #{p.$amber};
+  --bf-color-warning-text: #{p.$amber-800};
+  --bf-color-warning-subtle: #{p.$amber-50};
+  --bf-color-position-goalkeeper: #{p.$terracotta};
+  --bf-color-position-defender: #{p.$blue};
+  --bf-color-position-midfielder: #{p.$olive};
+  --bf-color-position-forward: #{p.$pink};
+  --bf-color-pitch: #{p.$pitch};
+  --bf-color-pitch-stripe: #{p.$pitch-stripe};
+  --bf-color-pitch-line: #{color.change(p.$white, $alpha: 0.55)};
+  --bf-color-on-pitch: #{p.$white};
+  --bf-color-on-pitch-muted: #{color.change(p.$white, $alpha: 0.78)};
+  --bf-color-scrim: #{color.change(p.$neutral-900, $alpha: 0.45)};
+
+  // Only on what floats over the page: sheets and toasts, menus.
+  --bf-shadow-overlay:
+    0 -1px 0 #{color.change(p.$neutral-900, $alpha: 0.06)},
+    0 -12px 32px #{color.change(p.$neutral-900, $alpha: 0.14)};
+  --bf-shadow-raised:
+    0 1px 2px #{color.change(p.$neutral-900, $alpha: 0.12)},
+    0 4px 12px #{color.change(p.$neutral-900, $alpha: 0.08)};
+}
+
+@mixin dark {
+  --bf-color-bg: #{p.$neutral-950};
+  --bf-color-surface: #{p.$neutral-900};
+  --bf-color-border: #{p.$neutral-800};
+  --bf-color-border-strong: #{p.$neutral-700};
+  --bf-color-text: #{p.$neutral-50};
+  --bf-color-text-muted: #{p.$neutral-400};
+  --bf-color-brand: #{p.$green};
+  --bf-color-brand-text: #{p.$green-400};
+  --bf-color-brand-subtle: #{p.$green-900};
+  --bf-color-on-color: #{p.$neutral-900};
+  --bf-color-accent: #{p.$lavender};
+  --bf-color-accent-text: #{p.$lavender-300};
+  --bf-color-accent-subtle: #{p.$lavender-900};
+  --bf-color-focus: #{p.$lavender-300};
+  --bf-color-danger: #{p.$red};
+  --bf-color-danger-text: #{p.$red-300};
+  --bf-color-warning: #{p.$amber};
+  --bf-color-warning-text: #{p.$amber};
+  --bf-color-warning-subtle: #{p.$amber-900};
+  --bf-color-position-goalkeeper: #{p.$terracotta};
+  --bf-color-position-defender: #{p.$blue};
+  --bf-color-position-midfielder: #{p.$olive};
+  --bf-color-position-forward: #{p.$pink};
+  --bf-color-pitch: #{p.$pitch};
+  --bf-color-pitch-stripe: #{p.$pitch-stripe};
+  --bf-color-pitch-line: #{color.change(p.$white, $alpha: 0.55)};
+  --bf-color-on-pitch: #{p.$white};
+  --bf-color-on-pitch-muted: #{color.change(p.$white, $alpha: 0.78)};
+  --bf-color-scrim: #{color.change(p.$black, $alpha: 0.6)};
+
+  // Only on what floats over the page: sheets and toasts, menus.
+  --bf-shadow-overlay:
+    0 -1px 0 #{color.change(p.$white, $alpha: 0.06)},
+    0 -12px 32px #{color.change(p.$black, $alpha: 0.5)};
+  --bf-shadow-raised:
+    0 1px 2px #{color.change(p.$black, $alpha: 0.4)},
+    0 4px 12px #{color.change(p.$black, $alpha: 0.3)};
+}

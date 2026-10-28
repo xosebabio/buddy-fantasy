@@ -1,0 +1,5 @@
+// Global styles of the design system, loaded once from src/styles.scss. Component styles @use
+// breakpoints and typography; they never @use the palette, only the tokens.
+@use 'fonts';
+@use 'themes';
+@use 'reset';

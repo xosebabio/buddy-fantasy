@@ -6,6 +6,15 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      // The theme chosen in the app (core/theme/theme.ts), applied before the first paint (FE-26).
+      try {
+        var theme = localStorage.getItem('bf.theme');
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <bf-root></bf-root>

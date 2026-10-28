@@ -1,4 +1,48 @@
-<main>
+<main class="catalog">
   <h1>Catálogo de componentes</h1>
-  <p>Aún no hay componentes.</p>
+  <p class="lead">Fundamentos del sistema de diseño en los dos temas. Aún no hay componentes.</p>
+
+  <div class="themes">
+    @for (theme of themes; track theme.id) {
+      <section
+        class="theme"
+        [attr.data-theme]="theme.id"
+        [attr.aria-labelledby]="'theme-' + theme.id"
+      >
+        <h2 [id]="'theme-' + theme.id">{{ theme.name }}</h2>
+
+        <h3>Colores</h3>
+        @for (group of colors; track group.name) {
+          <h4>{{ group.name }}</h4>
+          <ul class="swatches">
+            @for (token of group.tokens; track token) {
+              <li>
+                <span class="swatch" [style.background]="'var(--bf-color-' + token + ')'"></span>
+                <code>{{ token }}</code>
+              </li>
+            }
+          </ul>
+        }
+
+        <h3>Tipografía</h3>
+        <ul class="type">
+          @for (step of typeSteps; track step) {
+            <li [class]="'step-' + step">Jornada 12 <span class="figures">+14 −3 87,4</span></li>
+          }
+        </ul>
+
+        <h3>Iconos</h3>
+        <ul class="icons">
+          <li><svg lucideHouse></svg>Jornada</li>
+          <li><svg lucideShirt></svg>Alineación</li>
+          <li><svg lucideStar></svg>Valorar</li>
+          <li><svg lucideTrophy></svg>Clasificación</li>
+          <li><svg lucideUsers></svg>Liga</li>
+          <li><svg lucidePlus></svg>Crear</li>
+          <li><svg lucideChevronDown></svg>Cambiar</li>
+          <li><svg lucideClock></svg>Plazo</li>
+        </ul>
+      </section>
+    }
+  </div>
 </main>

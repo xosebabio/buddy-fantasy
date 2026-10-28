@@ -35,6 +35,7 @@ npm run lint           # ESLint (TS y plantillas, boundaries, i18n con id) y Sty
 npm run format         # Prettier sobre TS, HTML, SCSS y JSON
 npm run format:check   # lo mismo, sin escribir (CI)
 npm test               # Vitest con jsdom, una pasada; npm test -- --watch para quedarse mirando
+npm run palette        # regenera src/app/ui/styles/_palette.scss (versionado) desde scripts/palette.mjs
 npm run api:types      # regenera src/app/core/api/schema.d.ts (versionado) desde ../api/openapi.json
 npm run i18n:extract   # regenera src/locale/messages.xlf (versionado) desde el build de producción
 ```
