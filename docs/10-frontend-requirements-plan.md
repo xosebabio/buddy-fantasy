@@ -213,7 +213,7 @@ Se añaden como decididas: plataforma sin PWA de momento; librería de component
 | 2 | `requirements.md`: visión y alcance, RNF-01 y RNF-12 a RNF-16 (§3.1, §3.2) | Plataforma y RNF del front | ✅ |
 | 3 | `requirements.md`: sección *Frontend* con FE-01 a FE-35 y mapa de pantallas (§3.3) | Reglas del front | ✅ |
 | 4 | `requirements.md`: stack, roadmap y decisiones (§3.4 a §3.6) | Roadmap con el front | ✅ |
-| 5 | `AGENTS.md`, `architecture.md`, `frontend.md` nuevo, `conventions.md`, `testing.md`, `status.md` (§4) | Guías de agentes coherentes | |
+| 5 | `AGENTS.md`, `architecture.md`, `frontend.md` nuevo, `conventions.md`, `testing.md`, `status.md` (§4) | Guías de agentes coherentes | ✅ |
 | 6 | Redactar `docs/11-frontend-foundation-plan.md` (esqueleto, §5 y primeras pantallas) | Siguiente plan listo | |
 
 Las tareas 2 a 5 son un único commit `docs: add frontend requirements (RNF-01, RNF-12 to RNF-16)`.

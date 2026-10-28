@@ -49,4 +49,4 @@ Todo endpoint nuevo (o que cambie) se documenta en el mismo cambio con las anota
 
 ## Frontend
 
-- Mobile first: diseña primero para pantalla de móvil.
+Arquitectura, tipado, componentes, estilo y calidad del frontend (FE-01 a FE-35): ver [frontend.md](frontend.md).

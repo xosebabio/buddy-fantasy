@@ -8,11 +8,11 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 - **v1 NO incluye:** apps nativas, pagos, chat, varias competiciones por liga, compraventa de jugadores entre managers. No lo implementes sin que se pida.
 - **Objetivo:** un grupo de amigos en un VPS barato, sin bloquear la migración a cloud.
-- **Stack:** Java 21, Spring Boot 3, Spring Modulith, PostgreSQL + Flyway, login solo con Google, `@Scheduled` + ShedLock; Angular PWA (aún no existe `frontend/`).
+- **Stack:** Java 21, Spring Boot 3, Spring Modulith, PostgreSQL + Flyway, login solo con Google, `@Scheduled` + ShedLock; Angular web mobile first (aún no existe `frontend/`).
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. Requisitos del frontend definidos (plan 10); siguiente: plan 11, esqueleto de `frontend/`. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 
@@ -22,6 +22,7 @@ Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): sol
 | [docs/agents/architecture.md](docs/agents/architecture.md) | Stack, módulos y sus RF, reglas entre módulos, invariantes técnicas |
 | [docs/agents/domain-rules.md](docs/agents/domain-rules.md) | Puntos, valoraciones, alineaciones, mercado, roles |
 | [docs/agents/conventions.md](docs/agents/conventions.md) | Defaults y límites, estilo Java, casos de uso, OpenAPI, migraciones, commits |
+| [docs/agents/frontend.md](docs/agents/frontend.md) | Reglas del frontend (FE-xx), cómo añadir un endpoint o un componente |
 | [docs/agents/testing.md](docs/agents/testing.md) | Tests obligatorios, infraestructura de integración y escaneos |
 | [docs/agents/commands.md](docs/agents/commands.md) | Build, tests, arranque local y variables de entorno |
 | `docs/NN-*-plan.md` | Plan de cada módulo, con su *Orden de ejecución* |
@@ -39,6 +40,7 @@ Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): sol
 9. **Valoraciones anónimas.** Ninguna API devuelve votos individuales de otros usuarios, tampoco al admin.
 10. **Migraciones.** Nunca edites una migración aplicada: crea `V<n>__*.sql` nueva y añádela a `migration-checksums.txt`.
 11. **Tests.** Cada `@Test` con `@DisplayName` en inglés; integración con Testcontainers (nunca H2) y la infraestructura compartida de [testing.md](docs/agents/testing.md).
+12. **Frontend.** Sigue las reglas FE-xx de `docs/requirements.md` (resumen en [frontend.md](docs/agents/frontend.md)): tipos solo del OpenAPI, ninguna feature importa otra, ningún límite de negocio en el cliente y estilos solo con tokens.
 
 Código, identificadores y commits en **inglés**; textos de la interfaz y de OpenAPI en **español**.
 

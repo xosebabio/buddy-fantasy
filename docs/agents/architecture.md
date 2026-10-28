@@ -8,7 +8,7 @@
 | Base de datos | PostgreSQL + Flyway |
 | Autenticación | Spring Security + OAuth2 login (solo Google), sesión en Spring Session JDBC |
 | Jobs | `@Scheduled` + ShedLock |
-| Frontend | Angular + `@angular/pwa`, mobile first (Angular Material o PrimeNG, por decidir) |
+| Frontend | Angular web mobile first (standalone, zoneless, signals) + Angular CDK y librería de componentes propia; SCSS con tokens; tipos generados del OpenAPI. Sin PWA hasta la Fase 3 |
 | Notificaciones | webpush-java + SMTP (Brevo, Resend…) |
 | Imágenes | S3 + CloudFront (AWS SDK v2, subida por URL prefirmada); SeaweedFS en local y en tests |
 | Infra | Docker Compose (app + Postgres + Caddy), GitHub Actions |
@@ -17,7 +17,8 @@ Estructura de repositorio prevista (ajústala aquí si cambia):
 
 ```
 backend/    # Spring Boot (Maven)
-frontend/   # Angular PWA
+frontend/   # Angular (web mobile first)
+api/        # openapi.json versionado, del que salen los tipos del frontend (FE-05)
 deploy/     # docker-compose, Caddyfile, scripts de backup
 docs/       # requisitos, planes y guías para agentes (docs/agents/)
 ```
@@ -47,6 +48,23 @@ Reglas:
 - Cada módulo es dueño de sus tablas. Nada de joins SQL entre tablas de módulos distintos.
 - Diseña pensando en que un módulo pueda extraerse a servicio algún día: eventos en lugar de llamadas síncronas cuando el flujo lo permita.
 - Dentro de cada módulo, arquitectura hexagonal (`domain`, `application`, `adapter/in`, `adapter/out`), verificada por `HexagonalArchitectureTests`. Paquetes y nombres en [conventions.md](conventions.md).
+
+## Capas del frontend
+
+Reglas completas en `docs/requirements.md` (FE-01 a FE-35) y resumen en [frontend.md](frontend.md). `frontend/src/app/` tiene cuatro capas (FE-01):
+
+| Capa | Contenido |
+| --- | --- |
+| `core/` | Singletons: auth, interceptores http, `api` (tipos generados y un servicio por módulo del backend), layout, i18n, time |
+| `ui/` | Sistema de diseño sin dominio: tokens, estilos globales y componentes `bf-*` |
+| `shared/` | Piezas de dominio reutilizables: chip de posición, tarjeta de jugador, input de valoración, pipes |
+| `features/` | Una carpeta por módulo del backend: `identity`, `league`, `squad`, `match`, `lineup`, `rating`, `scoring` |
+
+Límites (FE-02), comprobados con `eslint-plugin-boundaries`, igual que Modulith en el backend:
+
+- `ui` no importa nada de la app (solo Angular y CDK).
+- `shared` puede importar `ui` y los tipos de `core/api`.
+- Una feature usa `core`, `ui` y `shared`, **nunca otra feature**: para pasar a otra se navega por ruta.
 
 ## Invariantes técnicas
 

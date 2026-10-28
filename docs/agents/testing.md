@@ -34,3 +34,12 @@ Usa Testcontainers con PostgreSQL para tests de integración, no H2. La infraest
 - **Migraciones:** una migración nueva añade su línea a `src/test/resources/db/migration-checksums.txt` (el fallo de `MigrationChecksumsTests` la imprime); editar una aplicada lo hace fallar.
 - **Pantallas y flujo:** una pantalla principal nueva entra en `ScreenStatementsTests` (mismas sentencias con una liga pequeña y con una temporada: sin N+1), y un módulo nuevo amplía `MatchdayFlowTests` (la jornada completa por HTTP).
 - **Zona horaria:** la suite corre con la JVM y Postgres en `Europe/Madrid` (`argLine` del `pom.xml`, `PostgresTestConfig`), para que una conversión implícita rompa tests; `TimeZoneTests` falla si deja de ser así (por ejemplo, desde el IDE sin el `argLine` de Maven).
+
+## Frontend
+
+Reglas completas en `docs/requirements.md` (FE-33, FE-34); se montan con el esqueleto de `frontend/` (plan 11).
+
+- **Unitarios y de componentes** con Vitest y Angular Testing Library. Obligatorios: cada componente de `ui/` y `shared/` (sus estados y la accesibilidad básica), cada servicio de API (con `HttpTestingController`), las funciones puras (mapeos, fechas, formatos) y los guards. Nombres de `describe`/`it` en inglés, como los `@DisplayName`.
+- **E2E** con Playwright en viewport móvil (Chromium y WebKit), contra el backend real con Postgres en contenedor y el login de pruebas del perfil `e2e` (que no existe en producción). Cubren la jornada completa: crear liga e invitar, plantilla, partido y acta, alineación, valorar, cierre y clasificación.
+- **Accesibilidad:** cada pantalla de los E2E pasa `@axe-core/playwright` sin violaciones; así se comprueba también el contraste de la paleta en los dos temas (FE-25, RNF-12).
+- **Contrato:** CI regenera `api/openapi.json` y `core/api/schema.d.ts` y falla si cambian (FE-05).
