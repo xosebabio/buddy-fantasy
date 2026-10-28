@@ -20,7 +20,7 @@ Los roles se asignan **por liga**, no de forma global: un mismo usuario puede ad
 | Invitar o expulsar managers | Sí | No |
 | Dar de alta jugadores y su valor inicial | Sí | No |
 | Crear partidos, resultados y estadísticas | Sí | No |
-| Valorar jugadores tras un partido | Opcional (decisión abierta) | Sí, opcional |
+| Valorar jugadores tras un partido | Sí, opcional (juega como manager) | Sí, opcional |
 | Editar su alineación | Si también juega como manager | Sí |
 | Ver clasificación, puntos y valores | Sí | Sí |
 | Recalcular o corregir una jornada | Sí | No |
@@ -80,8 +80,17 @@ Reglas confirmadas: el gol de penalti vale +3 sea cual sea la posición, y la do
 - RF-19: Formato de valoración configurable por liga: nota decimal (0–10) o picas al estilo Biwenger (0–4).
 - RF-20: Un manager puede modificar sus valoraciones mientras la ventana siga abierta.
 - RF-21: Las valoraciones individuales son anónimas para el resto; solo se publica la media.
-- RF-22: Al cerrar la ventana, la media de valoraciones se convierte en puntos y se suma a los puntos por acciones. No hay reparto porcentual entre ambas partes.
-- RF-23: Si un jugador no recibe ninguna valoración, cuenta solo con los puntos por acciones (o con una nota por defecto configurable).
+- RF-22: Al cerrar la ventana, la media de valoraciones se convierte en puntos (ver *Conversión de la valoración a puntos*), se redondea al entero más cercano (mitad hacia arriba) y se suma a los puntos por acciones. No hay reparto porcentual entre ambas partes.
+- RF-23: Si un jugador no recibe ninguna valoración, o recibe menos que el mínimo de votos de la liga, cuenta solo con los puntos por acciones (o con una nota por defecto configurable).
+
+#### Conversión de la valoración a puntos
+
+| Formato | Conversión por defecto | Ejemplos |
+| --- | --- | --- |
+| Picas (0–4) | 0 picas = −2, 1 = +2, 2 = +6, 3 = +10, 4 = +14 (puntos = 4 × picas − 2) | Media 2,5 picas → 8 puntos; media 2,6 → 8,4 → 8 puntos |
+| Nota decimal (0–10) | 1 punto por punto de nota | Media 7,5 → 8 puntos; media 7,4 → 7 puntos |
+
+La conversión se aplica a la media de la jornada (no a cada voto) y el redondeo al resultado en puntos. Un jugador sin valoraciones suma 0 puntos por valoración, no los −2 de 0 picas, salvo que la liga tenga nota por defecto.
 
 ### Alineaciones
 
@@ -120,7 +129,8 @@ Todos se guardan por liga y los edita el administrador. Los valores por defecto 
 | --- | --- | --- |
 | Duración de la ventana de valoración | 24 h tras el partido | Empieza al cerrar el partido |
 | Formato de valoración | Picas (0–4) | Alternativa: nota decimal 0–10 |
-| Conversión de la valoración a puntos | 1 pica = 1 punto | Se suma a los puntos por acciones, sin porcentajes |
+| Conversión de la valoración a puntos | Picas: −2, 2, 6, 10, 14; nota: 1 punto por punto | Ver *Conversión de la valoración a puntos*. Redondeo al entero, mitad hacia arriba. Se suma a los puntos por acciones, sin porcentajes |
+| Mínimo de votos para que cuente la valoración | 1 | Por debajo, el jugador cuenta como sin valoraciones (RF-23) |
 | Nota por defecto sin valoraciones | Ninguna (0 puntos) |  |
 | Bloqueo de la alineación | 2 h antes del partido |  |
 | Cambios máximos por jornada | 2 |  |
@@ -193,7 +203,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 - [ ] Apertura y cierre de la ventana de valoración con job programado y ShedLock (RF-17)
 - [ ] Pantalla de valoración en picas o nota decimal, editable mientras siga abierta (RF-18 a RF-21)
-- [ ] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23)
+- [ ] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23). Incluye adaptar los parámetros de `league`: sustituir `ratingPointsPerUnit` por una conversión por formato (picas −2/2/6/10/14, nota 1:1) y añadir el mínimo de votos
 - [ ] Prueba real: una jornada con los amigos y ajuste de los pesos
 
 ### Fase 3 · Mercado y notificaciones
@@ -218,9 +228,9 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 ## Decisiones abiertas
 
 - [x] ¿El administrador puede ser también manager en su propia liga? Tiene acceso a datos antes que nadie. Sí: el administrador siempre juega como manager en su liga (decidido).
-- [ ] ¿Picas o nota decimal por defecto? ¿Cómo se convierte la media en puntos? Propuesta: cada pica vale 1 punto, como en Biwenger.
+- [x] ¿Picas o nota decimal por defecto? ¿Cómo se convierte la media en puntos? Picas por defecto; 0 picas = −2, 1 = 2, 2 = 6, 3 = 10, 4 = 14 puntos, y en nota decimal 1 punto por punto de nota. La media convertida se redondea al entero, mitad hacia arriba (decidido).
 - [x] ¿Pueden dos managers alinear al mismo jugador? En una liga de un solo equipo parece imprescindible que sí. Sí, sin exclusividad (decidido); más adelante será un parámetro de la liga.
 - [x] Papel del valor del jugador: límite de presupuesto de la alineación (RF-29), con el valor vigente al guardar y al bloquear (decidido). Si al bloquear supera el presupuesto, la alineación no puntúa esa jornada.
-- [ ] ¿Valoraciones con un mínimo de votos para contar, para evitar que una sola nota decida?
+- [x] ¿Valoraciones con un mínimo de votos para contar, para evitar que una sola nota decida? Parámetro por liga, por defecto 1 (sin mínimo efectivo); por debajo, el jugador cuenta como sin valoraciones (decidido).
 - [x] Login: solo Google (decidido en v1).
 

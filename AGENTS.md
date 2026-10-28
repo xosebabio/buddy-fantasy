@@ -90,13 +90,14 @@ Los roles son **por liga**, no globales. Un usuario puede ser administrador de u
 
 - Puntos del jugador en la jornada = puntos por acciones + puntos por valoración. **Sin porcentajes ni pesos** entre ambas partes.
 - Puntos del manager = suma de los puntos de sus jugadores alineados en la alineación **bloqueada**.
-- Si un jugador no recibe valoraciones: solo puntos por acciones (o la nota por defecto de la liga, si está configurada).
+- Si un jugador no recibe valoraciones, o menos que el mínimo de votos de la liga (por defecto 1): solo puntos por acciones (o la nota por defecto de la liga, si está configurada). Sin valoraciones son 0 puntos, no los −2 de 0 picas.
 
 ### Valoraciones
 
 - Se abren al cerrar el partido; ventana por defecto de 24 h (configurable).
 - Solo se valora a jugadores que jugaron. Valorar es opcional.
-- Formato por liga: picas 0–4 (por defecto, 1 pica = 1 punto) o nota decimal 0–10.
+- Formato por liga: picas 0–4 (por defecto) o nota decimal 0–10.
+- Conversión de la media a puntos, por defecto: picas 0 = −2, 1 = 2, 2 = 6, 3 = 10, 4 = 14 (`4 × media − 2`); nota decimal, 1 punto por punto de nota. Se convierte la media (no cada voto) y el resultado se redondea al entero, mitad hacia arriba. La conversión es un parámetro por liga sembrado desde `league.defaults`; nunca constantes en código.
 - Editables mientras la ventana siga abierta.
 - **Anónimas**: ninguna API devuelve valoraciones individuales de otros usuarios; solo la media.
 
@@ -200,10 +201,9 @@ Lint: pendiente.
 
 ## Decisiones abiertas
 
-No las resuelvas por tu cuenta. Si una tarea depende de alguna, pregunta o deja la opción configurable:
+No las resuelvas por tu cuenta. Si una tarea depende de alguna, pregunta o deja la opción configurable.
 
-- Formato de valoración por defecto y conversión de la media a puntos (redondeo incluido).
-- ¿Mínimo de votos para que cuente la valoración?
+Ninguna por ahora.
 
 ## Roadmap
 

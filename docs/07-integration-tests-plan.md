@@ -181,7 +181,8 @@ Se escriben **con cada módulo**, no ahora. Todos heredan: endpoints dentro de `
 - Valorar dentro de la ventana y editar; fuera de plazo se rechaza en el servidor.
 - Solo jugadores que jugaron; solo miembros (el admin incluido); formato de la liga (picas 0–4 o nota 0–10).
 - **Anonimato:** ningún endpoint devuelve valoraciones individuales de otro usuario; solo la media. Test explícito con dos managers.
-- Sin valoraciones → nota por defecto de la liga o 0; mínimo de votos según se decida (decisión abierta de `requirements.md`).
+- Conversión de la media con la de la liga y redondeo al entero, mitad hacia arriba (picas: media 2,5 → 8 puntos; 0 picas → −2).
+- Sin valoraciones, o menos que el mínimo de votos de la liga → nota por defecto de la liga o 0 (no −2).
 - Corrección del partido con la ventana abierta o cerrada → recálculo.
 
 **`market` (RF-34–36)**
