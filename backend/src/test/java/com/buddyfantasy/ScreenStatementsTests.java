@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
@@ -37,8 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * The main screens run the same number of SQL statements whatever the volume (RNF-09): no N+1. Each screen is
  * measured on a small league and again once it has the volume of a real season (20 members, 25 players, 30 matches,
- * the locked lineups of 20 managers), counting every statement with {@link SqlStatements}. No time assertions: they
- * would be flaky.
+ * the locked lineups of 20 managers, two of them scored), counting every statement with {@link SqlStatements}. No
+ * time assertions: they would be flaky.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupEndpointsTests
@@ -62,6 +63,9 @@ class ScreenStatementsTests {
     @Autowired
     MutableClock clock;
 
+    @Autowired
+    JdbcTemplate jdbc;
+
     UUID admin;
     UUID ana;
     TestLeague peña;
@@ -69,7 +73,10 @@ class ScreenStatementsTests {
     final List<UUID> players = new ArrayList<>();
     final List<UUID> matches = new ArrayList<>();
 
-    /** Each screen as ana sees it (the audit, as the admin), the match screens on {@code matchId}. */
+    /**
+     * Each screen as ana sees it (the audit, as the admin), the match screens on {@code matchId}, the history of her
+     * own points and the points of the first player, who is in every sheet.
+     */
     private Map<String, MockHttpServletRequestBuilder> screens(UUID matchId) {
         UUID league = peña.id();
         Map<String, MockHttpServletRequestBuilder> screens = new LinkedHashMap<>();
@@ -81,6 +88,12 @@ class ScreenStatementsTests {
         screens.put("members", get("/api/leagues/{id}/members", league).with(as(ana)));
         screens.put("my lineup", get("/api/leagues/{id}/lineup", league).with(as(ana)));
         screens.put("locked lineups", get("/api/leagues/{id}/lineups/{matchId}", league, matchId).with(as(ana)));
+        screens.put("standings", get("/api/leagues/{id}/standings", league).with(as(ana)));
+        screens.put("matchday standings", get("/api/leagues/{id}/standings/{matchId}", league, matchId).with(as(ana)));
+        screens.put("manager history",
+                get("/api/leagues/{id}/managers/{userId}/history", league, ana).with(as(ana)));
+        screens.put("player points",
+                get("/api/leagues/{id}/players/{playerId}/points", league, players.get(0)).with(as(ana)));
         return screens;
     }
 
@@ -168,8 +181,8 @@ class ScreenStatementsTests {
         play(matches.get(0), KICKOFF_1, 1);
         Map<String, List<String>> small = statements(matches.get(0));
 
-        // a season: 20 members, 25 players, 30 matches, the second one played with 14 lines and corrected twice,
-        // ana in 4 leagues and with several versions of her lineup
+        // a season: 20 members, 25 players, 30 matches, the second one played with 14 lines and corrected twice (so
+        // scored three times), ana in 4 leagues and with several versions of her lineup
         addMembers(20);
         addPlayers(25);
         addMatches(30);
@@ -184,6 +197,7 @@ class ScreenStatementsTests {
         play(matches.get(1), kickoff2, 14);
         fixtures.sheet(peña, matches.get(1), 1, 0, played(players.get(0), 1));
         fixtures.sheet(peña, matches.get(1), 2, 0, played(players.get(0), 2));
+        Listeners.await(jdbc); // the recalculation of the corrections
         Map<String, List<String>> season = statements(matches.get(1));
 
         // the proxy sees them: a screen without statements would make the comparison vacuous

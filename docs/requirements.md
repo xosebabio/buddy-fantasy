@@ -195,9 +195,9 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 - [x] Crear liga, invitar managers por enlace y configurar parámetros (RF-05 a RF-08)
 - [x] CRUD de jugadores con valor inicial (RF-09 a RF-11)
-- [x] Partidos, convocatoria, resultado y estadísticas con su tabla de puntos (RF-12 a RF-16). `match` guarda y publica el acta; el cálculo de puntos de RF-15 llega con *Cálculo de puntos por acción según posición y clasificaciones* (`scoring`)
-- [x] Alineaciones: edición, bloqueo X horas antes y límite de cambios (RF-24 a RF-29). `lineup` bloquea las alineaciones y publica `LineupsLocked`; los puntos del manager (RF-31), incluido el 0 de una alineación fuera de presupuesto, llegan con *Cálculo de puntos por acción según posición y clasificaciones* (`scoring`)
-- [ ] Cálculo de puntos por acción según posición y clasificaciones (RF-30 a RF-33)
+- [x] Partidos, convocatoria, resultado y estadísticas con su tabla de puntos (RF-12 a RF-16). `match` guarda y publica el acta; el cálculo de puntos de RF-15 lo hace *Cálculo de puntos por acción según posición y clasificaciones* (`scoring`)
+- [x] Alineaciones: edición, bloqueo X horas antes y límite de cambios (RF-24 a RF-29). `lineup` bloquea las alineaciones y publica `LineupsLocked`; los puntos del manager (RF-31), incluido el 0 de una alineación fuera de presupuesto, los calcula *Cálculo de puntos por acción según posición y clasificaciones* (`scoring`)
+- [x] Cálculo de puntos por acción según posición y clasificaciones (RF-30 a RF-33). `scoring` puntúa cada partido al tener el acta y las alineaciones bloqueadas, con la tabla de la liga congelada, y publica `MatchdayScored`; los puntos por valoración de RF-30 valen 0 hasta *Combinación de valoración y estadísticas al cierre* (Fase 2)
 
 ### Fase 2 · Valoraciones
 
@@ -214,7 +214,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 ### Fase 4 · Pulido y operación
 
-- [ ] Correcciones del administrador con auditoría y recálculo (RF-16, RNF-04). Hechas en Fase 1 las correcciones del acta con auditoría y el evento `MatchCorrected`; falta el recálculo en `scoring` y `rating`
+- [ ] Correcciones del administrador con auditoría y recálculo (RF-16, RNF-04). Hechas en Fase 1 las correcciones del acta con auditoría y el evento `MatchCorrected`, y el recálculo automático en `scoring` con la tabla congelada del partido; falta el recálculo en `rating` y el recálculo forzado por el admin (por ejemplo, para aplicar una tabla editada a jornadas pasadas)
 - [ ] Logs, health checks y alertas de caída (RNF-08)
 - [ ] Tests de puntuación, plazos y mercado; restauración de backup probada
 - [ ] RGPD: consentimiento y borrado de cuenta (RNF-10)

@@ -33,8 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * A whole matchday of phase 1 through the API only, as the frontend will drive it, with the lock job run by hand and a
- * controllable server clock: the smoke test that rating, scoring and market will extend. The users are registered by
- * {@link TestFixtures}: the Google login itself is {@code SessionTests}'.
+ * controllable server clock: the smoke test that rating and market will extend. The points of the matchday (default
+ * table: a forward's goal is +3) are read through the standings and histories once it closes, and again after a
+ * correction. The users are registered by {@link TestFixtures}: the Google login itself is {@code SessionTests}'.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupEndpointsTests
@@ -178,10 +179,21 @@ class MatchdayFlowTests {
         perform(get("/api/leagues/{id}/lineup", league), ana)
                 .andExpect(jsonPath("$.targetMatch.matchday").value(2))
                 .andExpect(jsonPath("$.changesRemaining").value(2));
+        // locked but not played: nothing scored yet
+        perform(get("/api/leagues/{id}/standings", league), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].position", contains(1, 1)))
+                .andExpect(jsonPath("$[*].points", contains(0, 0)))
+                .andExpect(jsonPath("$[*].matchdays", contains(0, 0)));
+        perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_NOT_SCORED"));
 
-        // after the match the admin records the sheet and closes it
+        // after the match the admin records the sheet and closes it: the last forward, only in the admin's lineup,
+        // scores twice and the other forward, only in ana's, does not play
         clock.now = KICKOFF_1.plus(Duration.ofHours(2));
-        UUID scorer = squad.get(6);
+        UUID scorer = squad.get(7);
+        UUID absent = squad.get(6);
         write(put("/api/leagues/{id}/matches/{matchId}/sheet", league, match1), admin,
                 sheet(2, scorer, squad.subList(0, 6)))
                 .andExpect(status().isOk())
@@ -202,6 +214,44 @@ class MatchdayFlowTests {
                 .andExpect(jsonPath("$.result.goalsAgainst").value(1))
                 .andExpect(jsonPath("$.performances.length()").value(7))
                 .andExpect(jsonPath("$.performances[?(@.playerId == '" + scorer + "')].goals").value(2));
+
+        // closed and locked, the matchday is scored: 2 goals of a forward, +6 for the admin and 0 for ana
+        perform(get("/api/leagues/{id}/standings", league), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].userId", contains(admin.toString(), ana.toString())))
+                .andExpect(jsonPath("$[*].position", contains(1, 2)))
+                .andExpect(jsonPath("$[*].points", contains(6, 0)))
+                .andExpect(jsonPath("$[*].matchdays", contains(1, 1)))
+                .andExpect(jsonPath("$[*].lastMatchdayPoints", contains(6, 0)));
+        perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.matchday").value(1))
+                .andExpect(jsonPath("$.scoredAt").value("2026-01-11T12:10:00Z"))
+                .andExpect(jsonPath("$.standings[*].userId", contains(admin.toString(), ana.toString())))
+                .andExpect(jsonPath("$.standings[*].points", contains(6, 0)))
+                .andExpect(jsonPath("$.standings[0].playerIds", containsInAnyOrder(strings(adminLineup))))
+                .andExpect(jsonPath("$.players.length()").value(7))
+                .andExpect(jsonPath("$.players[0].id").value(scorer.toString()))
+                .andExpect(jsonPath("$.players[0].position").value("FORWARD"))
+                .andExpect(jsonPath("$.players[0].points").value(6));
+        perform(get("/api/leagues/{id}/managers/{userId}/history", league, admin), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].points").value(6))
+                .andExpect(jsonPath("$[0].inStandings").value(true))
+                .andExpect(jsonPath("$[0].players[0].id").value(scorer.toString()))
+                .andExpect(jsonPath("$[0].players[0].actions.GOAL").value(6))
+                .andExpect(jsonPath("$[0].players[0].points").value(6));
+        perform(get("/api/leagues/{id}/managers/{userId}/history", league, ana), admin)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].points").value(0))
+                .andExpect(jsonPath("$[0].players.length()").value(7))
+                .andExpect(jsonPath("$[0].players[?(@.id == '" + absent + "')].played").value(false));
+        perform(get("/api/leagues/{id}/players/{playerId}/points", league, scorer), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].matchday", contains(1)))
+                .andExpect(jsonPath("$[0].actions.GOAL").value(6))
+                .andExpect(jsonPath("$[0].points").value(6));
 
         // a correction of the closed match, audited with the rest of its history
         clock.now = KICKOFF_1.plus(Duration.ofHours(5));
@@ -226,5 +276,19 @@ class MatchdayFlowTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lockedAt").value("2026-01-11T08:01:00Z"))
                 .andExpect(jsonPath("$.lineups.length()").value(2));
+        // but the points are recalculated: a third goal, +9 for the admin
+        perform(get("/api/leagues/{id}/standings", league), ana)
+                .andExpect(jsonPath("$[*].userId", contains(admin.toString(), ana.toString())))
+                .andExpect(jsonPath("$[*].points", contains(9, 0)))
+                .andExpect(jsonPath("$[*].matchdays", contains(1, 1)));
+        perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
+                .andExpect(jsonPath("$.scoredAt").value("2026-01-11T15:00:00Z"))
+                .andExpect(jsonPath("$.standings[*].points", contains(9, 0)));
+        perform(get("/api/leagues/{id}/managers/{userId}/history", league, admin), ana)
+                .andExpect(jsonPath("$[0].points").value(9))
+                .andExpect(jsonPath("$[0].players[0].actions.GOAL").value(9));
+        perform(get("/api/leagues/{id}/players/{playerId}/points", league, scorer), ana)
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].points").value(9));
     }
 }

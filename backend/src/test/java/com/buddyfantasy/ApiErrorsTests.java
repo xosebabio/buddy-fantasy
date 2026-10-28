@@ -146,6 +146,9 @@ class ApiErrorsTests {
     void anInvalidUuidInThePathIs400() throws Exception {
         isProblem(perform(get("/api/leagues/{id}/players", "not-a-uuid")), 400);
         isProblem(perform(get("/api/leagues/{id}/matches/{matchId}", peña.id(), "42")), 400);
+        isProblem(perform(get("/api/leagues/{id}/standings/{matchId}", peña.id(), "42")), 400);
+        isProblem(perform(get("/api/leagues/{id}/managers/{userId}/history", peña.id(), "42")), 400);
+        isProblem(perform(get("/api/leagues/{id}/players/{playerId}/points", peña.id(), "42")), 400);
     }
 
     @Test

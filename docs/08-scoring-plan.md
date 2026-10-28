@@ -125,7 +125,7 @@ Cada test nuevo se comprueba quitando a mano la defensa que prueba.
 | 4 | Recálculo con `MatchCorrected` y tabla congelada | RF-16 en `scoring` | ✅ |
 | 5 | `GetStandingsQuery`, `GetMatchdayScoresQuery` y sus endpoints | RF-32 | ✅ |
 | 6 | `GetManagerHistoryQuery`, `GetPlayerPointsQuery` y sus endpoints | RF-33 y RF-11 | ✅ |
-| 7 | `ScreenStatementsTests`, `MatchdayFlowTests`, escaneos; `AGENTS.md` (estado), marcar el ítem en `requirements.md` y la parte de `scoring` del ítem de Fase 4 | Ítem de Fase 1 cerrado | |
+| 7 | `ScreenStatementsTests`, `MatchdayFlowTests`, escaneos; `AGENTS.md` (estado), marcar el ítem en `requirements.md` y la parte de `scoring` del ítem de Fase 4 | Ítem de Fase 1 cerrado | ✅ |
 
 Cada tarea es un commit `feat(scoring): … (RF-31)` en Conventional Commits.
 
