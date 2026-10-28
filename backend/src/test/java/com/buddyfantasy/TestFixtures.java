@@ -3,11 +3,14 @@ package com.buddyfantasy;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import com.buddyfantasy.datadefinition.Position;
+import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.identity.application.usecases.registerorloginuser.RegisterOrLoginUserCommand;
 import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
 import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
@@ -17,6 +20,7 @@ import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand
 import com.buddyfantasy.league.application.usecases.updateleaguesettings.UpdateLeagueSettingsCommand;
 import com.buddyfantasy.league.domain.LeagueSettings;
 import com.buddyfantasy.league.domain.RatingFormat;
+import com.buddyfantasy.league.domain.ScoringRules;
 import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceLine;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
@@ -79,6 +83,19 @@ public class TestFixtures {
         change.accept(settings);
         bus.dispatch(new UpdateLeagueSettingsCommand(league.admin(), league.id(), settings.toSettings(),
                 current.scoringRules()));
+    }
+
+    /** Sets {@code action} of {@code league}'s table of points to {@code points} in every position, keeping the rest. */
+    public void scoringRule(TestLeague league, ScoringAction action, int points) {
+        LeagueSettingsView current = bus.ask(new GetLeagueSettingsQuery(league.admin(), league.id()));
+        Map<ScoringAction, Map<Position, Integer>> rules = new EnumMap<>(current.scoringRules().points());
+        Map<Position, Integer> byPosition = new EnumMap<>(Position.class);
+        for (Position position : Position.values()) {
+            byPosition.put(position, points);
+        }
+        rules.put(action, byPosition);
+        bus.dispatch(new UpdateLeagueSettingsCommand(league.admin(), league.id(), current.settings(),
+                new ScoringRules(rules)));
     }
 
     /** A player named "Player", without shirt number, worth {@link #PLAYER_VALUE}. */

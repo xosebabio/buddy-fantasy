@@ -20,6 +20,7 @@ import com.buddyfantasy.match.MatchRescheduled;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
+import com.buddyfantasy.scoring.MatchdayScored;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.infrastructure.ResubmitIncompleteEventsJob;
 import org.awaitility.Awaitility;
@@ -218,7 +219,7 @@ class EventResubmissionTests {
 
     /**
      * Marks the publications of {@code eventType} incomplete, as if their listeners had failed, and runs the job: the
-     * lineup module's listeners must change no row nor publish anything more.
+     * listeners of the lineup and scoring modules must change no row nor publish anything more.
      */
     private void deliverAgain(Class<?> eventType) {
         Map<String, String> before = rows();
@@ -242,13 +243,42 @@ class EventResubmissionTests {
     }
 
     @Test
-    void deliveringAgainMatchClosedDoesNotLockTwice() {
+    void deliveringAgainMatchClosedDoesNotLockNorScoreTwice() {
         leagueWithALineup();
         clock.now = KICKOFF_1.plus(Duration.ofHours(2));
         fixtures.closeWithSheet(peña, match1, 1, 0, played(squad.get(5), 1));
         assertThat(events.stream(LineupsLocked.class)).hasSize(1);
+        assertThat(events.stream(MatchdayScored.class)).hasSize(1);
 
         deliverAgain(MatchClosed.class);
+    }
+
+    @Test
+    void deliveringAgainLineupsLockedDoesNotScoreTwice() {
+        leagueWithALineup();
+        clock.now = KICKOFF_1.minus(Duration.ofHours(1));
+        lockJob.lockDueLineups();
+        clock.now = KICKOFF_1.plus(Duration.ofHours(2));
+        fixtures.closeWithSheet(peña, match1, 1, 0, played(squad.get(5), 1));
+        assertThat(events.stream(MatchdayScored.class)).hasSize(1);
+
+        deliverAgain(LineupsLocked.class);
+    }
+
+    /** A lock delivered again after its unlock must not bring back the lineups it locked. */
+    @Test
+    void deliveringAgainLineupsUnlockedOrTheLockBeforeItChangesNothing() {
+        leagueWithALineup();
+        clock.now = KICKOFF_1.minus(Duration.ofHours(1));
+        lockJob.lockDueLineups();
+        clock.now = clock.now.plus(Duration.ofMinutes(10));
+        bus.dispatch(new UpdateMatchCommand(admin, peña.id(), match1, 1, "Rival",
+                Venue.HOME, KICKOFF_1.plus(Duration.ofDays(2))));
+        Listeners.await(jdbc);
+        assertThat(jdbc.queryForObject("select count(*) from scoring_lineup", Integer.class)).isZero();
+
+        deliverAgain(LineupsUnlocked.class);
+        deliverAgain(LineupsLocked.class);
     }
 
     @Test
