@@ -53,6 +53,24 @@ class ModularityTests {
     }
 
     @Test
+    void scoringDependsOnlyOnLeagueSquadMatchLineupAndDataDefinition() {
+        var scoring = modules.getModuleByName("scoring").orElseThrow();
+
+        assertThat(scoring.getDirectDependencies(modules).uniqueModules().map(ApplicationModule::getName))
+                .isSubsetOf("league", "squad", "match", "lineup", "datadefinition", "shared")
+                .contains("league", "datadefinition");
+    }
+
+    @Test
+    void noModuleItDependsOnDependsOnScoring() {
+        for (String name : new String[] {"league", "squad", "match", "lineup", "datadefinition"}) {
+            var module = modules.getModuleByName(name).orElseThrow();
+
+            assertThat(module.getAllDependencies(modules).containsModuleNamed("scoring")).as(name).isFalse();
+        }
+    }
+
+    @Test
     void writesModuleDocumentation() {
         new Documenter(modules).writeModulesAsPlantUml().writeIndividualModulesAsPlantUml();
     }

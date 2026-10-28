@@ -13,3 +13,4 @@
 9 1456841440 V9__league_lineup_formation.sql
 10 1959152757 V10__relax_business_limit_checks.sql
 11 2067199921 V11__lineup_create_tables.sql
+12 993892654 V12__scoring_create_tables.sql

@@ -1,0 +1,163 @@
+package com.buddyfantasy.scoring.domain;
+
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import com.buddyfantasy.league.ScoringTable;
+import com.buddyfantasy.scoring.MatchdayScored;
+import com.buddyfantasy.shared.domain.AggregateRoot;
+import com.buddyfantasy.shared.domain.DomainValidationException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
+/**
+ * The scoring of a match (RF-15, RF-30, RF-31): scoring's own copy of its sheet ({@code MatchClosed},
+ * {@code MatchCorrected}) and of its locked lineups ({@code LineupsLocked}), and the points computed from both.
+ * Events arrive at least once and in any order, so each copy keeps the {@code occurredAt} of the event it came from
+ * and only a more recent event replaces it; an older or repeated one changes nothing. The match is scored once it
+ * has both copies, with the league's table frozen the first time (a correction reuses it), and publishes
+ * {@link MatchdayScored} the first time and whenever a recalculation changes what it published.
+ *
+ * <p>{@code sheet} and {@code lineups} are empty while {@code sheetAt} and {@code lineupsAt} are null;
+ * {@code playerScores} and {@code managerScores} are empty while {@code scoredAt} is null.
+ */
+@Getter
+@Accessors(fluent = true)
+@AllArgsConstructor
+public class MatchScore extends AggregateRoot {
+
+    private final UUID matchId;
+    private final UUID leagueId;
+    private int matchday;
+    private Instant kickoffAt;
+    private List<PlayerPerformance> sheet;
+    private Instant sheetAt;
+    private List<ManagerLineup> lineups;
+    private Instant lineupsAt;
+    private Instant unlockedAt;
+    private ScoringTable rules;
+    private Instant scoredAt;
+    private List<PlayerScore> playerScores;
+    private List<ManagerScore> managerScores;
+
+    /** A match scoring has heard of, with neither copy yet. */
+    public static MatchScore create(UUID matchId, UUID leagueId, int matchday, Instant kickoffAt) {
+        return new MatchScore(matchId, leagueId, matchday, kickoffAt, List.of(), null, List.of(), null, null, null,
+                null, List.of(), List.of());
+    }
+
+    /**
+     * Replaces the copy of the sheet if {@code occurredAt} is more recent than the one applied, so a
+     * {@code MatchClosed} delivered again after a {@code MatchCorrected} does not undo the correction. The sheet's
+     * event also brings the matchday and kickoff, which no longer change once the match is closed: a lineup lock
+     * may have been published before a postponement that kept it locked. Returns whether it was applied.
+     */
+    public boolean applySheet(int newMatchday, Instant newKickoffAt, List<PlayerPerformance> performances,
+            Instant occurredAt) {
+        if (!isNewer(occurredAt, sheetAt)) {
+            return false;
+        }
+        requireUnique(performances, PlayerPerformance::playerId, "player in the sheet");
+        matchday = newMatchday;
+        kickoffAt = newKickoffAt;
+        sheet = List.copyOf(performances);
+        sheetAt = occurredAt;
+        return true;
+    }
+
+    /**
+     * Replaces the copy of the locked lineups if {@code occurredAt} is more recent than both the lineups applied and
+     * the last unlock: a {@code LineupsLocked} delivered again after a {@code LineupsUnlocked} is ignored. Returns
+     * whether it was applied.
+     */
+    public boolean applyLineups(List<ManagerLineup> locked, Instant occurredAt) {
+        if (!isNewer(occurredAt, lineupsAt) || !isNewer(occurredAt, unlockedAt)) {
+            return false;
+        }
+        requireUnique(locked, ManagerLineup::userId, "lineup of user");
+        lineups = List.copyOf(locked);
+        lineupsAt = occurredAt;
+        return true;
+    }
+
+    /**
+     * The match was postponed and its lineups unlocked: drops the copy of lineups locked before {@code occurredAt}
+     * and remembers the unlock. A match is only unlocked before it is closed, so a scored match ignores it and never
+     * loses its points. Returns whether it was applied.
+     */
+    public boolean unlock(Instant occurredAt) {
+        if (scoredAt != null || !isNewer(occurredAt, unlockedAt)) {
+            return false;
+        }
+        unlockedAt = occurredAt;
+        if (lineupsAt != null && lineupsAt.isBefore(occurredAt)) {
+            lineups = List.of();
+            lineupsAt = null;
+        }
+        return true;
+    }
+
+    public boolean hasSheet() {
+        return sheetAt != null;
+    }
+
+    public boolean scored() {
+        return scoredAt != null;
+    }
+
+    /**
+     * Scores the match if it has both copies; otherwise does nothing. The first time it freezes the league's
+     * {@code currentTable} (only read then); later it reuses the frozen one. Every player in the sheet gets their
+     * points for actions, and every manager the sum of their lineup's players (0 for one who did not play) or 0 if
+     * over budget. Publishes {@link MatchdayScored} the first time and, later, only if something changed: scoring
+     * the same data twice changes nothing.
+     */
+    public void score(Supplier<ScoringTable> currentTable, Instant now) {
+        if (sheetAt == null || lineupsAt == null) {
+            return;
+        }
+        ScoringTable table = rules != null ? rules : currentTable.get();
+        List<PlayerScore> players = sheet.stream()
+                .map(performance -> new PlayerScore(performance.playerId(), performance.position(),
+                        ActionScoring.breakdown(performance, table).total(), 0))
+                .toList();
+        Map<UUID, Integer> pointsByPlayer = players.stream()
+                .collect(Collectors.toMap(PlayerScore::playerId, PlayerScore::points));
+        List<ManagerScore> managers = lineups.stream()
+                .map(lineup -> new ManagerScore(lineup.userId(), lineup.overBudget() ? 0 : lineup.playerIds().stream()
+                        .mapToInt(playerId -> pointsByPlayer.getOrDefault(playerId, 0))
+                        .sum(), lineup.overBudget()))
+                .toList();
+        if (scoredAt != null && sameElements(players, playerScores) && sameElements(managers, managerScores)) {
+            return;
+        }
+        rules = table;
+        playerScores = players;
+        managerScores = managers;
+        scoredAt = now;
+        register(new MatchdayScored(leagueId, matchId, matchday, kickoffAt,
+                players.stream().map(PlayerScore::toData).toList(),
+                managers.stream().map(ManagerScore::toData).toList(), now));
+    }
+
+    private static boolean isNewer(Instant occurredAt, Instant applied) {
+        return applied == null || occurredAt.isAfter(applied);
+    }
+
+    private static <T> boolean sameElements(List<T> computed, List<T> current) {
+        return new HashSet<>(computed).equals(new HashSet<>(current));
+    }
+
+    private static <T> void requireUnique(List<T> items, Function<T, UUID> id, String what) {
+        if (items.stream().map(id).distinct().count() != items.size()) {
+            throw new DomainValidationException("More than one " + what + " with the same id");
+        }
+    }
+}
