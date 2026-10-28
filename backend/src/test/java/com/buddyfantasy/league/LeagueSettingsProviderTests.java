@@ -2,16 +2,20 @@ package com.buddyfantasy.league;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import com.buddyfantasy.datadefinition.Position;
+import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
+import com.buddyfantasy.league.domain.ScoringRules;
 import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
@@ -117,6 +121,49 @@ class LeagueSettingsProviderTests {
         assertThat(result).containsOnlyKeys(a.id().value(), b.id().value());
         assertThat(result.get(a.id().value()).size()).isEqualTo(9);
         assertThat(result.get(b.id().value()).size()).isEqualTo(7);
+    }
+
+    private League leagueWithEditedScoringRules() {
+        League league = league("Edited rules");
+        Map<ScoringAction, Map<Position, Integer>> points = new EnumMap<>(league.scoringRules().points());
+        Map<Position, Integer> goal = new EnumMap<>(points.get(ScoringAction.GOAL));
+        goal.put(Position.FORWARD, 8);
+        points.put(ScoringAction.GOAL, goal);
+        League updated = league.withSettings(league.settings(), new ScoringRules(points), limits.get());
+        leagues.save(updated);
+        return updated;
+    }
+
+    @Test
+    void returnsTheScoringTableOfTheRequestedLeagueInASingleQuery() {
+        League edited = leagueWithEditedScoringRules();
+        league("Other");
+        Statistics statistics = statistics();
+
+        ScoringTable table = provider.scoringRules(edited.id().value());
+
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
+        assertThat(table.pointsFor(ScoringAction.GOAL, Position.FORWARD)).isEqualTo(8);
+        assertThat(table.pointsFor(ScoringAction.GOAL, Position.GOALKEEPER))
+                .isEqualTo(defaults.scoringRules().pointsFor(ScoringAction.GOAL, Position.GOALKEEPER));
+        assertThat(table.points()).isEqualTo(edited.scoringRules().points());
+    }
+
+    @Test
+    void defaultLeagueHasTheDefaultScoringTable() {
+        League league = league("Default");
+
+        ScoringTable table = provider.scoringRules(league.id().value());
+
+        assertThat(table.points()).isEqualTo(defaults.scoringRules().points());
+        assertThat(table.pointsFor(ScoringAction.GOAL, Position.GOALKEEPER)).isEqualTo(6);
+        assertThat(table.pointsFor(ScoringAction.PENALTY_GOAL, Position.FORWARD)).isEqualTo(3);
+        assertThat(table.pointsFor(ScoringAction.DOUBLE_YELLOW, Position.DEFENDER)).isEqualTo(-3);
+    }
+
+    @Test
+    void scoringTableOfAnUnknownLeagueIsNotFound() {
+        assertThatThrownBy(() -> provider.scoringRules(UUID.randomUUID())).isInstanceOf(NotFoundException.class);
     }
 
     @Test

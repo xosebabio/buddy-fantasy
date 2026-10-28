@@ -119,7 +119,7 @@ Cada test nuevo se comprueba quitando a mano la defensa que prueba.
 
 | # | Tarea | Resultado | Hecho |
 | --- | --- | --- | --- |
-| 1 | `ScoringTable` y `LeagueSettingsProvider.scoringRules` en `league`, con su test | Tabla de puntos consultable | |
+| 1 | `ScoringTable` y `LeagueSettingsProvider.scoringRules` en `league`, con su test | Tabla de puntos consultable | ✅ |
 | 2 | V12, `ActionScoring`, `MatchScore`, `Standings` y `MatchdayScored`, con tests unitarios; `allowedDependencies` de `scoring` | Dominio verificado (RF-15, RF-30, RF-31) | |
 | 3 | Persistencia, commands internos y listeners de `MatchClosed`, `LineupsLocked`, `LineupsUnlocked` y `MatchDeleted`; concurrencia y reenvíos | Puntos calculados al cerrar y bloquear | |
 | 4 | Recálculo con `MatchCorrected` y tabla congelada | RF-16 en `scoring` | |

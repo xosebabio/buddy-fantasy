@@ -1,6 +1,7 @@
 package com.buddyfantasy.league.adapter.out.persistence;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
+import com.buddyfantasy.league.domain.ScoringRules;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -35,6 +37,12 @@ class JpaLeagueRepository implements LeagueRepository {
     public Map<UUID, LeagueSettings> findSettingsByIds(Collection<UUID> ids) {
         return settings.findAllById(ids).stream()
                 .collect(Collectors.toMap(e -> e.leagueId, LeagueSettingsMapper::toDomain));
+    }
+
+    @Override
+    public Optional<ScoringRules> findScoringRules(UUID id) {
+        List<ScoringRuleEntity> entities = rules.findByLeagueId(id);
+        return entities.isEmpty() ? Optional.empty() : Optional.of(ScoringRuleMapper.toDomain(entities));
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.buddyfantasy.league.LeagueSettingsProvider;
 import com.buddyfantasy.league.LineupSettings;
+import com.buddyfantasy.league.ScoringTable;
 import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.domain.LeagueSettings;
@@ -41,6 +42,13 @@ class LeagueSettingsProviderService implements LeagueSettingsProvider {
         }
         return leagues.findSettingsByIds(leagueIds).entrySet().stream()
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, e -> toLineupSettings(e.getValue())));
+    }
+
+    @Override
+    public ScoringTable scoringRules(UUID leagueId) {
+        return leagues.findScoringRules(leagueId)
+                .map(rules -> new ScoringTable(rules.points()))
+                .orElseThrow(() -> new NotFoundException("League " + leagueId + " not found"));
     }
 
     @Override
