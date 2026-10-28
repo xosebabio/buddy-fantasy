@@ -205,7 +205,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 - [x] Apertura y cierre de la ventana de valoración con job programado y ShedLock (RF-17)
 - [x] Pantalla de valoración en picas o nota decimal, editable mientras siga abierta, y cancelación de las valoraciones de un manager por el admin (RF-18 a RF-21, RF-41). `rating` sirve los votos, las vistas y la cancelación por API (plan 09, tareas 4 y 4b); la pantalla llega con el `frontend/`
-- [ ] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23). Incluye adaptar los parámetros de `league`: sustituir `ratingPointsPerUnit` por una conversión por formato (picas −2/2/6/10/14, nota 1:1) y añadir el mínimo de votos (la parte de `league` ya está hecha: plan 09, tarea 1; `scoring` ya suma los puntos por valoración al cerrar la ventana y recalcula con `RatingsCorrected`: tarea 5)
+- [x] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23). Incluye adaptar los parámetros de `league`: sustituir `ratingPointsPerUnit` por una conversión por formato (picas −2/2/6/10/14, nota 1:1) y añadir el mínimo de votos. `scoring` suma los puntos por valoración al cerrar la ventana y recalcula con `RatingsCorrected` (plan 09)
 - [ ] Prueba real: una jornada con los amigos y ajuste de los pesos
 
 ### Fase 3 · Mercado y notificaciones
@@ -216,7 +216,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 
 ### Fase 4 · Pulido y operación
 
-- [ ] Correcciones del administrador con auditoría y recálculo (RF-16, RNF-04). Hechas en Fase 1 las correcciones del acta con auditoría y el evento `MatchCorrected`, y el recálculo automático en `scoring` con la tabla congelada del partido; falta el recálculo en `rating` y el recálculo forzado por el admin (por ejemplo, para aplicar una tabla editada a jornadas pasadas)
+- [ ] Correcciones del administrador con auditoría y recálculo (RF-16, RNF-04). Hechas en Fase 1 las correcciones del acta con auditoría y el evento `MatchCorrected`, y el recálculo automático en `scoring` con la tabla congelada del partido; hecho en Fase 2 el recálculo en `rating` (los jugadores quitados del acta pierden sus votos y, con la ventana cerrada, `RatingsCorrected` recalcula los puntos; plan 09); falta el recálculo forzado por el admin (por ejemplo, para aplicar una tabla editada a jornadas pasadas)
 - [ ] Logs, health checks y alertas de caída (RNF-08)
 - [ ] Tests de puntuación, plazos y mercado; restauración de backup probada
 - [ ] RGPD: consentimiento y borrado de cuenta (RNF-10)

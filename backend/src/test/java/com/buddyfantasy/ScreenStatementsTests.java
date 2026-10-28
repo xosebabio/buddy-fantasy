@@ -14,6 +14,9 @@ import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLineupsCommand;
 import com.buddyfantasy.lineup.application.usecases.savelineup.SaveLineupCommand;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceLine;
+import com.buddyfantasy.rating.application.usecases.excluderater.ExcludeRaterCommand;
+import com.buddyfantasy.rating.application.usecases.savemyratings.SaveMyRatingsCommand;
+import com.buddyfantasy.rating.domain.Vote;
 import com.buddyfantasy.shared.application.CommandBus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,8 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * The main screens run the same number of SQL statements whatever the volume (RNF-09): no N+1. Each screen is
  * measured on a small league and again once it has the volume of a real season (20 members, 25 players, 30 matches,
- * the locked lineups of 20 managers, two of them scored), counting every statement with {@link SqlStatements}. No
- * time assertions: they would be flaky.
+ * the locked lineups of 20 managers and the votes of every member, two of them scored), counting every statement with
+ * {@link SqlStatements}. No time assertions: they would be flaky.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupEndpointsTests
@@ -74,8 +77,8 @@ class ScreenStatementsTests {
     final List<UUID> matches = new ArrayList<>();
 
     /**
-     * Each screen as ana sees it (the audit, as the admin), the match screens on {@code matchId}, the history of her
-     * own points and the points of the first player, who is in every sheet.
+     * Each screen as ana sees it (the audit and the exclusions, as the admin), the match screens on {@code matchId},
+     * the history of her own points and the points of the first player, who is in every sheet.
      */
     private Map<String, MockHttpServletRequestBuilder> screens(UUID matchId) {
         UUID league = peña.id();
@@ -94,6 +97,10 @@ class ScreenStatementsTests {
                 get("/api/leagues/{id}/managers/{userId}/history", league, ana).with(as(ana)));
         screens.put("player points",
                 get("/api/leagues/{id}/players/{playerId}/points", league, players.get(0)).with(as(ana)));
+        screens.put("rating windows", get("/api/leagues/{id}/ratings", league).with(as(ana)));
+        screens.put("match ratings", get("/api/leagues/{id}/ratings/{matchId}", league, matchId).with(as(ana)));
+        screens.put("match ratings (admin)",
+                get("/api/leagues/{id}/ratings/{matchId}", league, matchId).with(as(admin)));
         return screens;
     }
 
@@ -147,18 +154,30 @@ class ScreenStatementsTests {
         }
     }
 
+    /** A line for each of the first {@code lines} players, the first one scoring {@code goals}. */
+    private PerformanceLine[] sheet(int lines, int goals) {
+        return IntStream.range(0, lines)
+                .mapToObj(i -> played(players.get(i), i == 0 ? goals : 0))
+                .toArray(PerformanceLine[]::new);
+    }
+
     /**
-     * Locks the match's lineups, closes it with a line for each of the first {@code lines} players and then closes its
-     * rating window, so it is scored.
+     * Locks the match's lineups, closes it with a line for each of the first {@code lines} players, lets every member
+     * rate all of them, the admin exclude the first {@code excluded} managers and then closes its rating window, so it
+     * is scored.
      */
-    private void play(UUID matchId, Instant kickoffAt, int lines) {
+    private void play(UUID matchId, Instant kickoffAt, int lines, int excluded) {
         clock.now = kickoffAt.minus(Duration.ofHours(2));
         bus.dispatch(new LockMatchLineupsCommand(peña.id(), matchId));
         clock.now = kickoffAt.plus(Duration.ofHours(2));
-        PerformanceLine[] sheet = players.subList(0, lines).stream()
-                .map(player -> played(player, 0))
-                .toArray(PerformanceLine[]::new);
-        fixtures.closeWithSheet(peña, matchId, 0, 0, sheet);
+        fixtures.closeWithSheet(peña, matchId, 0, 0, sheet(lines, 0));
+        for (int i = 0; i < members.size(); i++) {
+            int value = i % 5;
+            List<Vote> votes = players.subList(0, lines).stream().map(player -> new Vote(player, value)).toList();
+            bus.dispatch(new SaveMyRatingsCommand(members.get(i), peña.id(), matchId, votes));
+        }
+        members.stream().filter(member -> !member.equals(admin) && !member.equals(ana)).limit(excluded)
+                .forEach(member -> bus.dispatch(new ExcludeRaterCommand(admin, peña.id(), matchId, member)));
         fixtures.closeRatings(clock, matchId);
     }
 
@@ -178,15 +197,16 @@ class ScreenStatementsTests {
         });
         members.addAll(List.of(admin, ana));
 
-        // small: 2 members, 7 players, 2 matches, the first one played with 1 line
+        // small: 2 members, 7 players, 2 matches, the first one played with 1 line and rated by both
         addPlayers(LINEUP_SIZE);
         addMatches(2);
         saveLineups();
-        play(matches.get(0), KICKOFF_1, 1);
+        play(matches.get(0), KICKOFF_1, 1, 0);
         Map<String, List<String>> small = statements(matches.get(0));
 
-        // a season: 20 members, 25 players, 30 matches, the second one played with 14 lines and corrected twice (so
-        // scored three times), ana in 4 leagues and with several versions of her lineup
+        // a season: 20 members, 25 players, 30 matches, the second one played with 14 lines, rated by every member but
+        // the 3 the admin excluded and corrected twice (so scored three times), ana in 4 leagues and with several
+        // versions of her lineup
         addMembers(20);
         addPlayers(25);
         addMatches(30);
@@ -198,9 +218,9 @@ class ScreenStatementsTests {
             bus.dispatch(new SaveLineupCommand(ana, peña.id(), players.subList(i, i + LINEUP_SIZE)));
         }
         Instant kickoff2 = KICKOFF_1.plus(WEEK);
-        play(matches.get(1), kickoff2, 14);
-        fixtures.sheet(peña, matches.get(1), 1, 0, played(players.get(0), 1));
-        fixtures.sheet(peña, matches.get(1), 2, 0, played(players.get(0), 2));
+        play(matches.get(1), kickoff2, 14, 3);
+        fixtures.sheet(peña, matches.get(1), 1, 0, sheet(14, 1));
+        fixtures.sheet(peña, matches.get(1), 2, 0, sheet(14, 2));
         Listeners.await(jdbc); // the recalculation of the corrections
         Map<String, List<String>> season = statements(matches.get(1));
 

@@ -24,6 +24,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import static com.buddyfantasy.TestUsers.as;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,10 +35,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * A whole matchday of phase 1 through the API only, as the frontend will drive it, with the lock and rating jobs run
- * by hand and a controllable server clock: the smoke test that rating and market will extend. The points of the
- * matchday (default table: a forward's goal is +3) are read through the standings and histories once its rating
- * window closes, and again after a correction. The users are registered by {@link TestFixtures}: the Google login itself is {@code SessionTests}'.
+ * A whole matchday of phases 1 and 2 through the API only, as the frontend will drive it, with the lock and rating
+ * jobs run by hand and a controllable server clock: the smoke test that market will extend. Both members rate the
+ * players while the window is open, each one seeing only their own votes; the points of the matchday (default table:
+ * a forward's goal is +3; default conversion: {@code 4 × average − 2} spades) are read through the standings and
+ * histories once the job closes the window, and again after a correction. The users are registered by
+ * {@link TestFixtures}: the Google login itself is {@code SessionTests}'.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupEndpointsTests
@@ -108,6 +112,16 @@ class MatchdayFlowTests {
         return """
                 {"result": {"goalsFor": %d, "goalsAgainst": 1}, "performances": [%s]}"""
                 .formatted(goalsFor, String.join(",", lines));
+    }
+
+    /** The votes of a member, {@code value} for the player before it. */
+    private static String ratings(Object... playersAndValues) {
+        List<String> ratings = new ArrayList<>();
+        for (int i = 0; i < playersAndValues.length; i += 2) {
+            ratings.add("{\"playerId\": \"%s\", \"value\": %s}"
+                    .formatted(playersAndValues[i], playersAndValues[i + 1]));
+        }
+        return "{\"ratings\": [" + String.join(",", ratings) + "]}";
     }
 
     private static String[] strings(List<UUID> ids) {
@@ -227,48 +241,114 @@ class MatchdayFlowTests {
         perform(get("/api/leagues/{id}/standings", league), ana)
                 .andExpect(jsonPath("$[*].matchdays", contains(0, 0)));
 
-        // 24 h after the close the job closes the rating window, without votes
+        // the window is open for 24 h, in spades, for the 7 players of the sheet
+        perform(get("/api/leagues/{id}/ratings", league), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].matchId", contains(match1.toString())))
+                .andExpect(jsonPath("$[0].status").value("OPEN"))
+                .andExpect(jsonPath("$[0].closesAt").value(RATINGS_CLOSE_1.toString()))
+                .andExpect(jsonPath("$[0].players").value(7))
+                .andExpect(jsonPath("$[0].myRatings").value(0));
+        // ana rates the scorer and the keeper, and changes her mind about the keeper; the admin rates the scorer
+        UUID keeper = squad.get(0);
+        clock.now = clock.now.plus(Duration.ofHours(1));
+        write(put("/api/leagues/{id}/ratings/{matchId}", league, match1), ana, ratings(scorer, 4, keeper, 3))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("OPEN"))
+                .andExpect(jsonPath("$.format").value("SPADES"))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + keeper + "')].myRating").value(3));
+        write(put("/api/leagues/{id}/ratings/{matchId}", league, match1), ana, ratings(scorer, 4, keeper, 2))
+                .andExpect(status().isOk());
+        write(put("/api/leagues/{id}/ratings/{matchId}", league, match1), admin, ratings(scorer, 3))
+                .andExpect(status().isOk());
+        // only the players of the sheet are rated, in the format of the window
+        write(put("/api/leagues/{id}/ratings/{matchId}", league, match1), admin, ratings(absent, 3))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("PLAYER_NOT_IN_SHEET"));
+        write(put("/api/leagues/{id}/ratings/{matchId}", league, match1), admin, ratings(scorer, 5))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_RATING"));
+        // while it is open each one sees only their own votes, without any average
+        perform(get("/api/leagues/{id}/ratings/{matchId}", league, match1), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.players.length()").value(7))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + scorer + "')].myRating").value(4))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + keeper + "')].myRating").value(2))
+                .andExpect(jsonPath("$.players[*].votes", everyItem(nullValue())))
+                .andExpect(jsonPath("$.players[*].average", everyItem(nullValue())))
+                .andExpect(jsonPath("$.players[*].ratingPoints", everyItem(nullValue())));
+        perform(get("/api/leagues/{id}/ratings/{matchId}", league, match1), admin)
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + scorer + "')].myRating").value(3))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + keeper + "')].myRating", contains(nullValue())))
+                .andExpect(jsonPath("$.excludedUserIds").isEmpty());
+        perform(get("/api/leagues/{id}/ratings", league), ana)
+                .andExpect(jsonPath("$[0].myRatings").value(2));
+
+        // the deadline is the server's: once it passes no vote is saved, even before the job closes the window
         clock.now = RATINGS_CLOSE_1;
+        write(put("/api/leagues/{id}/ratings/{matchId}", league, match1), ana, ratings(scorer, 0))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("RATING_WINDOW_CLOSED"));
+
+        // 24 h after the close the job closes the rating window and publishes the averages
         ratingsJob.closeDueRatingWindows();
         Listeners.await(jdbc);
+        perform(get("/api/leagues/{id}/ratings/{matchId}", league, match1), ana)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CLOSED"))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + scorer + "')].myRating").value(4))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + scorer + "')].votes").value(2))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + scorer + "')].average").value(3.5))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + scorer + "')].ratingPoints").value(12))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + keeper + "')].votes").value(1))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + keeper + "')].ratingPoints").value(6))
+                // without votes, 0 points: not the −2 of 0 spades
+                .andExpect(jsonPath("$.players[?(@.votes == 0)].ratingPoints", contains(0, 0, 0, 0, 0)))
+                .andExpect(jsonPath("$.players[?(@.votes == 0)].average", everyItem(nullValue())));
 
-        // the matchday is scored: 2 goals of a forward, +6 for the admin and 0 for ana
+        // the matchday is scored: the scorer gets 6 for his 2 goals and 12 for his 3.5 spades, the keeper 6 for his
+        // 2 spades, so 18 for the admin and 6 for ana
         perform(get("/api/leagues/{id}/standings", league), ana)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].userId", contains(admin.toString(), ana.toString())))
                 .andExpect(jsonPath("$[*].position", contains(1, 2)))
-                .andExpect(jsonPath("$[*].points", contains(6, 0)))
+                .andExpect(jsonPath("$[*].points", contains(18, 6)))
                 .andExpect(jsonPath("$[*].matchdays", contains(1, 1)))
-                .andExpect(jsonPath("$[*].lastMatchdayPoints", contains(6, 0)));
+                .andExpect(jsonPath("$[*].lastMatchdayPoints", contains(18, 6)));
         perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.matchday").value(1))
                 .andExpect(jsonPath("$.scoredAt").value("2026-01-12T12:10:00Z"))
                 .andExpect(jsonPath("$.standings[*].userId", contains(admin.toString(), ana.toString())))
-                .andExpect(jsonPath("$.standings[*].points", contains(6, 0)))
+                .andExpect(jsonPath("$.standings[*].points", contains(18, 6)))
                 .andExpect(jsonPath("$.standings[0].playerIds", containsInAnyOrder(strings(adminLineup))))
                 .andExpect(jsonPath("$.players.length()").value(7))
                 .andExpect(jsonPath("$.players[0].id").value(scorer.toString()))
                 .andExpect(jsonPath("$.players[0].position").value("FORWARD"))
-                .andExpect(jsonPath("$.players[0].points").value(6));
+                .andExpect(jsonPath("$.players[0].actionPoints").value(6))
+                .andExpect(jsonPath("$.players[0].ratingPoints").value(12))
+                .andExpect(jsonPath("$.players[0].points").value(18));
         perform(get("/api/leagues/{id}/managers/{userId}/history", league, admin), ana)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].points").value(6))
+                .andExpect(jsonPath("$[0].points").value(18))
                 .andExpect(jsonPath("$[0].inStandings").value(true))
                 .andExpect(jsonPath("$[0].players[0].id").value(scorer.toString()))
                 .andExpect(jsonPath("$[0].players[0].actions.GOAL").value(6))
-                .andExpect(jsonPath("$[0].players[0].points").value(6));
+                .andExpect(jsonPath("$[0].players[0].ratingPoints").value(12))
+                .andExpect(jsonPath("$[0].players[0].points").value(18));
         perform(get("/api/leagues/{id}/managers/{userId}/history", league, ana), admin)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].points").value(0))
+                .andExpect(jsonPath("$[0].points").value(6))
                 .andExpect(jsonPath("$[0].players.length()").value(7))
+                .andExpect(jsonPath("$[0].players[?(@.id == '" + keeper + "')].ratingPoints").value(6))
                 .andExpect(jsonPath("$[0].players[?(@.id == '" + absent + "')].played").value(false));
         perform(get("/api/leagues/{id}/players/{playerId}/points", league, scorer), ana)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].matchday", contains(1)))
                 .andExpect(jsonPath("$[0].actions.GOAL").value(6))
-                .andExpect(jsonPath("$[0].points").value(6));
+                .andExpect(jsonPath("$[0].ratingPoints").value(12))
+                .andExpect(jsonPath("$[0].points").value(18));
 
         // a correction of the closed match, audited with the rest of its history
         clock.now = RATINGS_CLOSE_1.plus(Duration.ofHours(3));
@@ -293,19 +373,24 @@ class MatchdayFlowTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lockedAt").value("2026-01-11T08:01:00Z"))
                 .andExpect(jsonPath("$.lineups.length()").value(2));
-        // but the points are recalculated: a third goal, +9 for the admin
+        // the same players played, so the window is not reopened and the ratings stand
+        perform(get("/api/leagues/{id}/ratings/{matchId}", league, match1), ana)
+                .andExpect(jsonPath("$.status").value("CLOSED"))
+                .andExpect(jsonPath("$.players[?(@.playerId == '" + scorer + "')].ratingPoints").value(12));
+        // but the points are recalculated: a third goal, 9 + 12 for the admin
         perform(get("/api/leagues/{id}/standings", league), ana)
                 .andExpect(jsonPath("$[*].userId", contains(admin.toString(), ana.toString())))
-                .andExpect(jsonPath("$[*].points", contains(9, 0)))
+                .andExpect(jsonPath("$[*].points", contains(21, 6)))
                 .andExpect(jsonPath("$[*].matchdays", contains(1, 1)));
         perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
                 .andExpect(jsonPath("$.scoredAt").value("2026-01-12T15:10:00Z"))
-                .andExpect(jsonPath("$.standings[*].points", contains(9, 0)));
+                .andExpect(jsonPath("$.standings[*].points", contains(21, 6)));
         perform(get("/api/leagues/{id}/managers/{userId}/history", league, admin), ana)
-                .andExpect(jsonPath("$[0].points").value(9))
-                .andExpect(jsonPath("$[0].players[0].actions.GOAL").value(9));
+                .andExpect(jsonPath("$[0].points").value(21))
+                .andExpect(jsonPath("$[0].players[0].actions.GOAL").value(9))
+                .andExpect(jsonPath("$[0].players[0].ratingPoints").value(12));
         perform(get("/api/leagues/{id}/players/{playerId}/points", league, scorer), ana)
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].points").value(9));
+                .andExpect(jsonPath("$[0].points").value(21));
     }
 }

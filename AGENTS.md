@@ -12,7 +12,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) en curso: falta la tarea 6 del plan 09. Fase 0 sin Docker/CI/VPS. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 
