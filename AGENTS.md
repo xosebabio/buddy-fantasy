@@ -12,7 +12,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. Requisitos del frontend definidos (plan 10); plan 11 (esqueleto de `frontend/`) con las decisiones cerradas; tareas 2 y 3 hechas (spec versionado en `api/openapi.json`, con los códigos de error como enum `ErrorCode`); siguiente: su tarea 4. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el desarrollo completo (plan 09): solo falta la prueba real, que necesita frontend y VPS. Fase 0 sin Docker/CI/VPS. Requisitos del frontend definidos (plan 10); plan 11 (esqueleto de `frontend/`) con las decisiones cerradas; tareas 2 a 4 hechas (spec versionado en `api/openapi.json`, con los códigos de error como enum `ErrorCode`, y vuelta tras el login a `/`); siguiente: su tarea 5. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 

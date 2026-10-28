@@ -34,7 +34,7 @@ Valores por defecto en `backend/src/main/resources/application.yml`.
 | --- | --- |
 | `DB_URL`, `DB_USER`, `DB_PASSWORD` | Conexión a PostgreSQL |
 | `SWAGGER_UI_ENABLED` | Sirve Swagger UI |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Cliente OAuth de Google Cloud; sin ellas el login no funciona, pero la app arranca. Redirect URI en local: `http://localhost:8080/login/oauth2/code/google` |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Cliente OAuth de Google Cloud; sin ellas el login no funciona, pero la app arranca. Redirect URIs autorizados: ver *Login con Google* |
 | `SESSION_COOKIE_SECURE` | `true` en producción, `false` en local |
 | `league.defaults` (p. ej. `LEAGUE_DEFAULTS_LINEUP_SIZE`) | Valores con los que nace una liga |
 | `league.limits`, `squad.limits`, `match.limits` (p. ej. `MATCH_LIMITS_SHEETPLAYERSMAX`) | Límites de negocio |
@@ -47,3 +47,22 @@ Valores por defecto en `backend/src/main/resources/application.yml`.
 | `PHOTOS_BASE_URL` | Origen desde el que se sirven las fotos: CloudFront en producción, `http://localhost:8333/buddy-fantasy-photos` en local |
 
 Las credenciales de S3 salen de la cadena por defecto del AWS SDK (rol IAM en producción, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` en local; las de SeaweedFS están en `deploy/seaweedfs/s3.json` y solo valen en local).
+
+## Login con Google
+
+El backend construye el redirect URI con el origen de la petición (`server.forward-headers-strategy: framework`: detrás de Caddy, con `X-Forwarded-Proto` y `X-Forwarded-Host`), así que en el cliente OAuth de Google van autorizados todos los orígenes desde los que se entra:
+
+| Entorno | Redirect URI |
+| --- | --- |
+| Front en local (`ng serve`, su proxy conserva `Host`) | `http://localhost:4200/login/oauth2/code/google` |
+| Backend solo (sin front: empieza en `http://localhost:8080/oauth2/authorization/google`) | `http://localhost:8080/login/oauth2/code/google` |
+| Producción | `https://<dominio>/login/oauth2/code/google` |
+
+Tras el login el backend redirige siempre a `/` (la SPA recupera la ruta guardada) y, si falla, a `/login?error`. `/login` es la pantalla de Angular: el proxy solo manda al backend `/api`, `/oauth2` y `/login/oauth2`. Si el proxy reescribiera `Host`, el redirect URI saldría con `localhost:8080` y Google lo rechazaría con `redirect_uri_mismatch`.
+
+## CORS del bucket de fotos
+
+El navegador sube la foto con un `PUT` directo al bucket y la lee con `GET`, así que el bucket admite el origen del front:
+
+- **En local:** `deploy/seaweedfs/cors.json` (`PUT` y `GET` desde `http://localhost:4200`, cabeceras `Content-Type` y `Cache-Control`).
+- **En producción (S3):** una regla CORS en el bucket con `AllowedOrigins` `https://<dominio>`, `AllowedMethods` `PUT` y `GET`, `AllowedHeaders` `Content-Type` y `Cache-Control`. Se configura en el bucket (consola o `aws s3api put-bucket-cors`), no en la app.

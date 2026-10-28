@@ -26,7 +26,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PostgresTestConfig.class)
 class SecurityTests {
 
-    /** The health endpoint and its Kubernetes probes, the only public paths besides the Google login. */
+    /**
+     * The health endpoint and its Kubernetes probes, the only public paths besides the Google login and
+     * {@code /login} (the SPA's page, a 404 on the backend).
+     */
     static final List<String> PUBLIC = List.of("/actuator/health", "/actuator/health/liveness",
             "/actuator/health/readiness");
 
@@ -60,7 +63,7 @@ class SecurityTests {
 
     /**
      * Scans the exposed actuator endpoints, so one exposed later is covered without listing it. Without a session a
-     * non-browser request gets 401 (a browser is sent to the Google login instead).
+     * non-browser request gets 401 (a browser is sent to the SPA's {@code /login} instead).
      */
     @Test
     @DisplayName("Every other actuator endpoint requires a session")

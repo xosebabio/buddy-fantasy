@@ -6,7 +6,7 @@ Aún no existe `frontend/`: el esqueleto, el export del spec y el resto del trab
 
 ## Qué es
 
-Una web Angular **mobile first** (360 × 640 primero), responsive, en español y preparada para traducir. Sin PWA instalable, Web Push ni modo offline hasta la Fase 3. Se sirve desde el mismo origen que el API (Caddy: estáticos, y `/api`, `/oauth2` y `/login` al backend).
+Una web Angular **mobile first** (360 × 640 primero), responsive, en español y preparada para traducir. Sin PWA instalable, Web Push ni modo offline hasta la Fase 3. Se sirve desde el mismo origen que el API (Caddy: estáticos, y `/api`, `/oauth2` y `/login/oauth2` al backend; `/login` es la pantalla de Angular).
 
 Stack: Angular (última estable: standalone, zoneless, signals, `@if`/`@for`/`@defer`), Angular CDK y librería propia (`ui/`), SCSS con tokens en CSS custom properties, tipos generados con `openapi-typescript`, `@angular/localize`, Lucide, Barlow y Barlow Condensed con `@fontsource`, `Intl.DateTimeFormat` y `@date-fns/tz`. Calidad: ESLint, Prettier, Stylelint, Vitest con Angular Testing Library y Playwright. npm con `package-lock.json`, Node LTS fijado en `.nvmrc`.
 
@@ -33,7 +33,7 @@ frontend/src/app/
 - Un servicio por módulo del backend (`LeagueApi`, `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi`, `ScoringApi`, `IdentityApi`), un método por endpoint, URLs relativas, sin lógica de negocio.
 - Errores `ProblemDetail`: el interceptor resuelve `401` (login guardando la ruta), `403`, `404`, `5xx` y la red; los `400` y `409` los trata la pantalla: los `violations` (campo obligatorio que falta), en su campo; el `code` (todo `409` y los `400` de un límite o regla de negocio), con su texto de un `Record<ErrorCode, string>` exhaustivo sobre el enum `ErrorCode` del spec.
 - **Plazos y límites en el servidor** (RNF-03): las cuentas atrás son orientativas y un `409` refresca y explica. Ningún límite ni valor por defecto de negocio como constante en el front: se lee del API o valida solo el servidor.
-- Sesión: `GET /api/me` al arrancar; login con navegación completa a `/oauth2/authorization/google` (ruta de vuelta en `sessionStorage`); logout con `POST /api/logout`. Los guards solo ocultan: autoriza el backend.
+- Sesión: `GET /api/me` al arrancar; login con navegación completa a `/oauth2/authorization/google` (ruta de vuelta en `sessionStorage`: el backend vuelve siempre a `/`, o a `/login?error` si falla); logout con `POST /api/logout`. Los guards solo ocultan: autoriza el backend.
 - **Anonimato** (RF-21): nunca se muestran ni deducen votos individuales de otros.
 
 ### Estado y datos (FE-12 a FE-15)

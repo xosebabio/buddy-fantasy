@@ -66,16 +66,30 @@ class SessionTests {
         browser = HttpClient.newBuilder().cookieHandler(cookies).followRedirects(HttpClient.Redirect.NEVER).build();
     }
 
-    private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-        return browser.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build(),
-                HttpResponse.BodyHandlers.ofString());
+    private URI url(String path) {
+        return URI.create("http://localhost:" + port + path);
+    }
+
+    /** A GET with the given header pairs, such as a browser's {@code Accept} or a proxy's {@code X-Forwarded-*}. */
+    private HttpResponse<String> get(String path, String... headers) throws IOException, InterruptedException {
+        HttpRequest.Builder request = HttpRequest.newBuilder(url(path)).GET();
+        if (headers.length > 0) {
+            request.headers(headers);
+        }
+        return browser.send(request.build(), HttpResponse.BodyHandlers.ofString());
+    }
+
+    /** Where a redirect goes, resolved against the server as the browser does. */
+    private URI location(HttpResponse<?> response) {
+        assertThat(response.statusCode()).isEqualTo(302);
+        return url("/").resolve(response.headers().firstValue("Location").orElseThrow());
     }
 
     /** A POST as the SPA sends it: the CSRF cookie's value echoed in the {@code X-XSRF-TOKEN} header. */
     private HttpResponse<String> post(String path) throws IOException, InterruptedException {
         String csrf = cookie("XSRF-TOKEN");
         assertThat(csrf).as("XSRF-TOKEN cookie").isNotNull();
-        return browser.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+        return browser.send(HttpRequest.newBuilder(url(path))
                         .header("X-XSRF-TOKEN", csrf)
                         .POST(HttpRequest.BodyPublishers.noBody())
                         .build(),
@@ -159,9 +173,7 @@ class SessionTests {
     void loggingInRegistersTheUserAndAuthenticatesTheStoredSession() throws Exception {
         HttpResponse<String> callback = logIn(ANA);
 
-        assertThat(callback.statusCode()).isEqualTo(302);
-        assertThat(callback.headers().firstValue("Location")).hasValueSatisfying(location ->
-                assertThat(location).doesNotContain("error"));
+        assertThat(location(callback)).isEqualTo(url("/"));
         // a new session id on login (session fixation), still in the same row
         assertThat(setCookies(callback, "SESSION")).isNotEmpty();
         assertThat(jdbc.queryForList("select principal_name from spring_session", String.class))
@@ -179,11 +191,50 @@ class SessionTests {
     void anAccountWithoutAVerifiedEmailCannotLogIn() throws Exception {
         HttpResponse<String> callback = logIn(new Account("google-eve", "eve@x.com", "Eve", false));
 
-        assertThat(callback.statusCode()).isEqualTo(302);
-        assertThat(callback.headers().firstValue("Location")).hasValueSatisfying(location ->
-                assertThat(location).contains("error"));
+        assertThat(location(callback)).isEqualTo(url("/login?error"));
         assertThat(get("/api/me").statusCode()).isEqualTo(401);
         assertThat(jdbc.queryForObject("select count(*) from identity_user", Integer.class)).isZero();
+    }
+
+    /** The SPA keeps the route to return to in {@code sessionStorage}; the backend must not send it elsewhere. */
+    @Test
+    @DisplayName("Logging in returns to the root, not to the page that asked for it")
+    void loggingInReturnsToTheRootNotToThePageThatAskedForIt() throws Exception {
+        HttpResponse<String> page = get("/actuator/info", "Accept", "text/html");
+        assertThat(location(page)).isEqualTo(url("/login"));
+
+        assertThat(location(logIn(ANA))).isEqualTo(url("/"));
+    }
+
+    /** Only the SPA serves {@code /login}: hitting the backend alone gives a 404, neither a form nor a loop. */
+    @Test
+    @DisplayName("The backend does not serve a login page of its own")
+    void theBackendDoesNotServeALoginPageOfItsOwn() throws Exception {
+        for (String path : List.of("/login", "/login?error")) {
+            HttpResponse<String> login = get(path, "Accept", "text/html");
+
+            assertThat(login.statusCode()).as(path).isEqualTo(404);
+        }
+    }
+
+    @Test
+    @DisplayName("A browser's API call without a session is answered with 401 without a redirect")
+    void aBrowsersApiCallWithoutASessionIs401WithoutARedirect() throws Exception {
+        HttpResponse<String> me = get("/api/me", "Accept", "text/html");
+
+        assertThat(me.statusCode()).isEqualTo(401);
+        assertThat(me.headers().firstValue("Location")).isEmpty();
+    }
+
+    /** Caddy sends the public origin in {@code X-Forwarded-*}; Google only accepts the registered redirect URI. */
+    @Test
+    @DisplayName("Behind the proxy the redirect URI has the public origin")
+    void behindTheProxyTheRedirectUriHasThePublicOrigin() throws Exception {
+        HttpResponse<String> toGoogle = get("/oauth2/authorization/google",
+                "X-Forwarded-Proto", "https", "X-Forwarded-Host", "fantasy.example");
+
+        assertThat(query(location(toGoogle))).containsEntry("redirect_uri",
+                "https://fantasy.example/login/oauth2/code/google");
     }
 
     @Test
@@ -201,7 +252,7 @@ class SessionTests {
         assertThat(sessions()).isZero();
         // the old cookie no longer opens a session, even if the browser kept it
         HttpResponse<String> replayed = HttpClient.newHttpClient().send(
-                HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/api/me"))
+                HttpRequest.newBuilder(url("/api/me"))
                         .header("Cookie", "SESSION=" + session).GET().build(),
                 HttpResponse.BodyHandlers.ofString());
         assertThat(replayed.statusCode()).isEqualTo(401);

@@ -59,10 +59,10 @@ Vienen cerradas las de `docs/10-frontend-requirements-plan.md` §2 y las reglas 
 
 ### 3.3 Vuelta tras el login
 
-- `oauth2Login` con `loginPage("/login")` (la de Angular; Spring deja de generar la suya), `defaultSuccessUrl("/", true)` y `failureUrl("/login?error")`. El front recupera la ruta guardada en `sessionStorage` (FE-10).
+- `oauth2Login` con `loginPage("/login")` (la de Angular; Spring deja de generar la suya), `defaultSuccessUrl("/", true)` y `failureUrl("/login?error")`. El front recupera la ruta guardada en `sessionStorage` (FE-10). `/login` es pública: sin front, el backend responde `404` en vez de redirigirse a sí mismo en bucle.
 - `server.forward-headers-strategy: framework`, para que detrás de Caddy el redirect URI salga en `https` y con el dominio.
 - En local, el redirect URI de Google pasa a `http://localhost:4200/login/oauth2/code/google`: el proxy de `ng serve` conserva la cabecera `Host` (sin `changeOrigin`), así que Spring lo construye con el origen del front. Se documenta en `commands.md` junto al de `8080`, que sigue valiendo para probar el backend solo.
-- Tests en `SessionTests`: tras el login, redirección a `/`; con error, a `/login?error`; `/api/**` sigue respondiendo `401` sin redirigir.
+- Tests en `SessionTests`: tras el login, redirección a `/` (también si antes se pidió otra página); con error, a `/login?error`; `/login` en el backend es `404`; `/api/**` sigue respondiendo `401` sin redirigir a un navegador; con `X-Forwarded-Proto` y `X-Forwarded-Host`, el redirect URI lleva el origen público.
 
 ### 3.4 Login de pruebas para E2E (FE-34)
 
@@ -194,7 +194,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 | 1 | Revisar este plan con el usuario y cerrar las propuestas (§2) | Decisiones cerradas | ✅ |
 | 2 | `OpenApiSpecTests`, spec determinista y `api/openapi.json` (§3.1) | Spec versionado (FE-05) | ✅ |
 | 3 | `ErrorCode` como enum en el spec; `MatchError`, `SquadError` y `LeagueError`; tests (§3.2) | Códigos en el contrato (FE-08) | ✅ |
-| 4 | Vuelta tras el login, cabeceras de proxy y `SessionTests`; redirect URI local y CORS en `commands.md`; `/login/oauth2` en `requirements.md` y `frontend.md` (§3.3, §3.5, decisión 3) | Login listo para el front (RF-01, FE-10) | |
+| 4 | Vuelta tras el login, cabeceras de proxy y `SessionTests`; redirect URI local y CORS en `commands.md`; `/login/oauth2` en `requirements.md` y `frontend.md` (§3.3, §3.5, decisión 3) | Login listo para el front (RF-01, FE-10) | ✅ |
 | 5 | Login de pruebas con perfil `e2e` y sus tests (§3.4) | Sesión para E2E (FE-34) | |
 | 6 | `ng new`, TypeScript estricto, `angular.json`, ESLint, Prettier, Stylelint, Vitest, scripts y estructura de carpetas (§4, §5) | Esqueleto que compila, pasa lint y tests (FE-01, FE-02, FE-21, FE-22, FE-32, FE-35) | |
 | 7 | Tipos generados, ruta tipada, `IdentityApi`, `LeagueApi`, CSRF, interceptor y textos de `ErrorCode` (§6) | Contrato con el backend (FE-05 a FE-09) | |
