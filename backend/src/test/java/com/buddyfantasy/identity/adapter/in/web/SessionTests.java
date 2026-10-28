@@ -141,6 +141,19 @@ class SessionTests {
                         .doesNotContainKey("secure"));
     }
 
+    /**
+     * Against the real server: MockMvc's {@code csrf()} swaps the CSRF repository of the cached context for one
+     * without cookies, so a MockMvc test of the cookie depends on which test ran before it.
+     */
+    @Test
+    @DisplayName("The CSRF cookie is readable by the SPA")
+    void theCsrfCookieIsReadableByTheSpa() throws Exception {
+        HttpResponse<String> health = get("/actuator/health");
+
+        assertThat(setCookies(health, "XSRF-TOKEN")).singleElement().satisfies(setCookie ->
+                assertThat(attributes(setCookie)).doesNotContainKey("httponly"));
+    }
+
     @Test
     @DisplayName("Logging in registers the user and authenticates the stored session")
     void loggingInRegistersTheUserAndAuthenticatesTheStoredSession() throws Exception {

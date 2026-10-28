@@ -24,6 +24,7 @@ Usa Testcontainers con PostgreSQL para tests de integración, no H2. La infraest
   - `MutableClock`: el reloj del servidor, que el test mueve a mano; `at(instante, tarea)` lo fija solo para un hilo, para carreras entre peticiones que leen el reloj en momentos distintos.
   - `Listeners.await(jdbc)`: espera a los listeners asíncronos antes de comprobar sus efectos.
   - `TestUsers.as(userId)`: MockMvc con sesión.
+  - `with(csrf())` sustituye para siempre el repositorio CSRF del contexto cacheado por uno sin cookies: lo que dependa de la cookie `XSRF-TOKEN` se prueba contra el servidor real (`SessionTests`), no con MockMvc.
   - `TestFixtures`: prepara datos por los casos de uso reales (usuarios, liga, miembros, plantilla, calendario, acta, parámetros); `closeRatings` mueve el reloj al cierre de la ventana de valoración y ejecuta su job, sin el cual un partido no puntúa.
   - `RecordedEvents`: eventos que publican los listeners asíncronos (`@RecordApplicationEvents` solo vale para los del hilo del test).
   - `Concurrently`: carreras con un *latch*.

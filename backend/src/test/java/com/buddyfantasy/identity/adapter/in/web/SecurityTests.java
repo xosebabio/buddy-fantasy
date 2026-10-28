@@ -17,7 +17,6 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -107,13 +106,5 @@ class SecurityTests {
     @DisplayName("Logging out with a CSRF token returns 204")
     void logoutWithCsrfTokenReturns204() throws Exception {
         mvc.perform(post("/api/logout").with(oidcLogin()).with(csrf())).andExpect(status().isNoContent());
-    }
-
-    @Test
-    @DisplayName("The CSRF cookie is readable by the SPA")
-    void csrfCookieIsReadableByTheSpa() throws Exception {
-        mvc.perform(get("/actuator/health"))
-                .andExpect(cookie().exists("XSRF-TOKEN"))
-                .andExpect(cookie().httpOnly("XSRF-TOKEN", false));
     }
 }
