@@ -1,6 +1,7 @@
 package com.buddyfantasy;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -26,6 +27,7 @@ import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceL
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
 import com.buddyfantasy.match.application.usecases.schedulematch.ScheduleMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
+import com.buddyfantasy.rating.adapter.in.scheduler.CloseDueRatingWindowsJob;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class TestFixtures {
 
     private final CommandBus bus;
     private final JdbcTemplate jdbc;
+    private final CloseDueRatingWindowsJob closeRatingsJob;
 
     /** A league created by {@link #admin}; {@code invitationToken} is its initial link. */
     public record TestLeague(UUID id, UUID admin, String invitationToken) {
@@ -135,6 +138,21 @@ public class TestFixtures {
                                PerformanceLine... lines) {
         sheet(league, matchId, goalsFor, goalsAgainst, lines);
         bus.dispatch(new CloseMatchCommand(league.admin(), league.id(), matchId));
+        Listeners.await(jdbc);
+    }
+
+    /**
+     * Moves {@code clock} to the end of the rating window of the closed match {@code matchId}, unless it is already
+     * past it, runs the job that closes the windows due and waits for the listeners of {@code RatingWindowClosed}:
+     * scoring then scores the match, if it has its lineups (RF-30).
+     */
+    public void closeRatings(MutableClock clock, UUID matchId) {
+        Instant closesAt = jdbc.queryForObject("select closes_at from rating_window where match_id = ?",
+                Timestamp.class, matchId).toInstant();
+        if (clock.now.isBefore(closesAt)) {
+            clock.now = closesAt;
+        }
+        closeRatingsJob.closeDueRatingWindows();
         Listeners.await(jdbc);
     }
 

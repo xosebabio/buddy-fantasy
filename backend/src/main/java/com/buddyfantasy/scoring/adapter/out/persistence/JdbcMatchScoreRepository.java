@@ -50,7 +50,8 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
     private static final TypeReference<Map<ScoringAction, Map<Position, Integer>>> RULES = new TypeReference<>() {
     };
     private static final String SELECT_MATCH = """
-            select match_id, league_id, matchday, kickoff_at, sheet_at, lineups_at, unlocked_at, rules, scored_at
+            select match_id, league_id, matchday, kickoff_at, sheet_at, lineups_at, unlocked_at, ratings_at, rules,
+                   scored_at
             from scoring_match
             where match_id = :matchId""";
 
@@ -112,6 +113,14 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
                 .param("matchId", match.matchId())
                 .query(JdbcMatchScoreRepository::toLineupRow)
                 .list();
+        Map<UUID, Integer> ratingPoints = jdbc.sql("""
+                        select player_id, rating_points
+                        from scoring_player_rating
+                        where match_id = :matchId""")
+                .param("matchId", match.matchId())
+                .query((rs, rowNum) -> Map.entry(rs.getObject("player_id", UUID.class), rs.getInt("rating_points")))
+                .list().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         Map<UUID, LineupRow> lineups = new LinkedHashMap<>();
         Map<UUID, List<UUID>> lineupPlayers = new LinkedHashMap<>();
         for (LineupRow row : lineupRows) {
@@ -127,7 +136,7 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
                 lineups.values().stream()
                         .map(row -> new ManagerLineup(row.userId(), lineupPlayers.get(row.userId()), row.overBudget()))
                         .toList(),
-                match.lineupsAt(), match.unlockedAt(), match.rules(), match.scoredAt(),
+                match.lineupsAt(), match.unlockedAt(), ratingPoints, match.ratingsAt(), match.rules(), match.scoredAt(),
                 scored ? players.stream().map(PlayerRow::score).toList() : List.of(),
                 scored ? lineups.values().stream()
                         .map(row -> new ManagerScore(row.userId(), row.points(), row.overBudget()))
@@ -228,8 +237,8 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
         jdbc.sql("""
                         update scoring_match
                         set matchday = :matchday, kickoff_at = :kickoffAt, sheet_at = :sheetAt,
-                            lineups_at = :lineupsAt, unlocked_at = :unlockedAt, rules = cast(:rules as jsonb),
-                            scored_at = :scoredAt
+                            lineups_at = :lineupsAt, unlocked_at = :unlockedAt, ratings_at = :ratingsAt,
+                            rules = cast(:rules as jsonb), scored_at = :scoredAt
                         where match_id = :matchId""")
                 .param("matchId", score.matchId())
                 .param("matchday", score.matchday())
@@ -237,10 +246,12 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
                 .param("sheetAt", utc(score.sheetAt()))
                 .param("lineupsAt", utc(score.lineupsAt()))
                 .param("unlockedAt", utc(score.unlockedAt()))
+                .param("ratingsAt", utc(score.ratingsAt()))
                 .param("rules", toJson(score.rules()))
                 .param("scoredAt", utc(score.scoredAt()))
                 .update();
         savePlayers(score);
+        saveRatings(score);
         saveLineups(score);
     }
 
@@ -265,6 +276,16 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
                                     scored == null ? 0 : scored.ratingPoints(),
                                     nullableInt(scored == null ? null : scored.points())};
                         })
+                        .toList());
+    }
+
+    private void saveRatings(MatchScore score) {
+        jdbc.sql("delete from scoring_player_rating where match_id = :matchId")
+                .param("matchId", score.matchId())
+                .update();
+        batch.batchUpdate("insert into scoring_player_rating (match_id, player_id, rating_points) values (?, ?, ?)",
+                score.ratingPoints().entrySet().stream()
+                        .map(rating -> new Object[]{score.matchId(), rating.getKey(), rating.getValue()})
                         .toList());
     }
 
@@ -340,7 +361,8 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
     private MatchRow toMatchRow(ResultSet rs, int rowNum) throws SQLException {
         return new MatchRow(rs.getObject("match_id", UUID.class), rs.getObject("league_id", UUID.class),
                 rs.getInt("matchday"), instant(rs, "kickoff_at"), instant(rs, "sheet_at"), instant(rs, "lineups_at"),
-                instant(rs, "unlocked_at"), toRules(rs.getString("rules")), instant(rs, "scored_at"));
+                instant(rs, "unlocked_at"), instant(rs, "ratings_at"), toRules(rs.getString("rules")),
+                instant(rs, "scored_at"));
     }
 
     private static PlayerRow toPlayerRow(ResultSet rs, int rowNum) throws SQLException {
@@ -358,7 +380,8 @@ class JdbcMatchScoreRepository implements MatchScoreRepository {
     }
 
     private record MatchRow(UUID matchId, UUID leagueId, int matchday, Instant kickoffAt, Instant sheetAt,
-                            Instant lineupsAt, Instant unlockedAt, ScoringTable rules, Instant scoredAt) {
+                            Instant lineupsAt, Instant unlockedAt, Instant ratingsAt, ScoringTable rules,
+                            Instant scoredAt) {
     }
 
     /** {@code actionPoints} is only read if the match is scored, when it is not null. */

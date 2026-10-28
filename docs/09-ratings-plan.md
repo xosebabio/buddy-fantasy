@@ -146,7 +146,7 @@ Cada test nuevo se comprueba quitando a mano la defensa que prueba.
 | 3 | Persistencia, listeners de `MatchClosed` y `MatchCorrected`, `CloseRatingWindowCommand` y `CloseDueRatingWindowsJob`; reenvíos | Ventana abierta y cerrada con job y ShedLock (RF-17) | ✅ |
 | 4 | `SaveMyRatingsCommand`, `GetMatchRatingsQuery`, `ListRatingWindowsQuery` y sus endpoints; anonimato y concurrencia con el cierre | RF-18 a RF-21 | ✅ |
 | 4b | `rating_exclusion` (en V14), `ExcludeRaterCommand`, `RaterExcluded` y su endpoint; exclusión en las vistas; concurrencia con el voto | RF-41 | ✅ |
-| 5 | V15, `applyRatings` y puntuar con valoraciones en `scoring`, `RatingEventsListener`; ampliar `ScoringFlowTests` y reenvíos | RF-22, RF-23, RF-30 completos | |
+| 5 | V15, `applyRatings` y puntuar con valoraciones en `scoring`, `RatingEventsListener`; ampliar `ScoringFlowTests` y reenvíos | RF-22, RF-23, RF-30 completos | ✅ |
 | 6 | `ScreenStatementsTests`, `MatchdayFlowTests`, escaneos; `AGENTS.md` (estado, comandos con `RATING_CLOSE_JOB_CRON`), marcar los tres ítems en `requirements.md` y actualizar el de correcciones de la Fase 4 | Ítems de la Fase 2 cerrados | |
 
 Cada tarea es un commit `feat(rating): … (RF-17)` (o `feat(league)`, `feat(scoring)`) en Conventional Commits.

@@ -6,7 +6,7 @@ import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.scoring.domain.PlayerScore;
 
 /**
- * A player of the sheet with his points in the match: for actions plus for ratings (0 until phase 2). The position is
+ * A player of the sheet with his points in the match: for actions plus for ratings. The position is
  * the one in the sheet.
  */
 public record MatchdayPlayerView(UUID id, Position position, int actionPoints, int ratingPoints, int points) {

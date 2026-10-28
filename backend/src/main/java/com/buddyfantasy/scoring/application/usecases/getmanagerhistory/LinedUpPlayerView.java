@@ -10,7 +10,7 @@ import com.buddyfantasy.scoring.domain.ScoredLine;
 
 /**
  * A player of a locked lineup with their points in the match: per action (only those that add or subtract), for
- * ratings (0 until phase 2) and in total. One who did not play scores 0, with no position: the position is the one in
+ * ratings and in total. One who did not play scores 0, with no position: the position is the one in
  * the sheet.
  */
 public record LinedUpPlayerView(UUID id, boolean played, Position position, Map<ScoringAction, Integer> actions,

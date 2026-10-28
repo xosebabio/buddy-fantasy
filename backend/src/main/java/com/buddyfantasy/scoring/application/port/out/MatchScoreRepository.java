@@ -10,9 +10,10 @@ import com.buddyfantasy.scoring.domain.MatchdayPoints;
 import com.buddyfantasy.scoring.domain.PlayerMatchday;
 
 /**
- * scoring's matches with their copies of the sheet and locked lineups and their points. Every write first locks the
- * match's row until the transaction ends, so events of the same match handled at once (a {@code MatchClosed} and the
- * {@code LineupsLocked} it triggers) take turns and the second one sees the copy of the first.
+ * scoring's matches with their copies of the sheet, locked lineups and points for ratings, and their points. Every
+ * write first locks the match's row until the transaction ends, so events of the same match handled at once (a
+ * {@code MatchClosed} and the {@code LineupsLocked} it triggers) take turns and the second one sees the copy of the
+ * first.
  */
 public interface MatchScoreRepository {
 

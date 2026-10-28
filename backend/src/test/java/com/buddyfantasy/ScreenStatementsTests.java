@@ -147,7 +147,10 @@ class ScreenStatementsTests {
         }
     }
 
-    /** Locks the match's lineups and closes it with a line for each of the first {@code lines} players. */
+    /**
+     * Locks the match's lineups, closes it with a line for each of the first {@code lines} players and then closes its
+     * rating window, so it is scored.
+     */
     private void play(UUID matchId, Instant kickoffAt, int lines) {
         clock.now = kickoffAt.minus(Duration.ofHours(2));
         bus.dispatch(new LockMatchLineupsCommand(peña.id(), matchId));
@@ -156,6 +159,7 @@ class ScreenStatementsTests {
                 .map(player -> played(player, 0))
                 .toArray(PerformanceLine[]::new);
         fixtures.closeWithSheet(peña, matchId, 0, 0, sheet);
+        fixtures.closeRatings(clock, matchId);
     }
 
     @Test

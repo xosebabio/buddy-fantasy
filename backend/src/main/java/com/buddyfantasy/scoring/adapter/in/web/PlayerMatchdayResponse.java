@@ -25,7 +25,8 @@ record PlayerMatchdayResponse(
         Map<ScoringAction, Integer> actions,
         @Schema(description = "Puntos por acciones.", example = "5")
         int actionPoints,
-        @Schema(description = "Puntos por valoración; 0 hasta que se combinen las valoraciones (Fase 2).",
+        @Schema(description = "Puntos por valoración: la media convertida, o la nota por defecto de la liga si no "
+                + "llegó al mínimo de votos; 0 si tampoco la hay (RF-22, RF-23).",
                 example = "0")
         int ratingPoints,
         @Schema(description = "Total: acciones más valoración.", example = "5")

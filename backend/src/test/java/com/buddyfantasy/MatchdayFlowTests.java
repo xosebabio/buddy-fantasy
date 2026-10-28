@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.buddyfantasy.lineup.adapter.in.scheduler.LockDueLineupsJob;
+import com.buddyfantasy.rating.adapter.in.scheduler.CloseDueRatingWindowsJob;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,10 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * A whole matchday of phase 1 through the API only, as the frontend will drive it, with the lock job run by hand and a
- * controllable server clock: the smoke test that rating and market will extend. The points of the matchday (default
- * table: a forward's goal is +3) are read through the standings and histories once it closes, and again after a
- * correction. The users are registered by {@link TestFixtures}: the Google login itself is {@code SessionTests}'.
+ * A whole matchday of phase 1 through the API only, as the frontend will drive it, with the lock and rating jobs run
+ * by hand and a controllable server clock: the smoke test that rating and market will extend. The points of the
+ * matchday (default table: a forward's goal is +3) are read through the standings and histories once its rating
+ * window closes, and again after a correction. The users are registered by {@link TestFixtures}: the Google login itself is {@code SessionTests}'.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupEndpointsTests
@@ -46,6 +47,8 @@ class MatchdayFlowTests {
     static final Instant KICKOFF_1 = Instant.parse("2026-01-11T10:00:00Z");
     /** 2 h before {@link #KICKOFF_1}, with the lock hours a league is born with. */
     static final Instant LOCK_1 = Instant.parse("2026-01-11T08:00:00Z");
+    /** 24 h after match 1 is closed, with the rating window a league is born with. */
+    static final Instant RATINGS_CLOSE_1 = Instant.parse("2026-01-12T12:10:00Z");
     static final Instant KICKOFF_2 = Instant.parse("2026-01-18T10:00:00Z");
 
     @Autowired
@@ -62,6 +65,9 @@ class MatchdayFlowTests {
 
     @Autowired
     LockDueLineupsJob job;
+
+    @Autowired
+    CloseDueRatingWindowsJob ratingsJob;
 
     UUID league;
 
@@ -214,8 +220,19 @@ class MatchdayFlowTests {
                 .andExpect(jsonPath("$.result.goalsAgainst").value(1))
                 .andExpect(jsonPath("$.performances.length()").value(7))
                 .andExpect(jsonPath("$.performances[?(@.playerId == '" + scorer + "')].goals").value(2));
+        // closed and locked, but its rating window is open: the matchday is not scored yet
+        perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_NOT_SCORED"));
+        perform(get("/api/leagues/{id}/standings", league), ana)
+                .andExpect(jsonPath("$[*].matchdays", contains(0, 0)));
 
-        // closed and locked, the matchday is scored: 2 goals of a forward, +6 for the admin and 0 for ana
+        // 24 h after the close the job closes the rating window, without votes
+        clock.now = RATINGS_CLOSE_1;
+        ratingsJob.closeDueRatingWindows();
+        Listeners.await(jdbc);
+
+        // the matchday is scored: 2 goals of a forward, +6 for the admin and 0 for ana
         perform(get("/api/leagues/{id}/standings", league), ana)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].userId", contains(admin.toString(), ana.toString())))
@@ -226,7 +243,7 @@ class MatchdayFlowTests {
         perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.matchday").value(1))
-                .andExpect(jsonPath("$.scoredAt").value("2026-01-11T12:10:00Z"))
+                .andExpect(jsonPath("$.scoredAt").value("2026-01-12T12:10:00Z"))
                 .andExpect(jsonPath("$.standings[*].userId", contains(admin.toString(), ana.toString())))
                 .andExpect(jsonPath("$.standings[*].points", contains(6, 0)))
                 .andExpect(jsonPath("$.standings[0].playerIds", containsInAnyOrder(strings(adminLineup))))
@@ -254,7 +271,7 @@ class MatchdayFlowTests {
                 .andExpect(jsonPath("$[0].points").value(6));
 
         // a correction of the closed match, audited with the rest of its history
-        clock.now = KICKOFF_1.plus(Duration.ofHours(5));
+        clock.now = RATINGS_CLOSE_1.plus(Duration.ofHours(3));
         write(put("/api/leagues/{id}/matches/{matchId}/sheet", league, match1), admin,
                 sheet(3, scorer, squad.subList(0, 6)))
                 .andExpect(status().isOk());
@@ -266,7 +283,7 @@ class MatchdayFlowTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].action", contains("CORRECTED", "CLOSED", "SHEET_RECORDED", "SCHEDULED")))
                 .andExpect(jsonPath("$[0].actorUserId").value(admin.toString()))
-                .andExpect(jsonPath("$[0].occurredAt").value("2026-01-11T15:00:00Z"))
+                .andExpect(jsonPath("$[0].occurredAt").value("2026-01-12T15:10:00Z"))
                 .andExpect(jsonPath("$[0].before.result.goalsFor").value(2))
                 .andExpect(jsonPath("$[0].after.result.goalsFor").value(3));
         perform(get("/api/leagues/{id}/matches/{matchId}/audit", league, match1), ana)
@@ -282,7 +299,7 @@ class MatchdayFlowTests {
                 .andExpect(jsonPath("$[*].points", contains(9, 0)))
                 .andExpect(jsonPath("$[*].matchdays", contains(1, 1)));
         perform(get("/api/leagues/{id}/standings/{matchId}", league, match1), ana)
-                .andExpect(jsonPath("$.scoredAt").value("2026-01-11T15:00:00Z"))
+                .andExpect(jsonPath("$.scoredAt").value("2026-01-12T15:10:00Z"))
                 .andExpect(jsonPath("$.standings[*].points", contains(9, 0)));
         perform(get("/api/leagues/{id}/managers/{userId}/history", league, admin), ana)
                 .andExpect(jsonPath("$[0].points").value(9))

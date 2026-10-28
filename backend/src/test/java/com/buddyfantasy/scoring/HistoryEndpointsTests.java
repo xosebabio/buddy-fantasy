@@ -145,13 +145,17 @@ class HistoryEndpointsTests {
         return mvc.perform(get("/api/leagues/{id}/players/{playerId}/points", leagueId, playerId).with(as(userId)));
     }
 
-    /** Locks the lineups by the job and closes the match after kickoff with {@code lines}. */
+    /**
+     * Locks the lineups by the job, closes the match after kickoff with {@code lines} and then its rating window,
+     * without votes.
+     */
     private void play(UUID matchId, Instant kickoffAt, PerformanceLine... lines) {
         clock.now = kickoffAt.minus(LOCK_BEFORE_KICKOFF);
         lockJob.lockDueLineups();
         Listeners.await(jdbc);
         clock.now = kickoffAt.plus(CLOSE_AFTER_KICKOFF);
         fixtures.closeWithSheet(peña, matchId, 1, 0, lines);
+        fixtures.closeRatings(clock, matchId);
     }
 
     /** Goalkeeper 10, forward 1 a goal and a yellow card (9), forward 2 10: admin 19, ana 20 and bea 0. */
@@ -322,6 +326,7 @@ class HistoryEndpointsTests {
         UUID foreignPlayer = fixtures.player(other, FORWARD);
         UUID foreignMatch = fixtures.schedule(other, 1, KICKOFF_1);
         fixtures.closeWithSheet(other, foreignMatch, 1, 0, played(foreignPlayer, 1));
+        fixtures.closeRatings(clock, foreignMatch);
         points(outsider, other.id(), foreignPlayer)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));

@@ -9,7 +9,7 @@ import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.scoring.domain.PlayerMatchday;
 
 /**
- * A player's points in a scored match: per action (only those that add or subtract), for ratings (0 until phase 2)
+ * A player's points in a scored match: per action (only those that add or subtract), for ratings
  * and in total. The position is the one in the sheet.
  */
 public record PlayerMatchdayView(UUID matchId, int matchday, Instant kickoffAt, Position position,

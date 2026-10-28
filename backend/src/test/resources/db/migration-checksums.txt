@@ -16,3 +16,4 @@
 12 993892654 V12__scoring_create_tables.sql
 13 -208793360 V13__league_rating_conversion.sql
 14 -740109714 V14__rating_create_tables.sql
+15 -109862310 V15__scoring_ratings.sql

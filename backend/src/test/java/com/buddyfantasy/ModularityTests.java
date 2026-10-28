@@ -59,19 +59,19 @@ class ModularityTests {
     }
 
     @Test
-    @DisplayName("scoring depends only on league, squad, match, lineup and datadefinition")
-    void scoringDependsOnlyOnLeagueSquadMatchLineupAndDataDefinition() {
+    @DisplayName("scoring depends only on league, squad, match, lineup, rating and datadefinition")
+    void scoringDependsOnlyOnLeagueSquadMatchLineupRatingAndDataDefinition() {
         var scoring = modules.getModuleByName("scoring").orElseThrow();
 
         assertThat(scoring.getDirectDependencies(modules).uniqueModules().map(ApplicationModule::getName))
-                .isSubsetOf("league", "squad", "match", "lineup", "datadefinition", "shared")
-                .contains("league", "datadefinition");
+                .isSubsetOf("league", "squad", "match", "lineup", "rating", "datadefinition", "shared")
+                .contains("league", "rating", "datadefinition");
     }
 
     @Test
     @DisplayName("No module that scoring depends on depends back on scoring")
     void noModuleItDependsOnDependsOnScoring() {
-        for (String name : new String[] {"league", "squad", "match", "lineup", "datadefinition"}) {
+        for (String name : new String[] {"league", "squad", "match", "lineup", "rating", "datadefinition"}) {
             var module = modules.getModuleByName(name).orElseThrow();
 
             assertThat(module.getAllDependencies(modules).containsModuleNamed("scoring")).as(name).isFalse();

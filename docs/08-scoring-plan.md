@@ -157,6 +157,6 @@ Tomadas en este plan:
 9. **Sin alineación bloqueada:** el miembro aparece en la clasificación de esa jornada con 0 puntos y sin jugadores.
 10. **Ex-miembros:** las clasificaciones solo muestran a los miembros actuales. Quien vuelve empieza de cero también en puntos (como en la decisión D2 del plan 07): cuentan las jornadas desde su nuevo `joinedAt`, y las anteriores siguen en su historial.
 11. **Jugador dado de baja:** los puntos salen solo del acta. Dado de baja antes del partido, no puede estar en el acta y suma 0; dado de baja después, conserva los puntos de los partidos que jugó.
-12. **Fase 2, puntos provisionales:** los puntos por acciones se publican al cerrar y bloquear, como provisionales, y pasan a definitivos al cerrar la ventana de valoración. Lo implementa el plan de `rating`.
+12. **Fase 2, puntos provisionales:** los puntos por acciones se publican al cerrar y bloquear, como provisionales, y pasan a definitivos al cerrar la ventana de valoración. Lo implementa el plan de `rating`. *Sustituida por la decisión 5 del plan 09: sin puntos provisionales; la jornada se puntúa y publica al cerrar la ventana de valoración.*
 
 No quedan decisiones abiertas para este paso.

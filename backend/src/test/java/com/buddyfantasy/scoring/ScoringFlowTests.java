@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.buddyfantasy.Listeners;
@@ -22,7 +23,11 @@ import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchComman
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceLine;
 import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchCommand;
 import com.buddyfantasy.match.domain.Venue;
+import com.buddyfantasy.rating.RatingsCorrected;
+import com.buddyfantasy.rating.application.usecases.savemyratings.SaveMyRatingsCommand;
+import com.buddyfantasy.rating.domain.Vote;
 import com.buddyfantasy.scoring.application.usecases.applylockedlineups.ApplyLockedLineupsCommand;
+import com.buddyfantasy.scoring.application.usecases.applyratings.ApplyRatingsCommand;
 import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.DiscardLockedLineupsCommand;
 import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.DiscardLockedLineupsCommand.Cause;
 import com.buddyfantasy.scoring.domain.ManagerLineup;
@@ -48,11 +53,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
 /**
- * Scoring a match from the real events (RF-15, RF-31): the sheet of {@code MatchClosed} and the lineups of
- * {@code LineupsLocked}, in either order, with the league's own table frozen when the match is first scored, the
- * recalculation after a {@code MatchCorrected} with that table (RF-16), and the copy of the lineups dropped when the
- * match is postponed or deleted. The lock job is run by hand and the
- * listeners are awaited.
+ * Scoring a match from the real events (RF-15, RF-22, RF-23, RF-30, RF-31): the sheet of {@code MatchClosed}, the
+ * lineups of {@code LineupsLocked} and the points for ratings of {@code RatingWindowClosed}, in any order, with the
+ * league's own table frozen when the match is first scored, the recalculation after a {@code MatchCorrected} or a
+ * {@code RatingsCorrected} with that table (RF-16), and the copy of the lineups dropped when the match is postponed or
+ * deleted. The lock and rating jobs are run by hand and the listeners are awaited.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupLockTests
@@ -123,10 +128,27 @@ class ScoringFlowTests {
         Listeners.await(jdbc);
     }
 
-    /** Closes the match after kickoff; if the job has not locked its lineups, the close does. */
-    private void close(UUID matchId, Instant kickoffAt, PerformanceLine... lines) {
+    /**
+     * Closes the match after kickoff, which opens its rating window; if the job has not locked its lineups, the close
+     * does.
+     */
+    private void closeMatch(UUID matchId, Instant kickoffAt, PerformanceLine... lines) {
         clock.now = kickoffAt.plus(CLOSE_AFTER_KICKOFF);
         fixtures.closeWithSheet(peña, matchId, 1, 0, lines);
+    }
+
+    /** {@link #closeMatch} and then its rating window, without votes, at the end of the window. */
+    private void close(UUID matchId, Instant kickoffAt, PerformanceLine... lines) {
+        closeMatch(matchId, kickoffAt, lines);
+        fixtures.closeRatings(clock, matchId);
+    }
+
+    /** {@code userId}'s votes in match 1, in spades: player, value, player, value… */
+    private void rate(UUID userId, Object... playersAndValues) {
+        List<Vote> votes = IntStream.range(0, playersAndValues.length / 2)
+                .mapToObj(i -> new Vote((UUID) playersAndValues[2 * i], (Integer) playersAndValues[2 * i + 1]))
+                .toList();
+        bus.dispatch(new SaveMyRatingsCommand(userId, peña.id(), match1, votes));
     }
 
     private static PerformanceLine assisted(UUID playerId, int assists) {
@@ -159,8 +181,8 @@ class ScoringFlowTests {
     }
 
     @Test
-    @DisplayName("The lock and then the close score players and managers once")
-    void theLockAndThenTheCloseScorePlayersAndManagersOnce() {
+    @DisplayName("The lock, the close and the end of the rating window score players and managers once")
+    void theLockTheCloseAndTheEndOfTheRatingWindowScorePlayersAndManagersOnce() {
         fixtures.scoringRule(peña, GOAL, 10);
         fixtures.scoringRule(peña, ASSIST, 2);
         save(admin, adminLineup);
@@ -174,12 +196,23 @@ class ScoringFlowTests {
 
         // a forward of both lineups, a midfielder of both and a forward only ana lined up; a defender of the
         // admin's lineup did not play
-        close(match1, KICKOFF_1, played(squad.get(5), 1), assisted(squad.get(3), 1), played(squad.get(7), 2));
+        closeMatch(match1, KICKOFF_1, played(squad.get(5), 1), assisted(squad.get(3), 1), played(squad.get(7), 2));
+        // the sheet and the lineups, but not the ratings: the matchday is not scored while its window is open
+        assertThat(scoringMatch(match1))
+                .containsEntry("ratings_at", null)
+                .containsEntry("scored_at", null);
+        assertThat(count("select count(*) from scoring_player_score where match_id = ? and points is null", match1))
+                .isEqualTo(3);
+        assertThat(scored(match1)).isEmpty();
+
+        fixtures.closeRatings(clock, match1);
 
         assertThat(playerPoints(match1)).containsOnly(
                 entry(squad.get(5), 10), entry(squad.get(3), 2), entry(squad.get(7), 20));
         assertThat(managerPoints(match1)).containsOnly(entry(admin, 12), entry(ana, 22));
-        assertThat(scoringMatch(match1)).containsEntry("scored_at", Timestamp.from(clock.now));
+        assertThat(scoringMatch(match1))
+                .containsEntry("ratings_at", Timestamp.from(clock.now))
+                .containsEntry("scored_at", Timestamp.from(clock.now));
         assertThat(scored(match1)).singleElement().satisfies(event -> {
             assertThat(event.leagueId()).isEqualTo(peña.id());
             assertThat(event.matchday()).isEqualTo(1);
@@ -192,6 +225,87 @@ class ScoringFlowTests {
             assertThat(event.managers()).containsExactlyInAnyOrder(
                     new ManagerScoreData(admin, 12, false), new ManagerScoreData(ana, 22, false));
         });
+    }
+
+    @Test
+    @DisplayName("The points of a player are those for actions plus those for ratings, without weights")
+    void thePointsOfAPlayerAreThoseForActionsPlusThoseForRatings() {
+        fixtures.scoringRule(peña, GOAL, 10);
+        save(admin, adminLineup);
+        save(ana, anaLineup);
+        closeMatch(match1, KICKOFF_1, played(squad.get(5), 1), played(squad.get(3), 0), played(squad.get(7), 0));
+
+        // spades, 4 × average − 2: the forward 3 and 4 (3.5: 12), the midfielder 0 (−2) and the third forward,
+        // unrated, 0 and not −2
+        rate(admin, squad.get(5), 3, squad.get(3), 0);
+        rate(ana, squad.get(5), 4);
+        fixtures.closeRatings(clock, match1);
+
+        assertThat(playerPoints(match1)).containsOnly(
+                entry(squad.get(5), 22), entry(squad.get(3), -2), entry(squad.get(7), 0));
+        assertThat(managerPoints(match1)).containsOnly(entry(admin, 20), entry(ana, -2));
+        assertThat(count("select count(*) from scoring_player_rating where match_id = ?", match1)).isEqualTo(3);
+        assertThat(scored(match1)).singleElement().satisfies(event -> {
+            assertThat(event.players()).containsExactlyInAnyOrder(
+                    new PlayerScoreData(squad.get(5), FORWARD, 10, 12, 22),
+                    new PlayerScoreData(squad.get(3), MIDFIELDER, 0, -2, -2),
+                    new PlayerScoreData(squad.get(7), FORWARD, 0, 0, 0));
+            assertThat(event.managers()).containsExactlyInAnyOrder(
+                    new ManagerScoreData(admin, 20, false), new ManagerScoreData(ana, -2, false));
+        });
+    }
+
+    /** As if scoring's listeners of MatchClosed and LineupsLocked had failed and the window had closed meanwhile. */
+    @Test
+    @DisplayName("Ratings delivered before the sheet are kept and the match is scored once the rest arrives")
+    void ratingsDeliveredBeforeTheSheetAreKeptAndTheMatchIsScoredOnceTheRestArrives() {
+        fixtures.scoringRule(peña, GOAL, 10);
+        save(admin, adminLineup);
+        Instant ratedAt = KICKOFF_1.plus(Duration.ofDays(1));
+
+        bus.dispatch(new ApplyRatingsCommand(peña.id(), match1, Map.of(squad.get(5), 6), ratedAt));
+
+        // scoring had not heard of the match: it takes it from the calendar
+        assertThat(scoringMatch(match1))
+                .containsEntry("matchday", 1)
+                .containsEntry("kickoff_at", Timestamp.from(KICKOFF_1))
+                .containsEntry("ratings_at", Timestamp.from(ratedAt))
+                .containsEntry("scored_at", null);
+        assertThat(scored(match1)).isEmpty();
+
+        closeMatch(match1, KICKOFF_1, played(squad.get(5), 1));
+
+        assertThat(playerPoints(match1)).containsOnly(entry(squad.get(5), 16));
+        assertThat(managerPoints(match1)).containsOnly(entry(admin, 16));
+        assertThat(scored(match1)).singleElement().satisfies(event -> assertThat(event.players())
+                .containsExactly(new PlayerScoreData(squad.get(5), FORWARD, 10, 6, 16)));
+    }
+
+    @Test
+    @DisplayName("A correction after the rating window closed recalculates with the corrected ratings")
+    void aCorrectionAfterTheRatingWindowClosedRecalculatesWithTheCorrectedRatings() {
+        fixtures.scoringRule(peña, GOAL, 10);
+        // an unrated player scores the default rating: 2 spades, 4 × 2 − 2 = 6
+        fixtures.settings(peña, settings -> settings.defaultRating = new BigDecimal("2"));
+        save(admin, adminLineup);
+        closeMatch(match1, KICKOFF_1, played(squad.get(5), 1));
+        rate(admin, squad.get(5), 4);
+        fixtures.closeRatings(clock, match1);
+        assertThat(managerPoints(match1)).containsOnly(entry(admin, 24));
+
+        // a forward of the lineup is added to the sheet: the window does not reopen and he counts as unrated
+        clock.now = clock.now.plus(Duration.ofHours(1));
+        fixtures.sheet(peña, match1, 1, 0, played(squad.get(5), 1), played(squad.get(6), 0));
+        Listeners.await(jdbc);
+
+        assertThat(playerPoints(match1)).containsOnly(entry(squad.get(5), 24), entry(squad.get(6), 6));
+        assertThat(managerPoints(match1)).containsOnly(entry(admin, 30));
+        assertThat(events.stream(RatingsCorrected.class)).singleElement().satisfies(corrected ->
+                assertThat(scoringMatch(match1)).containsEntry("ratings_at", Timestamp.from(corrected.occurredAt())));
+        // MatchCorrected and RatingsCorrected may arrive in any order: the last MatchdayScored has both
+        assertThat(scored(match1).getLast().players()).containsExactlyInAnyOrder(
+                new PlayerScoreData(squad.get(5), FORWARD, 10, 14, 24),
+                new PlayerScoreData(squad.get(6), FORWARD, 0, 6, 6));
     }
 
     @Test

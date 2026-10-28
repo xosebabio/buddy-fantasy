@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -26,6 +27,7 @@ import com.buddyfantasy.rating.domain.SheetPlayer;
 import com.buddyfantasy.scoring.MatchdayScored;
 import com.buddyfantasy.scoring.application.usecases.applylockedlineups.ApplyLockedLineupsCommand;
 import com.buddyfantasy.scoring.application.usecases.applymatchsheet.ApplyMatchSheetCommand;
+import com.buddyfantasy.scoring.application.usecases.applyratings.ApplyRatingsCommand;
 import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.DiscardLockedLineupsCommand;
 import com.buddyfantasy.scoring.application.usecases.discardlockedlineups.DiscardLockedLineupsCommand.Cause;
 import com.buddyfantasy.scoring.domain.ManagerLineup;
@@ -56,10 +58,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 /**
  * Races against the real database: the same request sent at once (a double tap, two admins), the two paths that
- * lock a match's lineups, the two halves scoring needs to score a match, the events and job of a rating window, and
- * the votes against its close and against the admin's exclusion of their member. The checks before writing do not see the other transaction, so the unique indexes
- * and row locks decide: each race ends in one write and a 409 or nothing, never a 500 nor a duplicate. Each case runs
- * {@link #ROUNDS} times, since a single run may not overlap.
+ * lock a match's lineups, the three copies scoring needs to score a match, the events and job of a rating window,
+ * and the votes against its close and against the admin's exclusion of their member. The checks before writing do
+ * not see the other transaction, so the unique indexes and row locks decide: each race ends in one write and a 409
+ * or nothing, never a 500 nor a duplicate. Each case runs {@link #ROUNDS} times, since a single run may not overlap.
  */
 @SpringBootTest
 @AutoConfigureMockMvc // same context as LineupLockTests
@@ -201,13 +203,13 @@ class ConcurrencyTests {
     }
 
     /**
-     * The sheet and the lineups of a match reach scoring at once, on two threads, when scoring already has the match
-     * (here from an earlier unlock): without locking its row, each one sees only its own copy and the match is never
-     * scored, or the last one to save drops the other's copy.
+     * The sheet, the lineups and the ratings of a match reach scoring at once, on three threads, when scoring already
+     * has the match (here from an earlier unlock): without locking its row, each one sees only its own copy and the
+     * match is never scored, or the last one to save drops another's copy.
      */
     @Test
-    @DisplayName("The sheet and the lineups of a match arriving at once score it only once")
-    void theSheetAndTheLineupsOfAMatchAtOnceScoreItOnce() {
+    @DisplayName("The sheet, the lineups and the ratings of a match arriving at once score it only once")
+    void theSheetTheLineupsAndTheRatingsOfAMatchAtOnceScoreItOnce() {
         List<UUID> squad = fixtures.squad(peña, GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD);
         List<PlayerPerformance> sheet = List.of(new PlayerPerformance(squad.get(3), FORWARD, 1, 0, 0, 0, 0, 0, false,
                 false, false));
@@ -224,7 +226,9 @@ class ConcurrencyTests {
                     () -> bus.dispatch(new ApplyMatchSheetCommand(peña.id(), match, day, kickoff, sheet,
                             kickoff.plus(Duration.ofHours(2)))),
                     () -> bus.dispatch(new ApplyLockedLineupsCommand(peña.id(), match, day, kickoff, lineups,
-                            kickoff.minus(Duration.ofHours(2))))));
+                            kickoff.minus(Duration.ofHours(2)))),
+                    () -> bus.dispatch(new ApplyRatingsCommand(peña.id(), match, Map.of(squad.get(3), 6),
+                            kickoff.plus(Duration.ofDays(1))))));
 
             assertThat(count("select count(*) from scoring_match where match_id = ? and scored_at is not null", match))
                     .as("matchday %d", matchday).isOne();
@@ -232,6 +236,8 @@ class ConcurrencyTests {
                     .as("matchday %d", matchday).isOne();
             assertThat(count("select count(*) from scoring_lineup_player where match_id = ?", match))
                     .as("matchday %d", matchday).isEqualTo(squad.size());
+            assertThat(count("select points from scoring_lineup where match_id = ?", match))
+                    .as("matchday %d", matchday).isEqualTo(9);
             assertThat(events.stream(MatchdayScored.class).filter(event -> event.matchId().equals(match)))
                     .as("matchday %d", matchday).hasSize(1);
         }

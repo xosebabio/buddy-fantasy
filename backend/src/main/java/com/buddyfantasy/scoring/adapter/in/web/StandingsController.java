@@ -43,11 +43,14 @@ class StandingsController {
 
     @Operation(summary = "Ver los puntos de una jornada",
             description = "Rol mínimo: miembro. La clasificación de la jornada y los puntos de cada jugador del acta "
-                    + "(RF-30 a RF-32). Hay puntos cuando el partido está cerrado y sus alineaciones bloqueadas.")
+                    + "(RF-30 a RF-32). Hay puntos cuando el partido está cerrado, sus alineaciones bloqueadas y su "
+                    + "ventana de valoración cerrada (RF-17): hasta entonces la jornada no cuenta en la "
+                    + "clasificación.")
     @ApiResponse(responseCode = "200", description = "Los puntos de la jornada.")
     @ApiResponse(responseCode = "403", description = "El usuario no es miembro de la liga (o no existe).")
     @ApiResponse(responseCode = "404", description = "El partido no es de la liga.")
-    @ApiResponse(responseCode = "409", description = "El partido aún no tiene puntos (`code`: `MATCH_NOT_SCORED`).",
+    @ApiResponse(responseCode = "409", description = "El partido aún no tiene puntos: no está cerrado o su ventana de valoración sigue "
+            + "abierta (`code`: `MATCH_NOT_SCORED`).",
             content = @Content(examples = @ExampleObject(value = """
                     {"type": "about:blank", "title": "Conflict", "status": 409,
                      "detail": "Match 5b8d0f2a-4c6e-4a1b-9d3f-7e9a1c3b5d7f is not scored yet", "code": "MATCH_NOT_SCORED",

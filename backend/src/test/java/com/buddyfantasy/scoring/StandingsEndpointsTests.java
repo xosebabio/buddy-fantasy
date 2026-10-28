@@ -138,13 +138,17 @@ class StandingsEndpointsTests {
         return mvc.perform(get("/api/leagues/{id}/standings/{matchId}", leagueId, matchId).with(as(userId)));
     }
 
-    /** Locks the lineups by the job and closes the match after kickoff with {@code lines}. */
+    /**
+     * Locks the lineups by the job, closes the match after kickoff with {@code lines} and then its rating window,
+     * without votes.
+     */
     private void play(TestLeague league, UUID matchId, Instant kickoffAt, PerformanceLine... lines) {
         clock.now = kickoffAt.minus(LOCK_BEFORE_KICKOFF);
         lockJob.lockDueLineups();
         Listeners.await(jdbc);
         clock.now = kickoffAt.plus(CLOSE_AFTER_KICKOFF);
         fixtures.closeWithSheet(league, matchId, 1, 0, lines);
+        fixtures.closeRatings(clock, matchId);
     }
 
     /** Admin 20, ana 20 and bea, without a lineup, 0. */
@@ -220,7 +224,8 @@ class StandingsEndpointsTests {
                 .andExpect(jsonPath("$.matchId").value(match1.toString()))
                 .andExpect(jsonPath("$.matchday").value(1))
                 .andExpect(jsonPath("$.kickoffAt").value("2026-01-11T10:00:00Z"))
-                .andExpect(jsonPath("$.scoredAt").value("2026-01-11T12:00:00Z"))
+                // when its rating window closed, 24 h after the match was
+                .andExpect(jsonPath("$.scoredAt").value("2026-01-12T12:00:00Z"))
                 .andExpect(jsonPath("$.standings[*].position", contains(1, 1, 3)))
                 .andExpect(jsonPath("$.standings[*].points", contains(20, 20, 0)))
                 .andExpect(jsonPath("$.standings[2].userId").value(bea.toString()))
@@ -287,9 +292,10 @@ class StandingsEndpointsTests {
         UUID foreignMatch = fixtures.schedule(other, 1, KICKOFF_1);
         clock.now = KICKOFF_1.plus(CLOSE_AFTER_KICKOFF);
         fixtures.closeWithSheet(other, foreignMatch, 1, 0, played(foreignPlayer, 1));
+        fixtures.closeRatings(clock, foreignMatch);
         matchday(outsider, other.id(), foreignMatch).andExpect(status().isOk());
 
-        // match 2 not even locked, then locked but not closed
+        // match 2 not even locked, then locked but not closed, then closed with its rating window open
         matchday(ana, peña.id(), match2)
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("MATCH_NOT_SCORED"));
@@ -299,6 +305,12 @@ class StandingsEndpointsTests {
         matchday(ana, peña.id(), match2)
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("MATCH_NOT_SCORED"));
+        clock.now = KICKOFF_2.plus(CLOSE_AFTER_KICKOFF);
+        fixtures.closeWithSheet(peña, match2, 1, 0, played(forward1, 1));
+        matchday(ana, peña.id(), match2)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("MATCH_NOT_SCORED"));
+        standings(ana).andExpect(jsonPath("$[?(@.userId == '%s')].matchdays", ana).value(contains(1)));
 
         matchday(ana, peña.id(), foreignMatch).andExpect(status().isNotFound());
         matchday(ana, peña.id(), UUID.randomUUID()).andExpect(status().isNotFound());
