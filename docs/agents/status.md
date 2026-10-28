@@ -6,7 +6,7 @@ Actualiza este archivo (y el resumen de *Estado* en `AGENTS.md`) cuando cierres 
 
 Aún no hay `frontend/`. Todo lo hecho está en `backend/`.
 
-Los requisitos del frontend ya están en `docs/requirements.md` (RNF-01, RNF-12 a RNF-16 y FE-01 a FE-35, según `docs/10-frontend-requirements-plan.md`), resumidos para agentes en [frontend.md](frontend.md). El siguiente paso es `docs/11-frontend-foundation-plan.md`: el esqueleto de `frontend/`, el trabajo de backend que se desprende (export del spec, códigos de error en el spec, vuelta tras el login, login de pruebas para E2E, CORS del bucket, Caddy) y las primeras pantallas.
+Los requisitos del frontend ya están en `docs/requirements.md` (RNF-01, RNF-12 a RNF-16 y FE-01 a FE-35, según `docs/10-frontend-requirements-plan.md`), resumidos para agentes en [frontend.md](frontend.md). El siguiente paso es `docs/11-frontend-foundation-plan.md`, ya redactado y con sus decisiones cerradas (tarea 1); sigue la tarea 2: el esqueleto de `frontend/`, el trabajo de backend que se desprende (export del spec, códigos de error en el spec, vuelta tras el login, login de pruebas para E2E, CORS del bucket, Caddy) y las primeras pantallas (identidad y liga).
 
 ### Fase 0 · Fundamentos (en curso)
 
