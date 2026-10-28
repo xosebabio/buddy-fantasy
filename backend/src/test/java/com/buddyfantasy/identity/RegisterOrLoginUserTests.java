@@ -8,6 +8,7 @@ import com.buddyfantasy.identity.application.usecases.registerorloginuser.Regist
 import com.buddyfantasy.identity.domain.UserId;
 import com.buddyfantasy.shared.application.CommandBus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,6 +47,7 @@ class RegisterOrLoginUserTests {
     }
 
     @Test
+    @DisplayName("The first login creates the user with the clock's timestamps")
     void firstLoginCreatesTheUserWithClockTimestamps() {
         UserId id = bus.dispatch(login("sub-1", "a@x.com"));
 
@@ -55,6 +57,7 @@ class RegisterOrLoginUserTests {
     }
 
     @Test
+    @DisplayName("A second login with the same sub does not duplicate the user and only updates the last login")
     void secondLoginWithSameSubDoesNotDuplicateAndOnlyUpdatesLastLogin() {
         UserId first = bus.dispatch(login("sub-1", "a@x.com"));
         clock.now = T0.plusSeconds(3600);
@@ -72,6 +75,7 @@ class RegisterOrLoginUserTests {
     }
 
     @Test
+    @DisplayName("A different sub with the same email creates another user")
     void differentSubWithSameEmailCreatesAnotherUser() {
         UserId a = bus.dispatch(login("sub-1", "same@x.com"));
         UserId b = bus.dispatch(login("sub-2", "same@x.com"));

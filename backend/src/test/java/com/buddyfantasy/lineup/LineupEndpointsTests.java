@@ -17,6 +17,7 @@ import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLi
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -155,6 +156,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Before the first save the lineup is empty")
     void beforeTheFirstSaveTheLineupIsEmpty() throws Exception {
         myLineup(ana)
                 .andExpect(status().isOk())
@@ -172,6 +174,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("A manager and the admin each save their own lineup")
     void managerAndAdminEachSaveTheirOwnLineup() throws Exception {
         save(ana, lineupA)
                 .andExpect(status().isOk())
@@ -198,6 +201,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Non-members can neither save nor see a lineup")
     void nonMembersCannotSaveNorSeeALineup() throws Exception {
         save(outsider, lineupA).andExpect(status().isForbidden());
         mvc.perform(get("/api/leagues/{id}/lineup", league).with(as(outsider))).andExpect(status().isForbidden());
@@ -206,6 +210,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Invalid lineups are answered with 400 and an error code")
     void invalidLineupsAre400WithACode() throws Exception {
         UUID retired = squad.get(11);
         bus.dispatch(new RetirePlayerCommand(admin, league, retired));
@@ -233,6 +238,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("The formation minimums apply when enabled")
     void theFormationMinimumsApplyWhenEnabled() throws Exception {
         fixtures.settings(peña, settings -> settings.lineupFormationEnabled = true);
 
@@ -245,6 +251,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Saving the current lineup again creates no new version")
     void savingTheCurrentLineupAgainCreatesNoVersion() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         clock.now = NOW.plus(Duration.ofHours(1));
@@ -257,6 +264,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Changes are unlimited until a lineup is locked")
     void changesAreUnlimitedUntilALineupIsLocked() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
 
@@ -268,6 +276,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("After the lock the lineup carries over and changes count against it")
     void afterTheLockTheLineupCarriesOverAndChangesCountAgainstIt() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         clock.now = LOCK_1;
@@ -301,6 +310,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("A save just before the lock is the locked lineup")
     void aSaveJustBeforeTheLockIsTheLockedLineup() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         List<UUID> lastMinute = replace(lineupA, List.of(5, 6), List.of(squad.get(7), squad.get(8)));
@@ -320,6 +330,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Replacing a retired player is a free change")
     void replacingARetiredPlayerIsFree() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         UUID retired = lineupA.get(6);
@@ -341,6 +352,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("A lineup that no longer fits the budget gets a warning")
     void aLineupThatNoLongerFitsTheBudgetIsWarned() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         // 60 M + 40 M: exactly the budget still fits
@@ -360,6 +372,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Without matches ahead the lineup can still be saved")
     void withoutMatchesAheadTheLineupCanStillBeSaved() throws Exception {
         clock.now = KICKOFF_2.plus(Duration.ofDays(1));
 
@@ -370,6 +383,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Once locked, every member sees every lineup with its values at the lock")
     void onceLockedEveryMemberSeesEveryLineupWithItsValuesAtTheLock() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         List<UUID> adminLineup = squad.subList(5, 12);
@@ -404,6 +418,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Members without a lineup before the lock are not in it")
     void membersWithoutALineupBeforeTheLockAreNotInIt() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         clock.now = LOCK_1;
@@ -418,6 +433,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("A lineup over budget at the lock is shown as such")
     void aLineupOverBudgetAtTheLockIsShownAsSuch() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         jdbc.update("update squad_player set initial_value = 41 where id = ?", lineupA.getFirst());
@@ -431,6 +447,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Lineups are not visible until the match is locked")
     void lineupsAreNotVisibleUntilTheMatchIsLocked() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
 
@@ -442,6 +459,7 @@ class LineupEndpointsTests {
     }
 
     @Test
+    @DisplayName("Locked lineups are only visible within their league")
     void lockedLineupsAreOnlyVisibleWithinTheirLeague() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         clock.now = LOCK_1.plus(Duration.ofMinutes(1));

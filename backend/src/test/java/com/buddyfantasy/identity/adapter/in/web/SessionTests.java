@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.identity.adapter.in.web.FakeGoogle.Account;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,6 +127,7 @@ class SessionTests {
     }
 
     @Test
+    @DisplayName("Starting the login stores the session in the database")
     void startingTheLoginStoresTheSessionInTheDatabase() throws Exception {
         HttpResponse<String> toGoogle = get("/oauth2/authorization/google");
 
@@ -140,6 +142,7 @@ class SessionTests {
     }
 
     @Test
+    @DisplayName("Logging in registers the user and authenticates the stored session")
     void loggingInRegistersTheUserAndAuthenticatesTheStoredSession() throws Exception {
         HttpResponse<String> callback = logIn(ANA);
 
@@ -159,6 +162,7 @@ class SessionTests {
     }
 
     @Test
+    @DisplayName("An account without a verified email cannot log in")
     void anAccountWithoutAVerifiedEmailCannotLogIn() throws Exception {
         HttpResponse<String> callback = logIn(new Account("google-eve", "eve@x.com", "Eve", false));
 
@@ -170,6 +174,7 @@ class SessionTests {
     }
 
     @Test
+    @DisplayName("Logging out deletes the session and expires its cookie")
     void loggingOutDeletesTheSessionAndExpiresItsCookie() throws Exception {
         logIn(ANA);
         assertThat(get("/api/me").statusCode()).isEqualTo(200);
@@ -203,6 +208,7 @@ class SessionTests {
         }
 
         @Test
+        @DisplayName("The session cookie only travels over HTTPS")
         void theSessionCookieOnlyTravelsOverHttps() throws Exception {
             HttpResponse<String> toGoogle = get("/oauth2/authorization/google");
 

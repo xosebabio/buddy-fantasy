@@ -8,6 +8,7 @@ import com.buddyfantasy.TestFixtures;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -78,6 +79,7 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("Joining with the initial token creates a manager")
     void joiningWithTheInitialTokenCreatesAManager() throws Exception {
         join(ana, token).andExpect(status().isOk()).andExpect(jsonPath("$.leagueId").value(league.toString()));
 
@@ -89,6 +91,7 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("Joining twice does not duplicate the membership and the admin keeps their role")
     void joiningTwiceDoesNotDuplicateAndAdminKeepsTheirRole() throws Exception {
         join(ana, token).andExpect(status().isOk());
         join(ana, token).andExpect(status().isOk());
@@ -100,6 +103,7 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("The preview shows only the league name and the user's membership")
     void previewShowsOnlyNameAndMembership() throws Exception {
         preview(ana, token).andExpect(status().isOk())
                 .andExpect(jsonPath("$.leagueName").value("Peña"))
@@ -109,6 +113,7 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("Regenerating invalidates the previous token and keeps a single active one")
     void regeneratingInvalidatesThePreviousTokenAndKeepsOneActive() throws Exception {
         String fresh = regenerate(admin);
 
@@ -122,6 +127,7 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("A revoked token is 404 and revoking twice is fine")
     void revokedTokenIs404AndRevokingTwiceIsFine() throws Exception {
         mvc.perform(delete("/api/leagues/{id}/invitation", league).with(as(admin)).with(csrf()))
                 .andExpect(status().isNoContent());
@@ -137,12 +143,14 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("An unknown token is 404 with a generic body")
     void unknownTokenIs404WithAGenericBody() throws Exception {
         preview(ana, "nope").andExpect(status().isNotFound()).andExpect(jsonPath("$.detail").value("Not found"));
         join(ana, "nope").andExpect(status().isNotFound());
     }
 
     @Test
+    @DisplayName("Only the league admin manages the invitation")
     void onlyTheAdminOfTheLeagueManagesTheInvitation() throws Exception {
         join(ana, token).andExpect(status().isOk());
         UUID otherLeague = fixtures.league(bob, "Otra").id();
@@ -158,6 +166,7 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the token hash is persisted")
     void onlyTheTokenHashIsPersisted() {
         String stored = jdbc.queryForObject("select token_hash from league_invitation", String.class);
 
@@ -167,6 +176,7 @@ class InvitationEndpointsTests {
     }
 
     @Test
+    @DisplayName("Requires a session and a CSRF token")
     void securityWithoutSessionOrCsrf() throws Exception {
         mvc.perform(get("/api/invitations/{t}", token)).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/invitations/{t}/join", token).with(csrf())).andExpect(status().isUnauthorized());

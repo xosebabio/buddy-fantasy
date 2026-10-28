@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.buddyfantasy.lineup.adapter.in.scheduler.LockDueLineupsJob;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -107,6 +108,7 @@ class MatchdayFlowTests {
     }
 
     @Test
+    @DisplayName("A whole matchday runs end to end through the API")
     void aWholeMatchdayThroughTheApi() throws Exception {
         clock.now = NOW;
         UUID admin = fixtures.user("admin");

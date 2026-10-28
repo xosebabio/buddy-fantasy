@@ -10,6 +10,7 @@ import com.buddyfantasy.shared.domain.DomainValidationException;
 import com.buddyfantasy.squad.PlayerRegistered;
 import com.buddyfantasy.squad.PlayerRetired;
 import com.buddyfantasy.squad.adapter.out.config.TestSquadLimits;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -29,6 +30,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("register creates an active player and publishes PlayerRegistered once")
     void registerCreatesAnActivePlayerAndPublishesPlayerRegisteredOnce() {
         Player player = register();
 
@@ -41,6 +43,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("The shirt number and photo are optional")
     void shirtNumberAndPhotoAreOptional() {
         Player player = Player.register(LEAGUE, "Iago", null, Position.GOALKEEPER, VALUE, NOW, LIMITS);
 
@@ -49,6 +52,7 @@ class PlayerTests {
     }
 
     @ParameterizedTest
+    @DisplayName("Rejects a blank name")
     @ValueSource(strings = {"", "   "})
     void rejectsBlankName(String name) {
         assertThatThrownBy(() -> Player.register(LEAGUE, name, null, Position.FORWARD, VALUE, NOW, LIMITS))
@@ -56,6 +60,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("Rejects a missing or too long name")
     void rejectsMissingOrTooLongName() {
         assertThatThrownBy(() -> Player.register(LEAGUE, null, null, Position.FORWARD, VALUE, NOW, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
@@ -66,12 +71,14 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("Requires a position")
     void requiresPosition() {
         assertThatThrownBy(() -> Player.register(LEAGUE, "Iago", null, null, VALUE, NOW, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
     }
 
     @ParameterizedTest
+    @DisplayName("Accepts shirt numbers within the configured range")
     @ValueSource(ints = {0, 99})
     void acceptsShirtNumbersWithinTheConfiguredRange(int number) {
         assertThat(Player.register(LEAGUE, "Iago", new ShirtNumber(number), Position.FORWARD, VALUE, NOW, LIMITS)
@@ -79,6 +86,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("Rejects shirt numbers out of the configured range")
     void rejectsShirtNumbersOutOfTheConfiguredRange() {
         assertThatThrownBy(() -> Player.register(LEAGUE, "Iago", new ShirtNumber(100), Position.FORWARD, VALUE,
                 NOW, LIMITS)).isInstanceOf(DomainValidationException.class);
@@ -88,18 +96,21 @@ class PlayerTests {
     }
 
     @ParameterizedTest
+    @DisplayName("Rejects shirt numbers out of the storage range")
     @ValueSource(ints = {-1, 32768})
     void rejectsShirtNumbersOutOfStorageRange(int number) {
         assertThatThrownBy(() -> new ShirtNumber(number)).isInstanceOf(DomainValidationException.class);
     }
 
     @Test
+    @DisplayName("ShirtNumber.ofNullable keeps null")
     void shirtNumberOfNullableKeepsNull() {
         assertThat(ShirtNumber.ofNullable(null)).isNull();
         assertThat(ShirtNumber.ofNullable(7)).isEqualTo(new ShirtNumber(7));
     }
 
     @ParameterizedTest
+    @DisplayName("Rejects initial values that are not positive or do not fit the column")
     @ValueSource(strings = {"0", "0.00", "-1", "0.001", "100000000"})
     void rejectsInitialValuesThatAreNotPositiveOrDoNotFitTheColumn(String value) {
         assertThatThrownBy(() -> Player.register(LEAGUE, "Iago", null, Position.FORWARD, new BigDecimal(value),
@@ -107,6 +118,7 @@ class PlayerTests {
     }
 
     @ParameterizedTest
+    @DisplayName("Accepts positive initial values in millions")
     @ValueSource(strings = {"0.01", "14", "14.50", "99999999.99"})
     void acceptsPositiveInitialValuesInMillions(String value) {
         assertThat(Player.register(LEAGUE, "Iago", null, Position.FORWARD, new BigDecimal(value), NOW, LIMITS)
@@ -114,12 +126,14 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("Rejects a missing initial value")
     void rejectsMissingInitialValue() {
         assertThatThrownBy(() -> Player.register(LEAGUE, "Iago", null, Position.FORWARD, null, NOW, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
     }
 
     @Test
+    @DisplayName("update replaces every editable field but keeps the photo")
     void updateReplacesEveryEditableFieldButKeepsThePhoto() {
         Player player = register();
         PlayerPhotoKey photoKey = PlayerPhotoKey.generate(LEAGUE, player.id());
@@ -135,6 +149,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("update validates like register")
     void updateValidatesLikeRegister() {
         Player player = register();
 
@@ -146,6 +161,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("A retired player cannot be edited")
     void retiredPlayerCannotBeEdited() {
         Player player = register();
         player.retire(NOW);
@@ -155,6 +171,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("changePhoto sets a key generated for this player and is idempotent")
     void changePhotoSetsAKeyGeneratedForThisPlayerAndIsIdempotent() {
         Player player = register();
         PlayerPhotoKey photo = PlayerPhotoKey.generate(LEAGUE, player.id());
@@ -169,6 +186,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("changePhoto rejects keys of another player or league")
     void changePhotoRejectsKeysOfAnotherPlayerOrLeague() {
         Player player = register();
 
@@ -181,6 +199,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("A retired player cannot change photo")
     void retiredPlayerCannotChangePhoto() {
         Player player = register();
         player.retire(NOW);
@@ -190,6 +209,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("removePhoto is idempotent and allowed on retired players")
     void removePhotoIsIdempotentAndAllowedOnRetiredPlayers() {
         Player player = register();
         player.changePhoto(PlayerPhotoKey.generate(LEAGUE, player.id()));
@@ -202,6 +222,7 @@ class PlayerTests {
     }
 
     @Test
+    @DisplayName("retire is idempotent, keeps the first instant and publishes once")
     void retireIsIdempotentKeepsTheFirstInstantAndPublishesOnce() {
         Player player = register();
         player.pullEvents();

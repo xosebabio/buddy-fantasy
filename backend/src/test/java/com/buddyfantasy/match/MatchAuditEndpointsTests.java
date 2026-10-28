@@ -15,6 +15,7 @@ import com.buddyfantasy.match.application.usecases.updatematch.UpdateMatchComman
 import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -79,6 +80,7 @@ class MatchAuditEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin sees every change, newest first, with its before and after")
     void adminSeesEveryChangeNewestFirstWithItsBeforeAndAfter() throws Exception {
         UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
         bus.dispatch(new UpdateMatchCommand(admin, league, match, 1, "Os Ninguéns", Venue.AWAY, KICKOFF));
@@ -123,6 +125,7 @@ class MatchAuditEndpointsTests {
     }
 
     @Test
+    @DisplayName("Changes without effect are not in the history")
     void changesWithoutEffectAreNotInTheHistory() throws Exception {
         UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
         bus.dispatch(new UpdateMatchCommand(admin, league, match, 1, "Rival", Venue.HOME, KICKOFF));
@@ -136,6 +139,7 @@ class MatchAuditEndpointsTests {
     }
 
     @Test
+    @DisplayName("The history of a deleted match is kept")
     void theHistoryOfADeletedMatchIsKept() throws Exception {
         UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
         recordSheet(match, 1, line(forward, 1, 0));
@@ -150,6 +154,7 @@ class MatchAuditEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin sees the history")
     void onlyTheLeagueAdminSeesTheHistory() throws Exception {
         UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
 
@@ -161,6 +166,7 @@ class MatchAuditEndpointsTests {
     }
 
     @Test
+    @DisplayName("Unknown matches and matches of another league are 404")
     void unknownMatchesAndMatchesOfAnotherLeagueAre404() throws Exception {
         UUID foreign = fixtures.schedule(other, 1, "Rival", KICKOFF);
 
@@ -174,6 +180,7 @@ class MatchAuditEndpointsTests {
     }
 
     @Test
+    @DisplayName("The history requires a session")
     void theHistoryRequiresASession() throws Exception {
         UUID match = fixtures.schedule(peña, 1, "Rival", KICKOFF);
 

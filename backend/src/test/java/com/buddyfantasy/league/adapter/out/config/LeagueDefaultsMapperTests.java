@@ -5,6 +5,7 @@ import java.util.Map;
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.league.domain.RatingFormat;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class LeagueDefaultsMapperTests {
 
     @Test
+    @DisplayName("Binds every group of the configured defaults")
     void bindsEveryGroupOfTheConfiguredDefaults() {
         LeagueDefaultsProperties properties = TestLeagueDefaults.bind(Map.of());
 
@@ -26,6 +28,7 @@ class LeagueDefaultsMapperTests {
     }
 
     @Test
+    @DisplayName("Any default can be overridden")
     void anyDefaultCanBeOverridden() {
         LeagueDefaultsProperties properties = TestLeagueDefaults.bind(Map.of(
                 "league.defaults.lineup.size", "9",
@@ -42,6 +45,7 @@ class LeagueDefaultsMapperTests {
     }
 
     @Test
+    @DisplayName("Invalid defaults are rejected")
     void invalidDefaultsAreRejected() {
         assertThatThrownBy(() -> LeagueDefaultsMapper.toSettings(
                 TestLeagueDefaults.bind(Map.of("league.defaults.lineup.size", "0"))))
@@ -49,6 +53,7 @@ class LeagueDefaultsMapperTests {
     }
 
     @Test
+    @DisplayName("Defaults over the limits stop the repository from being created")
     void defaultsOverTheLimitsStopTheRepositoryFromBeingCreated() {
         LeagueDefaultsProperties overLimit = TestLeagueDefaults.bind(
                 Map.of("league.defaults.lineup.lock-hours", "169"));
@@ -60,6 +65,7 @@ class LeagueDefaultsMapperTests {
     }
 
     @Test
+    @DisplayName("Missing groups or an incomplete scoring table are rejected")
     void missingGroupsOrIncompleteScoringTableAreRejected() {
         LeagueDefaultsProperties full = TestLeagueDefaults.bind(Map.of());
 

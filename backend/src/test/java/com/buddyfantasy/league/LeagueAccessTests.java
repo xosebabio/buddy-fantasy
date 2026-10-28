@@ -11,6 +11,7 @@ import com.buddyfantasy.league.application.port.out.LeagueRepository;
 import com.buddyfantasy.league.application.port.out.MembershipRepository;
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.Membership;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,6 +59,7 @@ class LeagueAccessTests {
     }
 
     @Test
+    @DisplayName("An admin passes both the member and the admin checks")
     void adminPassesBothChecks() {
         League league = league("A");
         UUID admin = UUID.randomUUID();
@@ -70,6 +72,7 @@ class LeagueAccessTests {
     }
 
     @Test
+    @DisplayName("A manager passes only the member check")
     void managerPassesOnlyRequireMember() {
         League league = league("A");
         UUID manager = UUID.randomUUID();
@@ -83,6 +86,7 @@ class LeagueAccessTests {
     }
 
     @Test
+    @DisplayName("A non-member is denied")
     void nonMemberIsDenied() {
         League league = league("A");
         UUID stranger = UUID.randomUUID();
@@ -97,6 +101,7 @@ class LeagueAccessTests {
     }
 
     @Test
+    @DisplayName("memberSince lists the admin and managers of that league only, with their join instant")
     void memberSinceListsAdminAndManagersOfThatLeagueOnlyWithTheirJoinInstant() {
         League league = league("A");
         League other = league("B");
@@ -114,6 +119,7 @@ class LeagueAccessTests {
     }
 
     @Test
+    @DisplayName("A member who leaves and joins again is a member since joining again")
     void aMemberWhoLeavesAndJoinsAgainIsAMemberSinceJoiningAgain() {
         League league = league("A");
         UUID manager = UUID.randomUUID();
@@ -127,6 +133,7 @@ class LeagueAccessTests {
     }
 
     @Test
+    @DisplayName("The same user can be admin in one league and manager in another")
     void sameUserCanBeAdminInOneLeagueAndManagerInAnother() {
         League a = league("A");
         League b = league("B");

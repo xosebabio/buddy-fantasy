@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.lineup.adapter.in.scheduler.LockDueLineupsJob;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -95,12 +96,14 @@ class TimeZoneTests {
     }
 
     @Test
+    @DisplayName("The tests run outside UTC")
     void theTestsRunOutsideUtc() {
         assertThat(ZoneId.systemDefault()).isEqualTo(ZoneId.of(PostgresTestConfig.TIME_ZONE));
         assertThat(jdbc.queryForObject("show timezone", String.class)).isEqualTo(PostgresTestConfig.TIME_ZONE);
     }
 
     @Test
+    @DisplayName("Kickoffs around the daylight saving changes travel unchanged")
     void kickoffsAroundTheChangesOfTimeTravelUnchanged() throws Exception {
         List<String> kickoffs = List.of(SPRING_KICKOFF, AUTUMN_KICKOFF_CEST, AUTUMN_KICKOFF_CET);
         for (int i = 0; i < kickoffs.size(); i++) {
@@ -123,6 +126,7 @@ class TimeZoneTests {
     }
 
     @Test
+    @DisplayName("An instant with an offset is the same instant in UTC")
     void anInstantWithAnOffsetIsTheSameInstantInUtc() throws Exception {
         // 02:30 CET, the second 02:30 of the autumn change
         schedule(1, "2026-10-25T02:30:00+01:00")
@@ -131,6 +135,7 @@ class TimeZoneTests {
     }
 
     @Test
+    @DisplayName("The lineup lock is the configured hours before kickoff across the daylight saving change")
     void theLineupLockIsHoursBeforeKickoffAcrossTheChangeOfTime() throws Exception {
         fixtures.settings(peña, settings -> settings.lineupLockHours = 2);
         List<UUID> squad = fixtures.squad(peña, GOALKEEPER, DEFENDER, DEFENDER, MIDFIELDER, MIDFIELDER, FORWARD,

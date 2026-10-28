@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.match.adapter.out.config.TestMatchLimits;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +32,7 @@ class MatchLimitsTests {
     }
 
     @Test
+    @DisplayName("The configured limits match the requirements")
     void configuredLimitsMatchRequirements() {
         assertThat(limits.opponentMaxLength()).isEqualTo(100);
         assertThat(limits.matchdayMin()).isOne();
@@ -40,6 +42,7 @@ class MatchLimitsTests {
     }
 
     @Test
+    @DisplayName("The opponent must be non-blank and within the maximum length")
     void opponentMustBeNonBlankAndWithinTheMaximumLength() {
         assertThatCode(() -> limits.requireValidOpponent("x".repeat(100))).doesNotThrowAnyException();
         assertThatThrownBy(() -> limits.requireValidOpponent("x".repeat(101)))
@@ -48,6 +51,7 @@ class MatchLimitsTests {
     }
 
     @Test
+    @DisplayName("The matchday must reach the minimum")
     void matchdayMustReachTheMinimum() {
         assertThatCode(() -> limits.requireValid(new Matchday(1))).doesNotThrowAnyException();
         assertThatThrownBy(() -> limits.requireValid(new Matchday(0))).isInstanceOf(IllegalArgumentException.class);
@@ -56,6 +60,7 @@ class MatchLimitsTests {
     }
 
     @Test
+    @DisplayName("The sheet accepts up to the maximum number of players")
     void sheetAcceptsUpToTheMaximumPlayers() {
         assertThatCode(() -> limits.requireValid(players(30))).doesNotThrowAnyException();
         assertThatThrownBy(() -> limits.requireValid(players(31))).isInstanceOf(IllegalArgumentException.class);
@@ -63,6 +68,7 @@ class MatchLimitsTests {
     }
 
     @Test
+    @DisplayName("The goals of the result must not exceed the maximum")
     void goalsOfTheResultMustNotExceedTheMaximum() {
         assertThatCode(() -> limits.requireValid(sheet(new MatchResult(99, 99)))).doesNotThrowAnyException();
         assertThatThrownBy(() -> limits.requireValid(sheet(new MatchResult(100, 0))))
@@ -72,6 +78,7 @@ class MatchLimitsTests {
     }
 
     @Test
+    @DisplayName("Every stat must not exceed the maximum")
     void everyStatMustNotExceedTheMaximum() {
         assertThatCode(() -> limits.requireValid(sheet(null, counters(99, 99, 99, 99, 99, 99))))
                 .doesNotThrowAnyException();
@@ -85,6 +92,7 @@ class MatchLimitsTests {
     }
 
     @Test
+    @DisplayName("Rejects nonsense limits")
     void rejectsNonsenseLimits() {
         assertThatThrownBy(() -> new MatchLimits(0, 1, 99, 99, 30)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new MatchLimits(100, -1, 99, 99, 30)).isInstanceOf(IllegalArgumentException.class);

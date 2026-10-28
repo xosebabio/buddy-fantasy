@@ -14,6 +14,7 @@ import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.hibernate.stat.Statistics;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,6 +62,7 @@ class SquadApiTests {
     }
 
     @Test
+    @DisplayName("Returns the requested players of the league with position, status and initial value")
     void returnsTheRequestedPlayersOfTheLeagueWithPositionStatusAndInitialValue() {
         Player keeper = player(LEAGUE, "Iago", Position.GOALKEEPER, new BigDecimal("12.5"));
         Player forward = player(LEAGUE, "Brais", Position.FORWARD, new BigDecimal("8"));
@@ -74,6 +76,7 @@ class SquadApiTests {
     }
 
     @Test
+    @DisplayName("Returns the initial value as edited by the admin")
     void returnsTheInitialValueAsEditedByTheAdmin() {
         Player player = player(LEAGUE, "Iago", Position.DEFENDER, new BigDecimal("5"));
         player.update("Iago", null, Position.DEFENDER, new BigDecimal("7.25"), limits.get());
@@ -85,6 +88,7 @@ class SquadApiTests {
     }
 
     @Test
+    @DisplayName("Retired players are returned as inactive")
     void retiredPlayersAreReturnedAsInactive() {
         Player retired = player(LEAGUE, "Iago", Position.MIDFIELDER);
         retired.retire(NOW);
@@ -96,6 +100,7 @@ class SquadApiTests {
     }
 
     @Test
+    @DisplayName("Players of another league and unknown ids are absent")
     void playersOfAnotherLeagueAndUnknownIdsAreAbsent() {
         Player mine = player(LEAGUE, "Iago", Position.DEFENDER);
         Player foreign = player(OTHER_LEAGUE, "Brais", Position.DEFENDER);
@@ -107,6 +112,7 @@ class SquadApiTests {
     }
 
     @Test
+    @DisplayName("Repeated ids return the player once")
     void repeatedIdsReturnThePlayerOnce() {
         Player player = player(LEAGUE, "Iago", Position.FORWARD);
 
@@ -114,6 +120,7 @@ class SquadApiTests {
     }
 
     @Test
+    @DisplayName("An empty request returns nothing without querying")
     void emptyRequestReturnsNothingWithoutQuerying() {
         Statistics statistics = statistics();
 
@@ -122,6 +129,7 @@ class SquadApiTests {
     }
 
     @Test
+    @DisplayName("Loads all players in a single query")
     void loadsAllPlayersInASingleQuery() {
         List<UUID> ids = List.of(
                 player(LEAGUE, "A", Position.GOALKEEPER).id().value(),

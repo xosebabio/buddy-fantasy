@@ -1,6 +1,7 @@
 package com.buddyfantasy.squad.domain;
 
 import com.buddyfantasy.squad.adapter.out.config.TestSquadLimits;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +13,7 @@ class SquadLimitsTests {
     private final SquadLimits limits = TestSquadLimits.get();
 
     @Test
+    @DisplayName("The configured limits match the requirements")
     void configuredLimitsMatchRequirements() {
         assertThat(limits.nameMaxLength()).isEqualTo(100);
         assertThat(limits.shirtNumberMin()).isZero();
@@ -20,6 +22,7 @@ class SquadLimitsTests {
     }
 
     @Test
+    @DisplayName("The name must be non-blank and within the maximum length")
     void nameMustBeNonBlankAndWithinTheMaximumLength() {
         assertThatCode(() -> limits.requireValidName("x".repeat(100))).doesNotThrowAnyException();
         assertThatThrownBy(() -> limits.requireValidName("x".repeat(101))).isInstanceOf(IllegalArgumentException.class);
@@ -27,6 +30,7 @@ class SquadLimitsTests {
     }
 
     @Test
+    @DisplayName("The shirt number must be within the configured range or absent")
     void shirtNumberMustBeWithinTheConfiguredRangeOrAbsent() {
         assertThatCode(() -> limits.requireValid(null)).doesNotThrowAnyException();
         assertThatCode(() -> limits.requireValid(new ShirtNumber(99))).doesNotThrowAnyException();
@@ -40,6 +44,7 @@ class SquadLimitsTests {
     }
 
     @Test
+    @DisplayName("The photo must be WebP and within the maximum size")
     void photoMustBeWebpAndWithinTheMaximumSize() {
         assertThatCode(() -> PlayerPhotoFormat.requireAcceptable("image/webp", 512 * 1024, limits))
                 .doesNotThrowAnyException();
@@ -52,6 +57,7 @@ class SquadLimitsTests {
     }
 
     @Test
+    @DisplayName("Rejects nonsense limits")
     void rejectsNonsenseLimits() {
         assertThatThrownBy(() -> new SquadLimits(0, 0, 99, 1)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new SquadLimits(100, -1, 99, 1)).isInstanceOf(IllegalArgumentException.class);

@@ -15,6 +15,7 @@ import com.buddyfantasy.squad.application.port.out.ImageUpload;
 import com.buddyfantasy.squad.application.port.out.StoredImage;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -90,6 +91,7 @@ class S3ImageStorageTests {
     }
 
     @Test
+    @DisplayName("The presigned upload accepts exactly the declared file")
     void presignedUploadAcceptsExactlyTheDeclaredFile() throws Exception {
         String key = newKey();
         ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
@@ -109,6 +111,7 @@ class S3ImageStorageTests {
     }
 
     @Test
+    @DisplayName("The presigned upload rejects another content type")
     void presignedUploadRejectsAnotherContentType() throws Exception {
         String key = newKey();
         ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
@@ -121,6 +124,7 @@ class S3ImageStorageTests {
     }
 
     @Test
+    @DisplayName("The presigned upload rejects another size")
     void presignedUploadRejectsAnotherSize() throws Exception {
         String key = newKey();
         ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
@@ -131,6 +135,7 @@ class S3ImageStorageTests {
     }
 
     @Test
+    @DisplayName("The presigned upload rejects a missing Cache-Control")
     void presignedUploadRejectsAMissingCacheControl() throws Exception {
         String key = newKey();
         ImageUpload upload = storage.createUpload(key, "image/jpeg", 1024);
@@ -140,6 +145,7 @@ class S3ImageStorageTests {
     }
 
     @Test
+    @DisplayName("The public URL is the base URL plus the key")
     void publicUrlIsTheBaseUrlPlusTheKey() {
         // the trailing slash of the configured base URL is not duplicated
         assertThat(storage.publicUrl("leagues/a/players/b/c.webp"))
@@ -147,11 +153,13 @@ class S3ImageStorageTests {
     }
 
     @Test
+    @DisplayName("find is empty for a missing key")
     void findIsEmptyForAMissingKey() {
         assertThat(storage.find(newKey())).isEmpty();
     }
 
     @Test
+    @DisplayName("delete removes the object and is idempotent")
     void deleteRemovesTheObjectAndIsIdempotent() throws Exception {
         String key = newKey();
         ImageUpload upload = storage.createUpload(key, "image/webp", 16);

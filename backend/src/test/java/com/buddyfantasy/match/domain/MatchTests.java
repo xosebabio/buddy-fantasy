@@ -16,6 +16,7 @@ import com.buddyfantasy.match.PlayerPerformanceData;
 import com.buddyfantasy.match.adapter.out.config.TestMatchLimits;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -56,6 +57,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("schedule creates a scheduled match with an empty sheet and no events")
     void scheduleCreatesAScheduledMatchWithAnEmptySheetAndNoEvents() {
         Match match = schedule();
 
@@ -71,6 +73,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("The kickoff may be in the past")
     void kickoffMayBeInThePast() {
         Match match = Match.schedule(LEAGUE, new Matchday(1), "Rival", Venue.AWAY, CREATED.minusSeconds(1), CREATED,
                 LIMITS);
@@ -79,6 +82,7 @@ class MatchTests {
     }
 
     @ParameterizedTest
+    @DisplayName("Rejects a blank opponent")
     @ValueSource(strings = {"", "   "})
     void rejectsBlankOpponent(String opponent) {
         assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), opponent, Venue.HOME, KICKOFF, CREATED,
@@ -86,6 +90,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Validates opponent, venue, matchday and kickoff")
     void validatesOpponentVenueMatchdayAndKickoff() {
         assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(1), null, Venue.HOME, KICKOFF, CREATED, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
@@ -102,12 +107,14 @@ class MatchTests {
     }
 
     @ParameterizedTest
+    @DisplayName("Rejects matchdays out of the storage range")
     @ValueSource(ints = {-1, 32768})
     void rejectsMatchdaysOutOfStorageRange(int value) {
         assertThatThrownBy(() -> new Matchday(value)).isInstanceOf(DomainValidationException.class);
     }
 
     @Test
+    @DisplayName("A matchday below the configured minimum is rejected")
     void matchdayBelowTheConfiguredMinimumIsRejected() {
         assertThatThrownBy(() -> Match.schedule(LEAGUE, new Matchday(0), "Rival", Venue.HOME, KICKOFF, CREATED,
                 LIMITS)).isInstanceOf(DomainValidationException.class);
@@ -117,6 +124,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Updating the details is allowed on a closed match")
     void updateDetailsIsAllowedOnAClosedMatch() {
         Match match = closed(completeSheet());
 
@@ -129,6 +137,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Rescheduling publishes the change with the previous kickoff")
     void reschedulePublishesTheChangeWithThePreviousKickoff() {
         Match match = schedule();
         Instant postponed = KICKOFF.plus(Duration.ofDays(14));
@@ -141,6 +150,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Changing only the matchday also publishes MatchRescheduled")
     void changingOnlyTheMatchdayAlsoPublishesRescheduled() {
         Match match = schedule();
 
@@ -152,6 +162,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Rescheduling without changes does nothing, even when closed")
     void rescheduleWithoutChangesDoesNothingEvenWhenClosed() {
         Match scheduled = schedule();
         scheduled.reschedule(new Matchday(5), KICKOFF, CREATED, LIMITS);
@@ -163,6 +174,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("A closed match cannot change its matchday or kickoff")
     void closedMatchCannotChangeMatchdayOrKickoff() {
         Match match = closed(completeSheet());
 
@@ -175,6 +187,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Recording the sheet on a scheduled match only saves it")
     void recordSheetOnAScheduledMatchOnlySavesIt() {
         Match match = schedule();
         MatchSheet draft = new MatchSheet(null, List.of(scorer(UUID.randomUUID(), Position.DEFENDER, 0)));
@@ -186,6 +199,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Closing before kickoff is rejected")
     void closeBeforeKickoffIsRejected() {
         Match match = schedule();
         match.recordSheet(completeSheet(), CREATED, LIMITS);
@@ -196,6 +210,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Closing exactly at kickoff closes and publishes the full sheet")
     void closeExactlyAtKickoffClosesAndPublishesTheFullSheet() {
         Match match = schedule();
         MatchSheet sheet = completeSheet();
@@ -213,6 +228,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Closing requires a result and at least one player")
     void closeRequiresAResultAndAtLeastOnePlayer() {
         Instant afterKickoff = at(KICKOFF.plusSeconds(3600)).instant();
         Match empty = schedule();
@@ -228,6 +244,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Closing twice publishes MatchClosed once and keeps the first instant")
     void closingTwicePublishesMatchClosedOnceAndKeepsTheFirstInstant() {
         Match match = schedule();
         match.recordSheet(completeSheet(), CREATED, LIMITS);
@@ -241,6 +258,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Recording the sheet on a closed match is a correction")
     void recordSheetOnAClosedMatchIsACorrection() {
         Match match = closed(completeSheet());
         MatchSheet corrected = new MatchSheet(new MatchResult(2, 1), List.of(
@@ -255,6 +273,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("The same sheet on a closed match publishes nothing")
     void theSameSheetOnAClosedMatchPublishesNothing() {
         MatchSheet sheet = completeSheet();
         Match match = closed(sheet);
@@ -265,6 +284,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("A correction must keep the sheet complete")
     void aCorrectionMustKeepTheSheetComplete() {
         Match match = closed(completeSheet());
         MatchSheet before = match.sheet();
@@ -278,12 +298,14 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("Recording the sheet requires a sheet")
     void recordSheetRequiresASheet() {
         assertThatThrownBy(() -> schedule().recordSheet(null, CREATED, LIMITS))
                 .isInstanceOf(DomainValidationException.class);
     }
 
     @Test
+    @DisplayName("Deleting publishes MatchDeleted")
     void deletePublishesMatchDeleted() {
         Match match = schedule();
 
@@ -293,6 +315,7 @@ class MatchTests {
     }
 
     @Test
+    @DisplayName("A closed match cannot be deleted")
     void closedMatchCannotBeDeleted() {
         Match match = closed(completeSheet());
 

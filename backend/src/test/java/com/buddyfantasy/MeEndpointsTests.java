@@ -2,6 +2,7 @@ package com.buddyfantasy;
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +27,7 @@ class MeEndpointsTests {
     TestFixtures fixtures;
 
     @Test
+    @DisplayName("/me returns the authenticated user")
     void meReturnsTheAuthenticatedUser() throws Exception {
         UUID id = fixtures.user("ana");
 
@@ -38,11 +40,13 @@ class MeEndpointsTests {
     }
 
     @Test
+    @DisplayName("/me without a session is answered with 401")
     void meWithoutSessionIs401() throws Exception {
         mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());
     }
 
     @Test
+    @DisplayName("My leagues returns only the user's leagues with their role")
     void myLeaguesReturnsOnlyTheUsersLeaguesWithTheirRole() throws Exception {
         UUID ana = fixtures.user("ana");
         UUID bob = fixtures.user("bob");
@@ -60,6 +64,7 @@ class MeEndpointsTests {
     }
 
     @Test
+    @DisplayName("My leagues is empty without memberships")
     void myLeaguesIsEmptyWithoutMemberships() throws Exception {
         UUID ana = fixtures.user("ana");
 

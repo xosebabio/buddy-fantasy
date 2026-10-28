@@ -24,6 +24,7 @@ import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -148,6 +149,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("The job locks only matches whose lock time is at least a minute old")
     void theJobLocksOnlyMatchesWhoseLockIsAMinuteOld() {
         save(ana, lineupA);
 
@@ -181,6 +183,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Running the job twice locks and publishes only once")
     void runningTheJobTwiceLocksAndPublishesOnce() {
         save(ana, lineupA);
         clock.now = LOCK_1.plus(MARGIN);
@@ -196,6 +199,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("A save after the lock time is not locked even if the job has not run yet")
     void aSaveAfterTheLockTimeIsNotLockedEvenIfTheJobHasNotRunYet() {
         save(ana, lineupA);
         clock.now = LOCK_1;
@@ -208,6 +212,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Closing the match locks it if the job did not")
     void closingTheMatchLocksItIfTheJobDidNot() {
         save(ana, lineupA);
         save(admin, lineupB);
@@ -227,6 +232,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Closing a match already locked publishes nothing more")
     void closingAMatchAlreadyLockedPublishesNothingMore() {
         save(ana, lineupA);
         clock.now = LOCK_1.plus(MARGIN);
@@ -241,6 +247,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("A match recorded after being played is locked with the versions saved before its lock")
     void aMatchLoadedAlreadyPlayedIsLockedWithTheVersionsSavedBeforeItsLock() {
         save(ana, lineupA);
         clock.now = Instant.parse("2026-01-20T10:00:00Z");
@@ -255,6 +262,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Former members are left out of the lock")
     void exMembersAreLeftOut() {
         save(ana, lineupA);
         save(admin, lineupB);
@@ -270,6 +278,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("A lineup over budget at the lock is locked but flagged")
     void aLineupOverBudgetAtTheLockIsLockedButFlagged() {
         save(ana, lineupA);
         save(admin, lineupB);
@@ -297,6 +306,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("A retired player is locked with the lineup that carries him")
     void aRetiredPlayerIsLockedWithTheLineupThatCarriesHim() {
         save(ana, lineupA);
         bus.dispatch(new RetirePlayerCommand(admin, league, lineupA.getLast()));
@@ -308,6 +318,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Postponing a locked match with its new lock in the future unlocks it")
     void postponingALockedMatchWithItsLockInTheFutureUnlocksIt() {
         save(ana, lineupA);
         clock.now = LOCK_1.plus(MARGIN);
@@ -336,6 +347,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Postponing a locked match with its lock still past changes nothing")
     void postponingALockedMatchWithItsLockStillPastChangesNothing() {
         save(ana, lineupA);
         clock.now = LOCK_1.plus(MARGIN);
@@ -351,6 +363,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Postponing a match not locked yet changes nothing")
     void postponingAMatchNotLockedYetChangesNothing() {
         save(ana, lineupA);
 
@@ -361,6 +374,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("Deleting a match deletes its lock without an event")
     void deletingAMatchDeletesItsLockWithoutAnEvent() {
         save(ana, lineupA);
         clock.now = LOCK_1.plus(MARGIN);
@@ -378,6 +392,7 @@ class LineupLockTests {
     }
 
     @Test
+    @DisplayName("The job locks every due match and skips the ones ahead")
     void theJobLocksEveryDueMatchAndSkipsTheOnesAhead() {
         save(ana, lineupA);
         clock.now = KICKOFF_2.minus(Duration.ofHours(2)).plus(MARGIN);

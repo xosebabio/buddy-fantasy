@@ -13,6 +13,7 @@ import com.buddyfantasy.lineup.application.usecases.savelineup.SaveLineupCommand
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.infrastructure.ResubmitIncompleteEventsJob;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -94,6 +95,7 @@ class SchedulerLockTests {
     }
 
     @Test
+    @DisplayName("Every job runs under its lock")
     void everyJobRunsUnderItsLock() {
         // ShedLock never deletes its rows: they may be there from an earlier test
         jdbc.update("update shedlock set locked_at = ?, lock_until = ?", LONG_AGO, LONG_AGO);
@@ -106,6 +108,7 @@ class SchedulerLockTests {
     }
 
     @Test
+    @DisplayName("The lock job does nothing while another instance holds its lock")
     void theLockJobDoesNothingWhileAnotherInstanceHoldsItsLock() {
         lockedByAnotherInstance("LockDueLineupsJob");
 

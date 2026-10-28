@@ -6,6 +6,7 @@ import java.util.Set;
 import com.buddyfantasy.ApiEndpoints;
 import com.buddyfantasy.ApiEndpoints.Endpoint;
 import com.buddyfantasy.PostgresTestConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,11 +47,13 @@ class ApiSecurityTests {
     }
 
     @Test
+    @DisplayName("The scan finds all API endpoints")
     void scanFindsAllApiEndpoints() {
         assertThat(apiEndpoints()).hasSizeGreaterThanOrEqualTo(24);
     }
 
     @Test
+    @DisplayName("The scan covers the match endpoints")
     void scanCoversTheMatchEndpoints() {
         assertThat(apiEndpoints()).contains(
                 new Endpoint(HttpMethod.POST, "/api/leagues/{id}/matches"),
@@ -64,6 +67,7 @@ class ApiSecurityTests {
     }
 
     @Test
+    @DisplayName("The scan covers the squad endpoints")
     void scanCoversTheSquadEndpoints() {
         assertThat(apiEndpoints()).contains(
                 new Endpoint(HttpMethod.POST, "/api/leagues/{id}/players"),
@@ -77,6 +81,7 @@ class ApiSecurityTests {
     }
 
     @Test
+    @DisplayName("The scan covers the lineup endpoints")
     void scanCoversTheLineupEndpoints() {
         assertThat(apiEndpoints()).contains(
                 new Endpoint(HttpMethod.GET, "/api/leagues/{id}/lineup"),
@@ -85,6 +90,7 @@ class ApiSecurityTests {
     }
 
     @Test
+    @DisplayName("Every API endpoint requires a session")
     void everyApiEndpointRequiresASession() throws Exception {
         for (Endpoint e : apiEndpoints()) {
             mvc.perform(MockMvcRequestBuilders.request(e.method(), e.path()).with(csrf()))
@@ -93,6 +99,7 @@ class ApiSecurityTests {
     }
 
     @Test
+    @DisplayName("Every mutating API endpoint requires a CSRF token")
     void everyMutatingApiEndpointRequiresCsrf() throws Exception {
         for (Endpoint e : apiEndpoints()) {
             if (MUTATING.contains(e.method())) {

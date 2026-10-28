@@ -11,6 +11,7 @@ import com.buddyfantasy.TestFixtures;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.match.application.port.out.MatchRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -128,6 +129,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin schedules a match and the change is audited")
     void adminSchedulesAMatchAndTheChangeIsAudited() throws Exception {
         String location = mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(5, "  Os Ninguéns  ", "AWAY", "2026-01-11T10:00:00Z")))
@@ -158,6 +160,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("The kickoff may be in the past")
     void kickoffMayBeInThePast() throws Exception {
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body(1, "Rival", "HOME", "2020-09-13T09:30:00Z")))
@@ -166,6 +169,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin can schedule")
     void onlyTheLeagueAdminCanSchedule() throws Exception {
         String request = body(1, "Rival", "HOME", "2026-01-11T10:00:00Z");
         mvc.perform(post("/api/leagues/{id}/matches", league).with(as(ana)).with(csrf())
@@ -179,6 +183,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Invalid data is answered with 400")
     void invalidDataIs400() throws Exception {
         for (String request : List.of(
                 body(0, "Rival", "HOME", "2026-01-11T10:00:00Z"),
@@ -200,6 +205,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Matchday and kickoff are unique per league")
     void matchdayAndKickoffAreUniquePerLeague() throws Exception {
         fixtures.schedule(peña, 1, KICKOFF);
 
@@ -219,6 +225,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Concurrent duplicates are still 409 and leave no audit entry")
     void concurrentDuplicatesAreStill409AndLeaveNoAuditEntry() throws Exception {
         fixtures.schedule(peña, 1, KICKOFF);
         // simulate a race: the pre-checks pass, the unique indexes reject the insert
@@ -237,6 +244,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Members see the calendar by matchday")
     void membersSeeTheCalendarByMatchday() throws Exception {
         // matchday 2 was postponed after matchday 3: the calendar still follows the matchday
         fixtures.schedule(peña, 2, KICKOFF.plusSeconds(14 * 86400));
@@ -255,6 +263,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Managers see results in the calendar only once the match is closed")
     void managersSeeResultsInTheCalendarOnlyOnceTheMatchIsClosed() throws Exception {
         UUID played = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(played, 2, 1, UUID.randomUUID(), 2);
@@ -275,6 +284,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Managers see the sheet only once the match is closed and never the warnings")
     void managersSeeTheSheetOnlyOnceTheMatchIsClosedAndNeverTheWarnings() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         UUID player = UUID.randomUUID();
@@ -306,6 +316,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Non-members can neither list nor see matches")
     void nonMembersCannotListOrSeeMatches() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -315,6 +326,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Matches are isolated between leagues")
     void matchesAreIsolatedBetweenLeagues() throws Exception {
         UUID foreign = fixtures.schedule(other, 1, "De otra liga", KICKOFF);
 
@@ -326,6 +338,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin edits the opponent and venue and the change is audited")
     void adminEditsOpponentAndVenueAndTheChangeIsAudited() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -347,6 +360,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Postponing a match publishes MatchRescheduled and is audited")
     void postponingAMatchPublishesMatchRescheduledAndIsAudited() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -372,6 +386,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("An update without changes leaves no audit entry")
     void anUpdateWithoutChangesLeavesNoAuditEntry() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -384,6 +399,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("An update keeps matchday and kickoff unique per league")
     void anUpdateKeepsMatchdayAndKickoffUniquePerLeague() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         fixtures.schedule(peña, 2, KICKOFF.plusSeconds(7 * 86400));
@@ -405,6 +421,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Concurrent clashes on update are still 409 and leave no audit entry")
     void concurrentClashesOnUpdateAreStill409AndLeaveNoAuditEntry() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         fixtures.schedule(peña, 2, KICKOFF.plusSeconds(7 * 86400));
@@ -424,6 +441,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("A closed match keeps its matchday and kickoff but its details can change")
     void aClosedMatchKeepsItsMatchdayAndKickoffButItsDetailsCanChange() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
@@ -450,6 +468,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Invalid updates are answered with 400")
     void invalidUpdatesAre400() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -467,6 +486,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin deletes a scheduled match and its history is kept")
     void adminDeletesAScheduledMatchAndItsHistoryIsKept() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
@@ -494,6 +514,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("A closed match is never deleted")
     void aClosedMatchIsNeverDeleted() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         recordDraftSheet(match, 1, 0, UUID.randomUUID(), 1);
@@ -508,6 +529,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin can update or delete")
     void onlyTheLeagueAdminCanUpdateOrDelete() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String request = body(2, "Otro", "AWAY", "2026-01-18T10:00:00Z");
@@ -529,6 +551,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Matches cannot be updated or deleted through another league")
     void matchesCannotBeUpdatedOrDeletedThroughAnotherLeague() throws Exception {
         UUID foreign = fixtures.schedule(other, 1, "De otra liga", KICKOFF);
 
@@ -546,6 +569,7 @@ class MatchesEndpointsTests {
     }
 
     @Test
+    @DisplayName("Requires a session and a CSRF token")
     void securityWithoutSessionOrCsrf() throws Exception {
 
         UUID match = fixtures.schedule(peña, 1, KICKOFF);

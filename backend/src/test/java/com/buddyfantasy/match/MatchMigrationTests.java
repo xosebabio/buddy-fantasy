@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,6 +51,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("Matchday and kickoff are unique per league")
     void matchdayAndKickoffAreUniquePerLeague() {
         UUID league = UUID.randomUUID();
         insertMatch(league, 1, KICKOFF);
@@ -61,6 +63,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("Rejects an invalid matchday, venue and status")
     void rejectsInvalidMatchdayVenueAndStatus() {
         UUID match = insertMatch();
 
@@ -74,6 +77,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("The result has both goals or none")
     void resultHasBothGoalsOrNone() {
         UUID match = insertMatch();
 
@@ -87,6 +91,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("closed_at is set if and only if the match is closed")
     void closedAtIsSetIfAndOnlyIfTheMatchIsClosed() {
         UUID match = insertMatch();
 
@@ -99,6 +104,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("A double yellow excludes a yellow and a straight red")
     void doubleYellowExcludesYellowAndStraightRed() {
         UUID match = insertMatch();
 
@@ -111,6 +117,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("Rejects negative counters and unknown positions")
     void rejectsNegativeCountersAndUnknownPositions() {
         UUID match = insertMatch();
 
@@ -134,6 +141,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("Deleting a match deletes its performances but keeps the audit log")
     void deletingAMatchDeletesItsPerformancesButKeepsTheAuditLog() {
         UUID match = insertMatch();
         insertPerformance(match, false, false, false);
@@ -151,6 +159,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("The opponent is not limited by the column")
     void opponentIsNotLimitedByTheColumn() {
         UUID match = insertMatch();
 
@@ -159,6 +168,7 @@ class MatchMigrationTests {
     }
 
     @Test
+    @DisplayName("The audit action must be known")
     void auditActionMustBeKnown() {
         assertThatThrownBy(() -> jdbc.update("""
                 insert into match_audit_entry (id, league_id, match_id, actor_user_id, action, occurred_at)

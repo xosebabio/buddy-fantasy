@@ -13,6 +13,7 @@ import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerComm
 import com.buddyfantasy.squad.domain.PlayerId;
 import com.buddyfantasy.squad.domain.PlayerPhotoKey;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -106,6 +107,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin gets a presigned upload for a new key and nothing is stored yet")
     void adminGetsAPresignedUploadForANewKeyAndNothingIsStoredYet() throws Exception {
         String key = mvc.perform(post("/api/leagues/{id}/players/{p}/photo/upload", league, player)
                         .with(as(admin)).with(csrf())
@@ -122,6 +124,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only WebP up to 512 KB is accepted")
     void onlyWebpUpTo512KbIsAccepted() throws Exception {
         for (String body : List.of(uploadBody("image/jpeg", 30_000L), uploadBody("image/png", 30_000L),
                 uploadBody(WEBP, 0L), uploadBody(WEBP, -1L), uploadBody(WEBP, MAX_BYTES + 1),
@@ -136,6 +139,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("The upload requires the league admin, an active player and the right league")
     void uploadRequiresTheLeagueAdminAnActivePlayerAndTheRightLeague() throws Exception {
         String body = uploadBody(WEBP, 30_000L);
         mvc.perform(post("/api/leagues/{id}/players/{p}/photo/upload", league, player).with(as(ana)).with(csrf())
@@ -153,6 +157,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Confirming an uploaded photo sets it and exposes its URL")
     void confirmingAnUploadedPhotoSetsItAndExposesItsUrl() throws Exception {
         String key = uploadedKey(player);
 
@@ -170,6 +175,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Players without a photo have no URL")
     void playersWithoutPhotoHaveNoUrl() throws Exception {
         mvc.perform(get("/api/leagues/{id}/players/{p}", league, player).with(as(ana)))
                 .andExpect(status().isOk())
@@ -177,6 +183,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Confirming rejects keys of another player or league, missing objects and invalid files")
     void confirmRejectsKeysOfAnotherPlayerOrLeagueMissingObjectsAndInvalidFiles() throws Exception {
         UUID teammate = fixtures.player(peña, "Hugo", 9, Position.FORWARD);
         String teammatesKey = uploadedKey(teammate);
@@ -197,6 +204,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Confirming a new photo deletes the previous one and repeating deletes nothing")
     void confirmingANewPhotoDeletesThePreviousOneAndRepeatingDeletesNothing() throws Exception {
         String first = uploadedKey(player);
         confirm(player, first);
@@ -212,6 +220,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("A storage failure when deleting the previous photo does not fail the change")
     void aStorageFailureWhenDeletingThePreviousPhotoDoesNotFailTheChange() throws Exception {
         confirm(player, uploadedKey(player));
         String second = uploadedKey(player);
@@ -223,6 +232,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Confirming requires the league admin and an active player")
     void confirmRequiresTheLeagueAdminAndAnActivePlayer() throws Exception {
         String key = uploadedKey(player);
         mvc.perform(put("/api/leagues/{id}/players/{p}/photo", league, player).with(as(ana)).with(csrf())
@@ -237,6 +247,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Removing the photo deletes it and is idempotent")
     void removingThePhotoDeletesItAndIsIdempotent() throws Exception {
         String key = uploadedKey(player);
         confirm(player, key);
@@ -253,6 +264,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin can still remove the photo of a retired player")
     void theAdminCanStillRemoveThePhotoOfARetiredPlayer() throws Exception {
         String key = uploadedKey(player);
         confirm(player, key);
@@ -265,6 +277,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Removing requires the league admin and the right league")
     void removeRequiresTheLeagueAdminAndTheRightLeague() throws Exception {
         String key = uploadedKey(player);
         confirm(player, key);
@@ -281,6 +294,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Editing the player keeps the photo")
     void editingThePlayerKeepsThePhoto() throws Exception {
         String key = uploadedKey(player);
         confirm(player, key);
@@ -294,6 +308,7 @@ class PlayerPhotoEndpointsTests {
     }
 
     @Test
+    @DisplayName("Requires a session and a CSRF token")
     void securityWithoutSessionOrCsrf() throws Exception {
         String key = uploadedKey(player);
 

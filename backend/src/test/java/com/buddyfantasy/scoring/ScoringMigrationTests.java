@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,6 +60,7 @@ class ScoringMigrationTests {
     }
 
     @Test
+    @DisplayName("Deleting a match deletes its players, lineups and lineup players")
     void deletingAMatchDeletesItsPlayersLineupsAndLineupPlayers() {
         UUID match = insertMatch();
         UUID user = UUID.randomUUID();
@@ -75,6 +77,7 @@ class ScoringMigrationTests {
     }
 
     @Test
+    @DisplayName("Rows belong to an existing match and are unique per player and user")
     void rowsBelongToAnExistingMatchAndAreUniquePerPlayerAndUser() {
         UUID match = insertMatch();
         UUID user = UUID.randomUUID();
@@ -94,6 +97,7 @@ class ScoringMigrationTests {
     }
 
     @Test
+    @DisplayName("The position is a valid position and the counts are non-negative")
     void positionIsAPositionAndCountsAreNonNegative() {
         UUID match = insertMatch();
 
@@ -106,6 +110,7 @@ class ScoringMigrationTests {
     }
 
     @Test
+    @DisplayName("Points are the action points plus the rating points, or null until scored")
     void pointsAreTheActionPointsPlusTheRatingPointsOrNullUntilScored() {
         UUID match = insertMatch();
 
@@ -120,6 +125,7 @@ class ScoringMigrationTests {
     }
 
     @Test
+    @DisplayName("A scored match has its frozen rules and both copies")
     void aScoredMatchHasItsFrozenRulesAndBothCopies() {
         UUID match = insertMatch();
         Timestamp at = Timestamp.from(KICKOFF);

@@ -14,6 +14,7 @@ import com.buddyfantasy.scoring.MatchdayScored;
 import com.buddyfantasy.scoring.PlayerScoreData;
 import com.buddyfantasy.shared.domain.DomainEvent;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.buddyfantasy.datadefinition.Position.*;
@@ -72,6 +73,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("Sheet then lineups scores players and managers and publishes MatchdayScored")
     void sheetThenLineupsScoresPlayersAndManagersAndPublishesMatchdayScored() {
         MatchScore match = match();
 
@@ -101,6 +103,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("Lineups then sheet scores the same")
     void lineupsThenSheetScoresTheSame() {
         MatchScore match = match();
 
@@ -117,6 +120,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("With only one of the copies it neither scores nor reads the table")
     void withOnlyOneOfTheCopiesItDoesNotScoreNorReadTheTable() {
         AtomicInteger reads = new AtomicInteger();
         Supplier<ScoringTable> counted = () -> {
@@ -140,6 +144,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("A lineup over budget scores zero but its players still score")
     void aLineupOverBudgetScoresZeroButItsPlayersStillScore() {
         MatchScore match = match();
         match.applySheet(4, KICKOFF, sheet(), CLOSED);
@@ -152,6 +157,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("A lined-up player who did not play scores zero and an empty lineup scores zero")
     void aLinedUpPlayerWhoDidNotPlayScoresZeroAndAnEmptyLineupScoresZero() {
         MatchScore match = match();
         match.applySheet(4, KICKOFF, sheet(), CLOSED);
@@ -166,6 +172,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("Without lineups locked the match is scored with no managers")
     void withoutLineupsLockedTheMatchIsScoredWithNoManagers() {
         MatchScore match = match();
         match.applySheet(4, KICKOFF, sheet(), CLOSED);
@@ -179,6 +186,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("Scoring the same data again changes nothing and publishes nothing")
     void scoringTheSameDataAgainChangesNothingAndPublishesNothing() {
         MatchScore match = match();
         match.applySheet(4, KICKOFF, sheet(), CLOSED);
@@ -195,6 +203,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("A correction that changes points recalculates and publishes again")
     void aCorrectionThatChangesPointsRecalculatesAndPublishesAgain() {
         MatchScore match = match();
         match.applySheet(4, KICKOFF, sheet(), CLOSED);
@@ -216,6 +225,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("A correction that only adds a player without points is published")
     void aCorrectionThatOnlyAddsAPlayerWithoutPointsIsPublished() {
         MatchScore match = match();
         match.applySheet(4, KICKOFF, sheet(), CLOSED);
@@ -232,6 +242,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("The recalculation uses the frozen table and does not read the current one")
     void theRecalculationUsesTheFrozenTableAndDoesNotReadTheCurrentOne() {
         ScoringTable tenPerGoal = TestScoringTables.withPoints(DEFAULTS, GOAL, 10);
         MatchScore match = match();
@@ -252,6 +263,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("An older sheet delivered again after a correction is ignored")
     void anOlderSheetDeliveredAgainAfterACorrectionIsIgnored() {
         MatchScore match = match();
         Instant corrected = CLOSED.plus(Duration.ofHours(1));
@@ -265,6 +277,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("The sheet brings the matchday and kickoff of the closed match")
     void theSheetBringsTheMatchdayAndKickoffOfTheClosedMatch() {
         MatchScore lockedBeforeAPostponement = match();
         Instant postponed = KICKOFF.plus(Duration.ofMinutes(30));
@@ -276,6 +289,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("An unlock drops the lineups locked before it and ignores them if delivered again")
     void anUnlockDropsTheLineupsLockedBeforeItAndIgnoresThemIfDeliveredAgain() {
         MatchScore match = match();
         Instant unlocked = LOCKED.plus(Duration.ofMinutes(10));
@@ -299,6 +313,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("An older unlock delivered late keeps the newer lineups")
     void anOlderUnlockDeliveredLateKeepsTheNewerLineups() {
         MatchScore match = match();
         Instant unlocked = LOCKED.plus(Duration.ofMinutes(10));
@@ -313,6 +328,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("A scored match ignores an unlock and keeps its points")
     void aScoredMatchIgnoresAnUnlockAndKeepsItsPoints() {
         MatchScore match = match();
         match.applySheet(4, KICKOFF, sheet(), CLOSED);
@@ -326,6 +342,7 @@ class MatchScoreTests {
     }
 
     @Test
+    @DisplayName("A player or a manager appears only once")
     void aPlayerOrAManagerAppearsOnce() {
         MatchScore match = match();
 

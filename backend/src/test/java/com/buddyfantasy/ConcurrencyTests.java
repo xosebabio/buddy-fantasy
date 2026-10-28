@@ -21,6 +21,7 @@ import com.buddyfantasy.scoring.domain.ManagerLineup;
 import com.buddyfantasy.scoring.domain.PlayerPerformance;
 import com.buddyfantasy.shared.application.CommandBus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -96,6 +97,7 @@ class ConcurrencyTests {
     }
 
     @Test
+    @DisplayName("Two players with the same shirt number at once give one 201 and one 409")
     void twoPlayersWithTheSameShirtNumberAtOnceGiveOne201AndOne409() {
         for (int shirtNumber = 1; shirtNumber <= ROUNDS; shirtNumber++) {
             String player = """
@@ -111,6 +113,7 @@ class ConcurrencyTests {
     }
 
     @Test
+    @DisplayName("Two matches on the same matchday at once give one 201 and one 409")
     void twoMatchesOnTheSameMatchdayAtOnceGiveOne201AndOne409() {
         for (int matchday = 1; matchday <= ROUNDS; matchday++) {
             Instant kickoff = FIRST_KICKOFF.plus(Duration.ofDays(7L * matchday));
@@ -132,6 +135,7 @@ class ConcurrencyTests {
     }
 
     @Test
+    @DisplayName("Joining with the same link several times at once creates one membership")
     void joiningWithTheSameLinkSeveralTimesAtOnceMakesOneMembership() {
         for (int round = 1; round <= ROUNDS; round++) {
             UUID user = fixtures.user("user" + round);
@@ -148,6 +152,7 @@ class ConcurrencyTests {
     }
 
     @Test
+    @DisplayName("The lock job and closing the match at once lock it only once")
     void theLockJobAndClosingTheMatchAtOnceLockItOnce() {
         List<UUID> squad = fixtures.squad(peña, GOALKEEPER, DEFENDER, DEFENDER, MIDFIELDER, MIDFIELDER, FORWARD,
                 FORWARD);
@@ -185,6 +190,7 @@ class ConcurrencyTests {
      * scored, or the last one to save drops the other's copy.
      */
     @Test
+    @DisplayName("The sheet and the lineups of a match arriving at once score it only once")
     void theSheetAndTheLineupsOfAMatchAtOnceScoreItOnce() {
         List<UUID> squad = fixtures.squad(peña, GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD);
         List<PlayerPerformance> sheet = List.of(new PlayerPerformance(squad.get(3), FORWARD, 1, 0, 0, 0, 0, 0, false,

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +29,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("A match is sorted by points and tied members share the position")
     void aMatchIsSortedByPointsAndTiedMembersShareThePosition() {
         MatchdayPoints match = match(FIRST, Map.of(ana, 10, brais, 14, carla, 10, dani, 3));
 
@@ -41,6 +43,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("A member without a lineup scores zero in the match")
     void aMemberWithoutLineupScoresZeroInTheMatch() {
         MatchdayPoints match = match(FIRST, Map.of(ana, 5));
 
@@ -50,6 +53,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("Negative points rank below a member without a lineup")
     void negativePointsRankBelowAMemberWithoutLineup() {
         MatchdayPoints match = match(FIRST, Map.of(ana, -4));
 
@@ -59,6 +63,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("A match only lists current members who were already members at kickoff")
     void aMatchOnlyListsCurrentMembersWhoAlreadyWereOnesAtKickoff() {
         MatchdayPoints match = match(SECOND, Map.of(ana, 5, brais, 8, carla, 2));
 
@@ -69,6 +74,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("The overall standings add up the matches, count them and keep the last one in kickoff order")
     void overallAddsUpTheMatchesCountsThemAndKeepsTheLastOneInKickoffOrder() {
         List<MatchdayPoints> matches = List.of(
                 match(THIRD, Map.of(ana, 4)),
@@ -82,6 +88,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("Overall ties share the position")
     void overallTiesShareThePosition() {
         List<MatchdayPoints> matches = List.of(match(FIRST, Map.of(ana, 9, brais, 9, carla, 1)));
 
@@ -92,6 +99,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("The overall standings only count the matches since the member joined")
     void overallOnlyCountsTheMatchesSinceTheMemberJoined() {
         List<MatchdayPoints> matches = List.of(
                 match(FIRST, Map.of(ana, 10, carla, 50)),
@@ -106,6 +114,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("The overall standings leave out former members and list new ones with zero")
     void overallLeavesOutFormerMembersAndListsNewOnesWithZero() {
         List<MatchdayPoints> matches = List.of(match(FIRST, Map.of(ana, 10, brais, 30)));
 
@@ -117,6 +126,7 @@ class StandingsTests {
     }
 
     @Test
+    @DisplayName("Without scored matches every member is first with zero")
     void withoutScoredMatchesEveryMemberIsFirstWithZero() {
         List<OverallStanding> standings = Standings.overall(List.of(), Map.of(ana, SEASON, brais, SEASON));
 

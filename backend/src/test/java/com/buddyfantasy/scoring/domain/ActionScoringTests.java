@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.league.ScoringTable;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -33,6 +34,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("A goal is worth more the further back the player")
     void aGoalIsWorthMoreTheFurtherBackThePlayer() {
         assertThat(ActionScoring.breakdown(goals(GOALKEEPER, 1), DEFAULTS).total()).isEqualTo(6);
         assertThat(ActionScoring.breakdown(goals(DEFENDER, 1), DEFAULTS).total()).isEqualTo(5);
@@ -41,6 +43,7 @@ class ActionScoringTests {
     }
 
     @ParameterizedTest
+    @DisplayName("A penalty goal is worth +3 in any position without adding the goal")
     @EnumSource(Position.class)
     void aPenaltyGoalIsWorthThreeInAnyPositionWithoutAddingTheGoal(Position position) {
         PlayerPerformance penalty = new PlayerPerformance(UUID.randomUUID(), position, 0, 1, 0, 0, 0, 0,
@@ -53,6 +56,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("A saved penalty adds 3 and a missed one takes 2")
     void aSavedPenaltyAddsThreeAndAMissedOneTakesTwo() {
         PlayerPerformance keeper = new PlayerPerformance(UUID.randomUUID(), GOALKEEPER, 0, 0, 1, 0, 0, 0,
                 false, false, false);
@@ -64,6 +68,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("An own goal takes 3")
     void anOwnGoalTakesThree() {
         PlayerPerformance ownGoal = new PlayerPerformance(UUID.randomUUID(), DEFENDER, 0, 0, 0, 0, 0, 1,
                 false, false, false);
@@ -72,6 +77,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("A double yellow is -3 in total")
     void aDoubleYellowIsMinusThreeInTotal() {
         ActionBreakdown breakdown = ActionScoring.breakdown(cards(false, true, false), DEFAULTS);
 
@@ -80,6 +86,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("A yellow and a straight red add up")
     void aYellowAndAStraightRedAddUp() {
         ActionBreakdown breakdown = ActionScoring.breakdown(cards(true, false, true), DEFAULTS);
 
@@ -88,6 +95,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("Several actions add up their count times their points")
     void severalActionsAddUpCountTimesTheirPoints() {
         PlayerPerformance midfielder = new PlayerPerformance(UUID.randomUUID(), MIDFIELDER, 2, 1, 0, 1, 3, 0,
                 true, false, false);
@@ -100,6 +108,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("Playing without actions is zero with an empty breakdown")
     void playingWithoutActionsIsZeroWithAnEmptyBreakdown() {
         ActionBreakdown breakdown = ActionScoring.breakdown(played(GOALKEEPER), DEFAULTS);
 
@@ -108,6 +117,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("Uses the table it is given and leaves out actions worth nothing")
     void usesTheTableItIsGivenAndLeavesOutActionsWorthNothing() {
         ScoringTable edited = TestScoringTables.withPoints(
                 TestScoringTables.withPoints(DEFAULTS, GOAL, 10), ASSIST, 0);
@@ -121,6 +131,7 @@ class ActionScoringTests {
     }
 
     @Test
+    @DisplayName("A sheet line needs a player, a position and non-negative counts")
     void aSheetLineNeedsPlayerPositionAndNonNegativeCounts() {
         assertThatThrownBy(() -> new PlayerPerformance(null, FORWARD, 0, 0, 0, 0, 0, 0, false, false, false))
                 .isInstanceOf(DomainValidationException.class);

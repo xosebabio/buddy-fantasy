@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +45,7 @@ class LeagueMigrationTests {
     }
 
     @Test
+    @DisplayName("The minimums per position default to one")
     void minimumsPerPositionDefaultToOne() {
         UUID league = insertLeagueWithSettings();
 
@@ -55,6 +57,7 @@ class LeagueMigrationTests {
     }
 
     @Test
+    @DisplayName("Rejects negative minimums")
     void rejectsNegativeMinimums() {
         UUID league = insertLeagueWithSettings();
 
@@ -69,6 +72,7 @@ class LeagueMigrationTests {
     }
 
     @Test
+    @DisplayName("The lock hours can only be non-negative")
     void lockHoursAreOnlyNonNegative() {
         UUID league = insertLeagueWithSettings();
 
@@ -79,6 +83,7 @@ class LeagueMigrationTests {
     }
 
     @Test
+    @DisplayName("The name is not limited by the column")
     void nameIsNotLimitedByTheColumn() {
         UUID league = insertLeagueWithSettings();
 

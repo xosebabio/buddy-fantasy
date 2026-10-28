@@ -8,6 +8,7 @@ import com.buddyfantasy.TestFixtures.TestLeague;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -69,6 +70,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("Members see the league with their own role")
     void membersSeeLeagueWithTheirOwnRole() throws Exception {
         mvc.perform(get("/api/leagues/{id}", league).with(as(admin)))
                 .andExpect(status().isOk())
@@ -80,6 +82,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("A non-member cannot read the league or its settings")
     void nonMemberCannotReadLeagueOrSettings() throws Exception {
         mvc.perform(get("/api/leagues/{id}", league).with(as(outsider))).andExpect(status().isForbidden());
         mvc.perform(get("/api/leagues/{id}/settings", league).with(as(outsider))).andExpect(status().isForbidden());
@@ -87,6 +90,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("A manager reads the default settings and scoring table")
     void managerReadsDefaultSettingsAndScoringTable() throws Exception {
         mvc.perform(get("/api/leagues/{id}/settings", league).with(as(manager)))
                 .andExpect(status().isOk())
@@ -106,6 +110,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin replaces the settings and scoring rules")
     void adminReplacesSettingsAndScoringRules() throws Exception {
         ObjectNode body = currentSettings();
         body.put("lineupSize", 9).put("ratingFormat", "DECIMAL").put("defaultRating", 5)
@@ -128,6 +133,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin configures the formation minimums and the lock hours")
     void adminConfiguresFormationMinimumsAndLockHours() throws Exception {
         ObjectNode body = currentSettings().put("lineupFormationEnabled", true).put("lineupMinGoalkeepers", 1)
                 .put("lineupMinDefenders", 3).put("lineupMinMidfielders", 2).put("lineupMinForwards", 0)
@@ -145,6 +151,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("A manager and the admin of another league cannot edit")
     void managerAndAdminOfAnotherLeagueCannotEdit() throws Exception {
         UUID otherLeague = fixtures.league(outsider, "Otra").id();
         ObjectNode body = currentSettings().put("lineupSize", 11);
@@ -159,6 +166,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("Invalid values are answered with 400 and nothing changes")
     void invalidValuesAre400AndNothingChanges() throws Exception {
         update(admin, currentSettings().put("lineupSize", 0)).andExpect(status().isBadRequest());
         update(admin, currentSettings().put("marketMaxChangePct", 101)).andExpect(status().isBadRequest());
@@ -180,6 +188,7 @@ class LeagueSettingsEndpointsTests {
     }
 
     @Test
+    @DisplayName("Requires a session and a CSRF token")
     void securityWithoutSessionOrCsrf() throws Exception {
         mvc.perform(get("/api/leagues/{id}", league)).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/leagues/{id}/settings", league)).andExpect(status().isUnauthorized());

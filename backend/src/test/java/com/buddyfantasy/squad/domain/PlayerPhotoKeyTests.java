@@ -3,6 +3,7 @@ package com.buddyfantasy.squad.domain;
 import java.util.UUID;
 
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -17,6 +18,7 @@ class PlayerPhotoKeyTests {
     static final String PREFIX = "leagues/" + LEAGUE + "/players/" + PLAYER.value() + "/";
 
     @Test
+    @DisplayName("Generates a WebP key under the player's prefix")
     void generatesAWebpKeyUnderThePlayersPrefix() {
         PlayerPhotoKey key = PlayerPhotoKey.generate(LEAGUE, PLAYER);
 
@@ -26,11 +28,13 @@ class PlayerPhotoKeyTests {
     }
 
     @Test
+    @DisplayName("Every upload gets a new key")
     void everyUploadGetsANewKey() {
         assertThat(PlayerPhotoKey.generate(LEAGUE, PLAYER)).isNotEqualTo(PlayerPhotoKey.generate(LEAGUE, PLAYER));
     }
 
     @Test
+    @DisplayName("A key does not belong to another player or league")
     void doesNotBelongToAnotherPlayerOrLeague() {
         PlayerPhotoKey key = PlayerPhotoKey.generate(LEAGUE, PLAYER);
 
@@ -39,6 +43,7 @@ class PlayerPhotoKeyTests {
     }
 
     @ParameterizedTest
+    @DisplayName("Rejects anything but a single UUID .webp under the prefix")
     @ValueSource(strings = {
             "photo.webp",
             "4b3f1c2e-0000-4000-8000-000000000000.jpg",
@@ -52,6 +57,7 @@ class PlayerPhotoKeyTests {
     }
 
     @Test
+    @DisplayName("Rejects blank or too long values")
     void rejectsBlankOrTooLongValues() {
         assertThatThrownBy(() -> new PlayerPhotoKey(" ")).isInstanceOf(DomainValidationException.class);
         assertThatThrownBy(() -> new PlayerPhotoKey(null)).isInstanceOf(DomainValidationException.class);

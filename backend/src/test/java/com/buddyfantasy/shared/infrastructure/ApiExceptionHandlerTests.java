@@ -3,6 +3,7 @@ package com.buddyfantasy.shared.infrastructure;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
 import com.buddyfantasy.shared.domain.ErrorCode;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,6 +19,7 @@ class ApiExceptionHandlerTests {
     final ApiExceptionHandler handler = new ApiExceptionHandler();
 
     @Test
+    @DisplayName("Business errors with a code expose it")
     void businessErrorsWithACodeExposeIt() {
         ProblemDetail invalid = handler.handleDomainValidation(
                 new DomainValidationException(TestError.SOME_REASON, "Invalid"));
@@ -30,6 +32,7 @@ class ApiExceptionHandlerTests {
     }
 
     @Test
+    @DisplayName("Business errors without a code have no code property")
     void businessErrorsWithoutACodeHaveNoCodeProperty() {
         ProblemDetail invalid = handler.handleDomainValidation(new DomainValidationException("Invalid"));
         ProblemDetail conflict = handler.handleConflict(new ConflictException("Conflict"));
@@ -39,6 +42,7 @@ class ApiExceptionHandlerTests {
     }
 
     @Test
+    @DisplayName("Access denied is 403 without its reason")
     void accessDeniedIs403WithoutItsReason() {
         ProblemDetail forbidden = handler.handleAccessDenied(new AccessDeniedException("Not an admin of league 42"));
 
@@ -47,6 +51,7 @@ class ApiExceptionHandlerTests {
     }
 
     @Test
+    @DisplayName("Unexpected errors are 500 without their message")
     void unexpectedErrorsAre500WithoutTheirMessage() {
         ProblemDetail error = handler.handleUnexpected(new IllegalStateException("secret internals"));
 

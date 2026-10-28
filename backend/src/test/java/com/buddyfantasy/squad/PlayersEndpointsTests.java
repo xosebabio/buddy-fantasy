@@ -12,6 +12,7 @@ import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -107,6 +108,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin registers a player and PlayerRegistered is published once")
     void adminRegistersAPlayerAndPlayerRegisteredIsPublishedOnce() throws Exception {
         String location = mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("  Iago  ", 10, "FORWARD", "12.5")))
@@ -129,6 +131,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("The shirt number is optional")
     void shirtNumberIsOptional() throws Exception {
         mvc.perform(post("/api/leagues/{id}/players", league).with(as(admin)).with(csrf())
                         .contentType(APPLICATION_JSON).content(body("Iago", null, "GOALKEEPER", "5")))
@@ -137,6 +140,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin can register players")
     void onlyTheLeagueAdminCanRegister() throws Exception {
         String request = body("Iago", 10, "FORWARD", "10");
         mvc.perform(post("/api/leagues/{id}/players", league).with(as(ana)).with(csrf())
@@ -150,6 +154,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Invalid data is answered with 400")
     void invalidDataIs400() throws Exception {
         for (String request : List.of(
                 body("Iago", 10, "COACH", "10"),
@@ -169,6 +174,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("The shirt number is unique among the active players of the league")
     void shirtNumberIsUniqueAmongActivePlayersOfTheLeague() throws Exception {
         fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -183,6 +189,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("The shirt number of a retired player can be reused")
     void shirtNumberOfARetiredPlayerCanBeReused() throws Exception {
         retire(fixtures.player(peña, "Iago", 10, Position.FORWARD));
 
@@ -192,6 +199,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("A concurrent duplicate shirt number is still 409")
     void concurrentDuplicateShirtNumberIsStill409() throws Exception {
         fixtures.player(peña, "Iago", 10, Position.FORWARD);
         // simulate a race: the pre-check passes, the unique index rejects the insert
@@ -204,6 +212,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Members see the active squad ordered by position and shirt number")
     void membersSeeTheActiveSquadOrderedByPositionAndShirtNumber() throws Exception {
         fixtures.player(peña, "Delantero", 9, Position.FORWARD);
         fixtures.player(peña, "Medio sin dorsal", null, Position.MIDFIELDER);
@@ -220,6 +229,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("includeRetired is honoured for the admin and ignored for managers")
     void includeRetiredIsHonouredForTheAdminAndIgnoredForManagers() throws Exception {
         fixtures.player(peña, "Activo", 9, Position.FORWARD);
         retire(fixtures.player(peña, "Retirado", 2, Position.DEFENDER));
@@ -238,6 +248,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Non-members can neither list nor see players")
     void nonMembersCannotListOrSeePlayers() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -247,6 +258,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Members see the player card, including retired players")
     void membersSeeThePlayerCardIncludingRetiredPlayers() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -264,6 +276,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Players are isolated between leagues")
     void playersAreIsolatedBetweenLeagues() throws Exception {
         UUID foreign = fixtures.player(other, "De otra liga", 5, Position.DEFENDER);
 
@@ -275,6 +288,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin updates every editable field")
     void adminUpdatesEveryEditableField() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -293,6 +307,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("An update keeps or changes the shirt number without clashing")
     void updateKeepsOrChangesTheShirtNumberWithoutClashing() throws Exception {
         UUID iago = fixtures.player(peña, "Iago", 10, Position.FORWARD);
         fixtures.player(peña, "Hugo", 9, Position.FORWARD);
@@ -314,6 +329,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin can update players")
     void onlyTheLeagueAdminCanUpdate() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
         String request = body("Cambiado", 10, "FORWARD", "10");
@@ -326,6 +342,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("An invalid update is answered with 400 and changes nothing")
     void invalidUpdateIs400AndChangesNothing() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -341,6 +358,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("A retired player cannot be updated")
     void retiredPlayerCannotBeUpdated() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
         retire(player);
@@ -352,6 +370,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin retires a player, who leaves the active squad but keeps the card")
     void adminRetiresAPlayerWhoLeavesTheActiveSquadButKeepsTheCard() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -370,6 +389,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Retiring is idempotent and publishes PlayerRetired once")
     void retireIsIdempotentAndPublishesPlayerRetiredOnce() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -387,6 +407,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin can retire players")
     void onlyTheLeagueAdminCanRetire() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
 
@@ -399,6 +420,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Another league's player can be neither updated nor retired")
     void anotherLeaguesPlayerCannotBeUpdatedOrRetired() throws Exception {
         UUID foreign = fixtures.player(other, "De otra liga", 5, Position.DEFENDER);
 
@@ -416,6 +438,7 @@ class PlayersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Requires a session and a CSRF token")
     void securityWithoutSessionOrCsrf() throws Exception {
         UUID player = fixtures.player(peña, "Iago", 10, Position.FORWARD);
         String request = body("Otro", 11, "FORWARD", "10");

@@ -29,6 +29,7 @@ import com.buddyfantasy.scoring.domain.ManagerLineup;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -157,6 +158,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("The lock and then the close score players and managers once")
     void theLockAndThenTheCloseScorePlayersAndManagersOnce() {
         fixtures.scoringRule(peña, GOAL, 10);
         fixtures.scoringRule(peña, ASSIST, 2);
@@ -192,6 +194,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("The close that locks the lineups scores once and a member without a lineup is left out")
     void theCloseThatLocksTheLineupsScoresOnceAndAMemberWithoutALineupIsLeftOut() {
         fixtures.scoringRule(peña, GOAL, 10);
         save(admin, adminLineup);
@@ -206,6 +209,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("The default table scores penalty goals and double yellows as the requirements say")
     void theDefaultTableScoresPenaltyGoalsAndDoubleYellowsAsTheRequirementsSay() {
         save(admin, adminLineup);
         lockByJob(KICKOFF_1);
@@ -227,6 +231,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("The table is frozen when the match is scored and the next match uses the edited one")
     void theTableIsFrozenWhenTheMatchIsScoredAndTheNextMatchUsesTheEditedOne() {
         fixtures.scoringRule(peña, GOAL, 10);
         save(admin, adminLineup);
@@ -242,6 +247,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("An over budget lineup scores zero but its players keep their points")
     void anOverBudgetLineupScoresZeroButItsPlayersKeepTheirPoints() {
         fixtures.scoringRule(peña, GOAL, 10);
         save(admin, adminLineup);
@@ -260,6 +266,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("A player retired before the match scores nothing and one retired after keeps his points")
     void aPlayerRetiredBeforeTheMatchScoresNothingAndOneRetiredAfterKeepsHisPoints() {
         fixtures.scoringRule(peña, GOAL, 10);
         save(admin, adminLineup);
@@ -275,6 +282,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("Postponing a match drops the copy of its lineups and the new lock replaces it")
     void postponingAMatchDropsTheCopyOfItsLineupsAndTheNewLockReplacesIt() {
         fixtures.scoringRule(peña, GOAL, 10);
         save(admin, adminLineup);
@@ -302,6 +310,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("A lock delivered after its unlock is ignored even if scoring had not heard of the match")
     void aLockDeliveredAfterItsUnlockIsIgnoredEvenIfScoringHadNotHeardOfTheMatch() {
         fixtures.scoringRule(peña, GOAL, 10);
         save(admin, adminLineup);
@@ -328,6 +337,7 @@ class ScoringFlowTests {
     }
 
     @Test
+    @DisplayName("Deleting a match drops scoring's copy of it")
     void deletingAMatchDropsScoringsCopyOfIt() {
         save(admin, adminLineup);
         lockByJob(KICKOFF_1);

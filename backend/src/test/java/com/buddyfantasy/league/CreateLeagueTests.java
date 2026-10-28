@@ -15,6 +15,7 @@ import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCom
 import com.buddyfantasy.league.domain.League;
 import com.buddyfantasy.league.domain.LeagueSettings;
 import com.buddyfantasy.shared.application.CommandBus;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,7 @@ class CreateLeagueTests {
     }
 
     @Test
+    @DisplayName("Creates the league with its settings, scoring rules and the admin membership")
     void createsLeagueWithSettingsRulesAndAdminMembership() throws Exception {
         UUID ana = fixtures.user("ana");
 
@@ -95,6 +97,7 @@ class CreateLeagueTests {
     }
 
     @Test
+    @DisplayName("A persisted league round-trips with its defaults")
     void persistedLeagueRoundTripsWithDefaults() {
         League league = League.create("A", NOW, defaults.settings(), defaults.scoringRules(), limits.get());
         leagues.save(league);
@@ -109,6 +112,7 @@ class CreateLeagueTests {
     }
 
     @Test
+    @DisplayName("A failure while saving the membership rolls everything back")
     void failureWhileSavingMembershipRollsEverythingBack() {
         UUID ana = fixtures.user("ana");
         Mockito.doThrow(new IllegalStateException("boom")).when(memberships).save(Mockito.any());
@@ -122,6 +126,7 @@ class CreateLeagueTests {
     }
 
     @Test
+    @DisplayName("A blank or too long name is answered with 400")
     void blankOrTooLongNameIs400() throws Exception {
         UUID ana = fixtures.user("ana");
 
@@ -134,6 +139,7 @@ class CreateLeagueTests {
     }
 
     @Test
+    @DisplayName("Without a session it is 401 and without CSRF it is 403")
     void withoutSessionIs401AndWithoutCsrfIs403() throws Exception {
         UUID ana = fixtures.user("ana");
 

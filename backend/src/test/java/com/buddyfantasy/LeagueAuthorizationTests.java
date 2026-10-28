@@ -10,6 +10,7 @@ import com.buddyfantasy.ApiEndpoints.Endpoint;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.league.LeagueRole;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -187,6 +188,7 @@ class LeagueAuthorizationTests {
     }
 
     @Test
+    @DisplayName("Every league endpoint is classified with its minimum role")
     void everyLeagueEndpointIsClassified() throws Exception {
         assertThat(rules().keySet())
                 .as("every /api/leagues/{id}/** endpoint needs a rule in LeagueAuthorizationTests.rules()")
@@ -194,6 +196,7 @@ class LeagueAuthorizationTests {
     }
 
     @Test
+    @DisplayName("A user outside the league gets 403 on every league endpoint")
     void aUserOutsideTheLeagueGets403OnEveryLeagueEndpoint() throws Exception {
         Map<Endpoint, Rule> rules = rules();
         Map<String, String> before = snapshot();
@@ -203,6 +206,7 @@ class LeagueAuthorizationTests {
     }
 
     @Test
+    @DisplayName("A manager gets 403 on every admin endpoint")
     void aManagerGets403OnEveryAdminEndpoint() throws Exception {
         Map<Endpoint, Rule> adminOnly = new LinkedHashMap<>(rules());
         adminOnly.values().removeIf(rule -> rule.role() != LeagueRole.ADMIN);

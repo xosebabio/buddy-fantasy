@@ -8,6 +8,7 @@ import com.buddyfantasy.shared.application.Query;
 import com.buddyfantasy.shared.application.QueryHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotBlank;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -106,16 +107,19 @@ class CommandBusTests {
     JdbcTemplate jdbc;
 
     @Test
+    @DisplayName("Dispatches to the matching handler")
     void dispatchesToTheMatchingHandler() {
         assertThat(bus.dispatch(new EchoCommand("hi"))).isEqualTo("echo:hi");
     }
 
     @Test
+    @DisplayName("Runs the handler inside a transaction")
     void runsHandlerInsideATransaction() {
         assertThat(bus.dispatch(new InTransactionCommand())).isTrue();
     }
 
     @Test
+    @DisplayName("Rolls back when the handler throws")
     void rollsBackWhenHandlerThrows() {
         assertThatThrownBy(() -> bus.dispatch(new InsertThenFailCommand())).isInstanceOf(IllegalStateException.class);
 
@@ -124,11 +128,13 @@ class CommandBusTests {
     }
 
     @Test
+    @DisplayName("Rejects invalid commands before calling the handler")
     void rejectsInvalidCommandsBeforeCallingTheHandler() {
         assertThatThrownBy(() -> bus.dispatch(new EchoCommand(" "))).isInstanceOf(ConstraintViolationException.class);
     }
 
     @Test
+    @DisplayName("ask runs queries in a read-only transaction")
     void askRunsQueriesInAReadOnlyTransaction() {
         assertThat(bus.ask(new ReadOnlyProbeQuery())).isTrue();
     }

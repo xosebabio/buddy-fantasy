@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.match.PlayerPerformanceData;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,12 +27,14 @@ class PlayerPerformanceTests {
     }
 
     @Test
+    @DisplayName("Accepts counters within the storage range")
     void acceptsCountersWithinStorageRange() {
         assertThatCode(() -> counters(0, 0, 0, 0, 0, 0)).doesNotThrowAnyException();
         assertThatCode(() -> counters(32767, 32767, 32767, 32767, 32767, 32767)).doesNotThrowAnyException();
     }
 
     @Test
+    @DisplayName("Rejects counters out of the storage range")
     void rejectsCountersOutOfStorageRange() {
         assertThatThrownBy(() -> counters(-1, 0, 0, 0, 0, 0)).isInstanceOf(DomainValidationException.class);
         assertThatThrownBy(() -> counters(0, 32768, 0, 0, 0, 0)).isInstanceOf(DomainValidationException.class);
@@ -42,6 +45,7 @@ class PlayerPerformanceTests {
     }
 
     @Test
+    @DisplayName("Requires a player and a position")
     void requiresPlayerAndPosition() {
         assertThatThrownBy(() -> new PlayerPerformance(null, Position.FORWARD, 0, 0, 0, 0, 0, 0,
                 false, false, false)).isInstanceOf(DomainValidationException.class);
@@ -50,6 +54,7 @@ class PlayerPerformanceTests {
     }
 
     @Test
+    @DisplayName("A double yellow excludes a yellow and a straight red")
     void doubleYellowExcludesYellowAndStraightRed() {
         assertThatThrownBy(() -> cards(true, true, false)).isInstanceOf(DomainValidationException.class);
         assertThatThrownBy(() -> cards(false, true, true)).isInstanceOf(DomainValidationException.class);
@@ -58,6 +63,7 @@ class PlayerPerformanceTests {
     }
 
     @Test
+    @DisplayName("A yellow and a straight red add up")
     void yellowAndStraightRedAddUp() {
         PlayerPerformance performance = cards(true, false, true);
 
@@ -66,6 +72,7 @@ class PlayerPerformanceTests {
     }
 
     @Test
+    @DisplayName("toData copies every field")
     void toDataCopiesEveryField() {
         PlayerPerformance performance = new PlayerPerformance(PLAYER, Position.GOALKEEPER, 1, 2, 3, 4, 5, 6,
                 true, false, true);

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.function.UnaryOperator;
 
 import com.buddyfantasy.league.adapter.out.config.TestLeagueDefaults;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,6 +15,7 @@ class LeagueSettingsTests {
     private final LeagueSettings defaults = TestLeagueDefaults.settings();
 
     @Test
+    @DisplayName("The defaults match the requirements")
     void defaultsMatchRequirements() {
         assertThat(defaults.ratingWindowHours()).isEqualTo(24);
         assertThat(defaults.ratingFormat()).isEqualTo(RatingFormat.SPADES);
@@ -35,6 +37,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("Rejects out of range values")
     void rejectsOutOfRangeValues() {
         assertInvalid(s -> with(s, 0, 7, "10"));
         assertInvalid(s -> with(s, 24, 0, "10"));
@@ -43,6 +46,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("The lock hours must not be negative")
     void lockHoursMustNotBeNegative() {
         // the upper bound is configurable: LeagueLimits
         assertThat(lineup(defaults, 169, 7, false, 1, 1, 1, 1).lineupLockHours()).isEqualTo(169);
@@ -50,6 +54,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("Rejects negative minimums per position")
     void rejectsNegativeMinimumsPerPosition() {
         assertInvalid(s -> lineup(s, 2, 7, false, -1, 1, 1, 1));
         assertInvalid(s -> lineup(s, 2, 7, false, 1, -1, 1, 1));
@@ -58,6 +63,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("The minimums cannot exceed the lineup size when the formation is enabled")
     void minimumsCannotExceedLineupSizeWhenFormationIsEnabled() {
         assertThat(lineup(defaults, 2, 7, true, 1, 2, 2, 2).lineupMinDefenders()).isEqualTo(2);
         assertThat(lineup(defaults, 2, 7, true, 0, 0, 0, 0).lineupFormationEnabled()).isTrue();
@@ -66,6 +72,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("The minimums are kept but not checked against the size when the formation is disabled")
     void minimumsAreKeptButNotCheckedAgainstSizeWhenFormationIsDisabled() {
         LeagueSettings settings = lineup(defaults, 2, 3, false, 1, 1, 1, 1);
 
@@ -74,6 +81,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("Rejects a default rating above the format maximum")
     void rejectsDefaultRatingAboveFormatMaximum() {
         assertThatThrownBy(() -> new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, new BigDecimal("5"),
                 2, 2, 7, false, 1, 1, 1, 1, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN,
@@ -82,6 +90,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("Accepts a default rating within the format maximum")
     void acceptsDefaultRatingWithinFormatMaximum() {
         LeagueSettings settings = new LeagueSettings(24, RatingFormat.DECIMAL, BigDecimal.ONE, new BigDecimal("5"),
                 2, 2, 7, false, 1, 1, 1, 1, false, new BigDecimal("100"), new BigDecimal("0.05"), BigDecimal.TEN,
@@ -90,6 +99,7 @@ class LeagueSettingsTests {
     }
 
     @Test
+    @DisplayName("Rejects non-positive money amounts and factors")
     void rejectsNonPositiveMoneyAndFactors() {
         assertThatThrownBy(() -> new LeagueSettings(24, RatingFormat.SPADES, BigDecimal.ONE, null,
                 2, 2, 7, false, 1, 1, 1, 1, false, BigDecimal.ZERO, new BigDecimal("0.05"), BigDecimal.TEN,

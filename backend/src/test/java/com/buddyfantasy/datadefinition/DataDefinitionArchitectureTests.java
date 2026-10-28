@@ -4,6 +4,7 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -29,6 +30,7 @@ class DataDefinitionArchitectureTests {
     }
 
     @Test
+    @DisplayName("datadefinition does not depend on any other module")
     void doesNotDependOnAnyOtherModule() {
         noClasses().that().resideInAPackage(PACKAGE)
                 .should().dependOnClassesThat().resideInAnyPackage(OTHER_MODULES)
@@ -37,6 +39,7 @@ class DataDefinitionArchitectureTests {
     }
 
     @Test
+    @DisplayName("datadefinition has no Spring beans nor persistence")
     void hasNoSpringBeansNorPersistence() {
         noClasses().that().resideInAPackage(PACKAGE)
                 .should().dependOnClassesThat().resideInAnyPackage(
@@ -47,6 +50,7 @@ class DataDefinitionArchitectureTests {
     }
 
     @Test
+    @DisplayName("datadefinition contains only enums and records")
     void containsOnlyEnumsAndRecords() {
         classes().that().resideInAPackage(PACKAGE)
                 .and().haveSimpleNameNotEndingWith("package-info")
@@ -56,6 +60,7 @@ class DataDefinitionArchitectureTests {
     }
 
     @Test
+    @DisplayName("datadefinition is not empty")
     void isNotEmpty() {
         classes().that().resideInAPackage(PACKAGE)
                 .and().haveSimpleNameNotEndingWith("package-info")

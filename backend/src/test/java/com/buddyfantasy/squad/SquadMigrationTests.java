@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +48,7 @@ class SquadMigrationTests {
     }
 
     @Test
+    @DisplayName("The shirt number is unique among the active players of a league")
     void shirtNumberIsUniqueAmongActivePlayersOfALeague() {
         UUID league = UUID.randomUUID();
         insert(league, 9);
@@ -56,6 +58,7 @@ class SquadMigrationTests {
     }
 
     @Test
+    @DisplayName("Retiring a player frees the shirt number")
     void retiringAPlayerFreesTheShirtNumber() {
         UUID league = UUID.randomUUID();
         UUID retired = insert(league, 10);
@@ -65,6 +68,7 @@ class SquadMigrationTests {
     }
 
     @Test
+    @DisplayName("Several players can have no shirt number")
     void severalPlayersCanHaveNoShirtNumber() {
         UUID league = UUID.randomUUID();
         insert(league, null);
@@ -73,6 +77,7 @@ class SquadMigrationTests {
     }
 
     @Test
+    @DisplayName("The name is not limited by the column")
     void nameIsNotLimitedByTheColumn() {
         UUID player = insert(UUID.randomUUID(), null);
 
@@ -81,6 +86,7 @@ class SquadMigrationTests {
     }
 
     @Test
+    @DisplayName("Rejects an invalid shirt number, position and value")
     void rejectsInvalidShirtNumberPositionAndValue() {
         UUID league = UUID.randomUUID();
 

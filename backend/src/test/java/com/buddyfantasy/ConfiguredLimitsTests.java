@@ -14,6 +14,7 @@ import com.buddyfantasy.match.domain.Venue;
 import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.domain.DomainValidationException;
 import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +48,7 @@ class ConfiguredLimitsTests {
     JdbcTemplate jdbc;
 
     @Test
+    @DisplayName("Raised limits are accepted and stored, and are still enforced")
     void raisedLimitsAreAcceptedAndStoredAndAreStillEnforced() {
         UUID admin = UUID.randomUUID();
         UUID league = bus.dispatch(new CreateLeagueCommand(admin, "L".repeat(150))).id().value();

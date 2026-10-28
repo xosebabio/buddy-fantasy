@@ -16,6 +16,7 @@ import com.buddyfantasy.lineup.LockedLineupData;
 import com.buddyfantasy.match.MatchSchedule;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +49,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("Locks each lineup with its values and publishes LineupsLocked")
     void locksEachLineupWithItsValuesAndPublishesLineupsLocked() {
         UUID ana = UUID.randomUUID();
         UUID brais = UUID.randomUUID();
@@ -92,6 +94,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("Exactly the budget is not over budget")
     void exactlyTheBudgetIsNotOverBudget() {
         UUID a = player("20", true);
         UUID b = player("20", true);
@@ -103,6 +106,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("With the budget disabled nothing is over budget and no budget is kept")
     void withTheBudgetDisabledNothingIsOverBudgetAndNoBudgetIsKept() {
         UUID a = player("500", true);
         UUID b = player("500", true);
@@ -115,6 +119,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("Without lineups the match is locked empty")
     void withoutLineupsTheMatchIsLockedEmpty() {
         MatchLineupLock lock = MatchLineupLock.lock(MATCH, settings(true, "40"), List.of(), players, LOCK_AT);
 
@@ -124,12 +129,14 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("Cannot lock before the lock time")
     void cannotLockBeforeTheLockTime() {
         assertThatThrownBy(() -> MatchLineupLock.lock(MATCH, settings(true, "40"), List.of(), players,
                 LOCK_AT.minusMillis(1))).isInstanceOf(ConflictException.class);
     }
 
     @Test
+    @DisplayName("Rejects lineups saved at or after the lock")
     void rejectsLineupsSavedAtOrAfterTheLock() {
         UUID a = player("1", true);
         UUID b = player("1", true);
@@ -140,6 +147,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("Rejects lineups of another league or two for the same user")
     void rejectsLineupsOfAnotherLeagueOrTwoForTheSameUser() {
         UUID a = player("1", true);
         UUID b = player("1", true);
@@ -154,6 +162,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("Rejects lineups with players missing from the squad")
     void rejectsLineupsWithPlayersMissingFromTheSquad() {
         UUID a = player("1", true);
 
@@ -163,6 +172,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("A postponement with the new lock in the future unlocks")
     void aPostponementWithTheLockInTheFutureUnlocks() {
         MatchLineupLock lock = MatchLineupLock.lock(MATCH, settings(true, "40"), List.of(), players, LOCK_AT);
         lock.pullEvents();
@@ -174,6 +184,7 @@ class MatchLineupLockTests {
     }
 
     @Test
+    @DisplayName("A postponement with the lock still past changes nothing")
     void aPostponementWithTheLockStillPastChangesNothing() {
         MatchLineupLock lock = MatchLineupLock.lock(MATCH, settings(true, "40"), List.of(), players, LOCK_AT);
         lock.pullEvents();

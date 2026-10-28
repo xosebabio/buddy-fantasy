@@ -19,6 +19,7 @@ import com.buddyfantasy.match.domain.Venue;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,6 +76,7 @@ class MatchRepositoryTests {
     }
 
     @Test
+    @DisplayName("Saves and loads the whole aggregate")
     void savesAndLoadsTheWholeAggregate() {
         Match match = scheduled();
         MatchSheet sheet = new MatchSheet(new MatchResult(3, 1), List.of(
@@ -97,6 +99,7 @@ class MatchRepositoryTests {
     }
 
     @Test
+    @DisplayName("A scheduled match has an empty sheet")
     void aScheduledMatchHasAnEmptySheet() {
         Match match = scheduled();
 
@@ -105,6 +108,7 @@ class MatchRepositoryTests {
     }
 
     @Test
+    @DisplayName("Replacing the sheet in the same transaction drops the old lines")
     void replacingTheSheetInTheSameTransactionDropsTheOldLines() {
         Match match = scheduled();
         UUID kept = UUID.randomUUID();
@@ -127,6 +131,7 @@ class MatchRepositoryTests {
     }
 
     @Test
+    @DisplayName("Loading is scoped by league")
     void loadingIsScopedByLeague() {
         Match match = scheduled();
 
@@ -134,6 +139,7 @@ class MatchRepositoryTests {
     }
 
     @Test
+    @DisplayName("Loads a match with its sheet in a single query")
     void loadsAMatchWithItsSheetInASingleQuery() {
         Match match = scheduled();
         match.recordSheet(new MatchSheet(new MatchResult(1, 0), List.of(

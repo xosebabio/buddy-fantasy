@@ -16,6 +16,7 @@ import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerComm
 import com.buddyfantasy.squad.application.usecases.updateplayer.UpdatePlayerCommand;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -124,6 +125,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin records a draft sheet with the positions from the squad")
     void adminRecordsADraftSheetWithThePositionsFromTheSquad() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -166,6 +168,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("A draft may have no result or no players yet")
     void aDraftMayHaveNoResultOrNoPlayersYet() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -183,6 +186,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Warnings do not block saving")
     void warningsDoNotBlockSaving() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -200,6 +204,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("The same sheet again leaves no audit entry")
     void theSameSheetAgainLeavesNoAuditEntry() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"), line(defender, "")));
@@ -213,6 +218,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Invalid sheets are answered with 400")
     void invalidSheetsAre400() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String[] tooMany = IntStream.range(0, 31).mapToObj(i -> line(UUID.randomUUID(), "")).toArray(String[]::new);
@@ -243,6 +249,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("A retired player cannot be added but stays if already in the sheet")
     void aRetiredPlayerCannotBeAddedButStaysIfAlreadyInTheSheet() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
@@ -260,6 +267,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("The position is taken when the player is added and kept afterwards")
     void thePositionIsTakenWhenThePlayerIsAddedAndKeptAfterwards() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
@@ -278,6 +286,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin closes a match and MatchClosed carries the whole sheet")
     void adminClosesAMatchAndMatchClosedCarriesTheWholeSheet() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(2, 1, line(forward, "\"goals\": 2, \"yellowCard\": true"),
@@ -310,6 +319,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Closing twice keeps the first close and publishes once")
     void closingTwiceKeepsTheFirstCloseAndPublishesOnce() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1")));
@@ -326,6 +336,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("A match cannot be closed before kickoff")
     void aMatchCannotBeClosedBeforeKickoff() throws Exception {
         UUID match = fixtures.schedule(peña, 1, FAR_FUTURE);
         putSheet(admin, match, sheet(1, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
@@ -339,6 +350,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("A match cannot be closed without a result or players")
     void aMatchCannotBeClosedWithoutResultOrPlayers() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
 
@@ -353,6 +365,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Managers see the sheet only once the admin closes the match")
     void managersSeeTheSheetOnlyOnceTheAdminClosesTheMatch() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         putSheet(admin, match, sheet(2, 0, line(forward, "\"goals\": 1"))).andExpect(status().isOk());
@@ -384,6 +397,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Correcting a closed match publishes MatchCorrected with the whole sheet")
     void correctingAClosedMatchPublishesMatchCorrectedWithTheWholeSheet() throws Exception {
         UUID match = closedMatch(sheet(2, 1, line(forward, "\"goals\": 2"), line(keeper, "\"penaltiesSaved\": 1")));
         String closedAt = JsonPath.read(mvc.perform(get("/api/leagues/{id}/matches/{m}", league, match)
@@ -424,6 +438,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("The same sheet on a closed match is not a correction")
     void theSameSheetOnAClosedMatchIsNotACorrection() throws Exception {
         UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1"), line(defender, "")));
 
@@ -435,6 +450,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("A correction keeps the sheet complete")
     void aCorrectionKeepsTheSheetComplete() throws Exception {
         UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1")));
 
@@ -449,6 +465,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("A correction keeps players retired after the match but cannot add them")
     void aCorrectionKeepsPlayersRetiredAfterTheMatchButCannotAddThem() throws Exception {
         UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1")));
         bus.dispatch(new UpdatePlayerCommand(admin, league, forward, "Iago", null, Position.MIDFIELDER, BigDecimal.TEN));
@@ -466,6 +483,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin corrects a closed match")
     void onlyTheLeagueAdminCorrectsAClosedMatch() throws Exception {
         UUID match = closedMatch(sheet(1, 0, line(forward, "\"goals\": 1")));
 
@@ -478,6 +496,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Only the league admin records the sheet and closes the match")
     void onlyTheLeagueAdminRecordsTheSheetAndClosesTheMatch() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String request = sheet(1, 0, line(forward, "\"goals\": 1"));
@@ -498,6 +517,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Sheets cannot be recorded or closed through another league")
     void sheetsCannotBeRecordedOrClosedThroughAnotherLeague() throws Exception {
         UUID foreign = fixtures.schedule(other, 1, KICKOFF);
         mvc.perform(put("/api/leagues/{id}/matches/{m}/sheet", otherLeague, foreign).with(as(outsider)).with(csrf())
@@ -515,6 +535,7 @@ class MatchSheetEndpointsTests {
     }
 
     @Test
+    @DisplayName("Requires a session and a CSRF token")
     void securityWithoutSessionOrCsrf() throws Exception {
         UUID match = fixtures.schedule(peña, 1, KICKOFF);
         String request = sheet(1, 0, line(forward, "\"goals\": 1"));

@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
 import com.buddyfantasy.shared.application.CommandBus;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +31,7 @@ class LeagueDefaultsTests {
     JdbcTemplate jdbc;
 
     @Test
+    @DisplayName("A new league is seeded with the configured defaults")
     void newLeagueIsSeededWithTheConfiguredDefaults() {
         UUID league = bus.dispatch(new CreateLeagueCommand(UUID.randomUUID(), "Peña")).id().value();
 

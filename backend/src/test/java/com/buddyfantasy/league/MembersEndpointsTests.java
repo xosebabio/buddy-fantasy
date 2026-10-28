@@ -6,6 +6,7 @@ import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.TestFixtures;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -58,6 +59,7 @@ class MembersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Members see everyone, including the admin, without emails")
     void membersSeeEveryoneIncludingTheAdminWithoutEmails() throws Exception {
         mvc.perform(get("/api/leagues/{id}/members", league).with(as(ana)))
                 .andExpect(status().isOk())
@@ -72,11 +74,13 @@ class MembersEndpointsTests {
     }
 
     @Test
+    @DisplayName("A non-member cannot list the members")
     void nonMemberCannotListMembers() throws Exception {
         mvc.perform(get("/api/leagues/{id}/members", league).with(as(outsider))).andExpect(status().isForbidden());
     }
 
     @Test
+    @DisplayName("The admin removes a manager, who loses access")
     void adminRemovesAManagerWhoLosesAccess() throws Exception {
         mvc.perform(delete("/api/leagues/{id}/members/{m}", league, ana).with(as(admin)).with(csrf()))
                 .andExpect(status().isNoContent());
@@ -87,12 +91,14 @@ class MembersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Removing a non-member is answered with 404")
     void removingANonMemberIs404() throws Exception {
         mvc.perform(delete("/api/leagues/{id}/members/{m}", league, outsider).with(as(admin)).with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @DisplayName("Managers and outsiders cannot remove members")
     void managersAndOutsidersCannotRemove() throws Exception {
         mvc.perform(delete("/api/leagues/{id}/members/{m}", league, bob).with(as(ana)).with(csrf()))
                 .andExpect(status().isForbidden());
@@ -102,6 +108,7 @@ class MembersEndpointsTests {
     }
 
     @Test
+    @DisplayName("The admin can neither remove themself nor leave")
     void adminCannotRemoveThemselfNorLeave() throws Exception {
         mvc.perform(delete("/api/leagues/{id}/members/{m}", league, admin).with(as(admin)).with(csrf()))
                 .andExpect(status().isConflict());
@@ -111,6 +118,7 @@ class MembersEndpointsTests {
     }
 
     @Test
+    @DisplayName("A manager leaves and loses access")
     void managerLeavesAndLosesAccess() throws Exception {
         mvc.perform(delete("/api/leagues/{id}/members/me", league).with(as(ana)).with(csrf()))
                 .andExpect(status().isNoContent());
@@ -124,6 +132,7 @@ class MembersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Roles are per league")
     void rolesArePerLeague() throws Exception {
         // ana is MANAGER in "Peña" and ADMIN in her own league
         TestLeague anaLeague = fixtures.league(ana, "De Ana");
@@ -137,6 +146,7 @@ class MembersEndpointsTests {
     }
 
     @Test
+    @DisplayName("Requires a session and a CSRF token")
     void securityWithoutSessionOrCsrf() throws Exception {
         mvc.perform(get("/api/leagues/{id}/members", league)).andExpect(status().isUnauthorized());
         mvc.perform(delete("/api/leagues/{id}/members/{m}", league, ana).with(csrf())).andExpect(status().isUnauthorized());

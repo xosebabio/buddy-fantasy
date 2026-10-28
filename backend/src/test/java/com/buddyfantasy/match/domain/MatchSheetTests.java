@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 
 import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +29,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("Rejects a repeated player")
     void rejectsARepeatedPlayer() {
         UUID player = UUID.randomUUID();
 
@@ -36,6 +38,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("Rejects missing or null performances")
     void rejectsMissingOrNullPerformances() {
         assertThatThrownBy(() -> new MatchSheet(null, null)).isInstanceOf(DomainValidationException.class);
         List<PlayerPerformance> withNull = new ArrayList<>();
@@ -44,12 +47,14 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("Rejects goals out of range")
     void rejectsGoalsOutOfRange() {
         assertThatThrownBy(() -> new MatchResult(-1, 0)).isInstanceOf(DomainValidationException.class);
         assertThatThrownBy(() -> new MatchResult(0, 32768)).isInstanceOf(DomainValidationException.class);
     }
 
     @Test
+    @DisplayName("Is complete only with a result and at least one player")
     void isCompleteOnlyWithResultAndAtLeastOnePlayer() {
         assertThat(MatchSheet.EMPTY.isComplete()).isFalse();
         assertThat(new MatchSheet(new MatchResult(0, 0), List.of()).isComplete()).isFalse();
@@ -58,6 +63,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("The same lines in another order are the same sheet")
     void sameLinesInAnotherOrderAreTheSameSheet() {
         PlayerPerformance first = scorer(UUID.randomUUID(), 1, 0, 0);
         PlayerPerformance second = played(UUID.randomUUID());
@@ -67,6 +73,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("No warnings when the goals add up")
     void noWarningsWhenGoalsAddUp() {
         MatchSheet sheet = new MatchSheet(new MatchResult(3, 2), List.of(
                 scorer(UUID.randomUUID(), 2, 0, 1), scorer(UUID.randomUUID(), 0, 1, 1)));
@@ -75,6 +82,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("The goals mismatch counts goals and penalty goals")
     void goalsMismatchCountsGoalsAndPenaltyGoals() {
         MatchSheet missingScorer = new MatchSheet(new MatchResult(3, 0), List.of(scorer(UUID.randomUUID(), 1, 1, 0)));
         MatchSheet tooManyGoals = new MatchSheet(new MatchResult(1, 0), List.of(scorer(UUID.randomUUID(), 1, 1, 0)));
@@ -84,6 +92,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("Warns when own goals exceed the goals against")
     void warnsWhenOwnGoalsExceedGoalsAgainst() {
         MatchSheet sheet = new MatchSheet(new MatchResult(0, 1), List.of(scorer(UUID.randomUUID(), 0, 0, 2)));
 
@@ -91,6 +100,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("Reports both warnings at once")
     void reportsBothWarningsAtOnce() {
         MatchSheet sheet = new MatchSheet(new MatchResult(2, 0), List.of(scorer(UUID.randomUUID(), 1, 0, 1)));
 
@@ -99,6 +109,7 @@ class MatchSheetTests {
     }
 
     @Test
+    @DisplayName("No warnings without a result")
     void noWarningsWithoutResult() {
         assertThat(new MatchSheet(null, List.of(scorer(UUID.randomUUID(), 3, 0, 2))).warnings()).isEmpty();
     }

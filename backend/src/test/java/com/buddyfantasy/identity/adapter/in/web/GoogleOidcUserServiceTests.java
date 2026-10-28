@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.shared.security.CurrentUser;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,6 +39,7 @@ class GoogleOidcUserServiceTests {
     }
 
     @Test
+    @DisplayName("A verified login registers the user and exposes its internal id")
     void verifiedLoginRegistersTheUserAndExposesItsInternalId() {
         OidcUser principal = service.register(google(true));
 
@@ -48,6 +50,7 @@ class GoogleOidcUserServiceTests {
     }
 
     @Test
+    @DisplayName("An unverified email is rejected and nothing is stored")
     void unverifiedEmailIsRejectedAndNothingIsStored() {
         assertThatThrownBy(() -> service.register(google(false))).isInstanceOf(OAuth2AuthenticationException.class);
         assertThat(jdbc.queryForObject("select count(*) from identity_user", Integer.class)).isZero();

@@ -2,6 +2,7 @@ package com.buddyfantasy.league.domain;
 
 import com.buddyfantasy.league.adapter.out.config.TestLeagueDefaults;
 import com.buddyfantasy.league.adapter.out.config.TestLeagueLimits;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,12 +14,14 @@ class LeagueLimitsTests {
     private final LeagueLimits limits = TestLeagueLimits.get();
 
     @Test
+    @DisplayName("The configured limits match the requirements")
     void configuredLimitsMatchRequirements() {
         assertThat(limits.nameMaxLength()).isEqualTo(100);
         assertThat(limits.lineupLockHoursMax()).isEqualTo(168);
     }
 
     @Test
+    @DisplayName("The name must be non-blank and within the maximum length")
     void nameMustBeNonBlankAndWithinTheMaximumLength() {
         assertThatCode(() -> limits.requireValidName("x".repeat(100))).doesNotThrowAnyException();
         assertThatThrownBy(() -> limits.requireValidName("x".repeat(101))).isInstanceOf(IllegalArgumentException.class);
@@ -27,6 +30,7 @@ class LeagueLimitsTests {
     }
 
     @Test
+    @DisplayName("The lock hours must not exceed the maximum")
     void lockHoursMustNotExceedTheMaximum() {
         LeagueSettings atMax = withLockHours(168);
         LeagueSettings overMax = withLockHours(169);
@@ -37,6 +41,7 @@ class LeagueLimitsTests {
     }
 
     @Test
+    @DisplayName("create and withSettings check the limits")
     void createAndWithSettingsCheckTheLimits() {
         LeagueSettings settings = TestLeagueDefaults.settings();
         ScoringRules rules = TestLeagueDefaults.scoringRules();
@@ -49,6 +54,7 @@ class LeagueLimitsTests {
     }
 
     @Test
+    @DisplayName("Rejects nonsense limits")
     void rejectsNonsenseLimits() {
         assertThatThrownBy(() -> new LeagueLimits(0, 168)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new LeagueLimits(100, -1)).isInstanceOf(IllegalArgumentException.class);

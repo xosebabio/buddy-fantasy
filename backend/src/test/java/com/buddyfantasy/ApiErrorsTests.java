@@ -10,6 +10,7 @@ import java.util.UUID;
 import com.buddyfantasy.ApiEndpoints.Endpoint;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -117,17 +118,20 @@ class ApiErrorsTests {
     }
 
     @Test
+    @DisplayName("Malformed JSON is answered with 400")
     void malformedJsonIs400() throws Exception {
         isProblem(perform(post("/api/leagues/{id}/players", peña.id())
                 .contentType(APPLICATION_JSON).content("{\"name\": \"Iago\",")), 400);
     }
 
     @Test
+    @DisplayName("A missing body is answered with 400")
     void aMissingBodyIs400() throws Exception {
         isProblem(perform(post("/api/leagues/{id}/players", peña.id()).contentType(APPLICATION_JSON)), 400);
     }
 
     @Test
+    @DisplayName("An unknown enum value is answered with 400 and nothing is registered")
     void anUnknownEnumValueIs400AndRegistersNothing() throws Exception {
         isProblem(perform(post("/api/leagues/{id}/players", peña.id()).contentType(APPLICATION_JSON).content("""
                 {"name": "Iago", "shirtNumber": 9, "position": "PORTERO", "initialValue": 10}""")), 400);
@@ -138,17 +142,20 @@ class ApiErrorsTests {
     }
 
     @Test
+    @DisplayName("An invalid UUID in the path is answered with 400")
     void anInvalidUuidInThePathIs400() throws Exception {
         isProblem(perform(get("/api/leagues/{id}/players", "not-a-uuid")), 400);
         isProblem(perform(get("/api/leagues/{id}/matches/{matchId}", peña.id(), "42")), 400);
     }
 
     @Test
+    @DisplayName("An unsupported HTTP method is answered with 405")
     void anUnsupportedMethodIs405() throws Exception {
         isProblem(perform(patch("/api/leagues/{id}", peña.id())), 405);
     }
 
     @Test
+    @DisplayName("An access denied is answered with 403")
     void anAccessDeniedIs403() throws Exception {
         UUID outsider = fixtures.user("outsider");
 
@@ -156,6 +163,7 @@ class ApiErrorsTests {
     }
 
     @Test
+    @DisplayName("An unexpected error is answered with 500 without exposing its cause")
     void anUnexpectedErrorIs500WithoutItsCause() throws Exception {
         String body = perform(get("/api/test/failure"))
                 .andExpect(status().isInternalServerError())
@@ -167,6 +175,7 @@ class ApiErrorsTests {
     }
 
     @Test
+    @DisplayName("The scan finds the endpoints that take a body")
     void scanFindsTheEndpointsWithABody() {
         assertThat(ApiEndpoints.withBody(mappings))
                 .hasSizeGreaterThanOrEqualTo(10)
@@ -181,6 +190,7 @@ class ApiErrorsTests {
     }
 
     @Test
+    @DisplayName("Every endpoint with a body answers an invalid body with 400")
     void everyEndpointWithABodyAnswersABadBodyWith400() throws Exception {
         Map<String, Integer> notBadRequest = new LinkedHashMap<>();
         for (Endpoint endpoint : ApiEndpoints.withBody(mappings)) {
@@ -199,6 +209,7 @@ class ApiErrorsTests {
     }
 
     @Test
+    @DisplayName("No mutating endpoint answers an empty body with 500")
     void noMutatingEndpointAnswersAnEmptyBodyWith500() throws Exception {
         Map<Endpoint, Integer> serverErrors = new LinkedHashMap<>();
         for (Endpoint endpoint : ApiEndpoints.scan(mappings)) {

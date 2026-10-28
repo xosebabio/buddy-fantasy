@@ -3,6 +3,7 @@ package com.buddyfantasy.identity.adapter.in.web;
 import java.util.List;
 
 import com.buddyfantasy.PostgresTestConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.web.PathMappedEndpoints;
@@ -37,6 +38,7 @@ class SecurityTests {
     PathMappedEndpoints actuatorEndpoints;
 
     @Test
+    @DisplayName("An unauthenticated API call is answered with 401 without a redirect")
     void unauthenticatedApiCallIs401WithoutRedirect() throws Exception {
         mvc.perform(get("/api/anything"))
                 .andExpect(status().isUnauthorized())
@@ -44,11 +46,13 @@ class SecurityTests {
     }
 
     @Test
+    @DisplayName("The health endpoint is public")
     void healthIsPublic() throws Exception {
         mvc.perform(get("/actuator/health")).andExpect(status().isOk());
     }
 
     @Test
+    @DisplayName("The health probes are public")
     void healthProbesArePublic() throws Exception {
         for (String path : PUBLIC) {
             mvc.perform(get(path)).andExpect(status().isOk());
@@ -60,6 +64,7 @@ class SecurityTests {
      * non-browser request gets 401 (a browser is sent to the Google login instead).
      */
     @Test
+    @DisplayName("Every other actuator endpoint requires a session")
     void everyOtherActuatorEndpointRequiresASession() throws Exception {
         List<String> paths = actuatorEndpoints.getAllPaths().stream().filter(path -> !PUBLIC.contains(path)).toList();
 
@@ -71,18 +76,21 @@ class SecurityTests {
     }
 
     @Test
+    @DisplayName("The API docs require a session")
     void apiDocsRequireASession() throws Exception {
         mvc.perform(get("/v3/api-docs")).andExpect(status().isUnauthorized());
         mvc.perform(get("/v3/api-docs").with(oidcLogin())).andExpect(status().isOk());
     }
 
     @Test
+    @DisplayName("Swagger UI is off by default")
     void swaggerUiIsOffByDefault() throws Exception {
         mvc.perform(get("/swagger-ui.html").with(oidcLogin())).andExpect(status().isNotFound());
         mvc.perform(get("/swagger-ui/index.html").with(oidcLogin())).andExpect(status().isNotFound());
     }
 
     @Test
+    @DisplayName("The OAuth entry point redirects to Google")
     void oauthEntryPointRedirectsToGoogle() throws Exception {
         mvc.perform(get("/oauth2/authorization/google"))
                 .andExpect(status().is3xxRedirection())
@@ -90,16 +98,19 @@ class SecurityTests {
     }
 
     @Test
+    @DisplayName("A POST without a CSRF token is forbidden")
     void postWithoutCsrfTokenIsForbidden() throws Exception {
         mvc.perform(post("/api/logout").with(oidcLogin())).andExpect(status().isForbidden());
     }
 
     @Test
+    @DisplayName("Logging out with a CSRF token returns 204")
     void logoutWithCsrfTokenReturns204() throws Exception {
         mvc.perform(post("/api/logout").with(oidcLogin()).with(csrf())).andExpect(status().isNoContent());
     }
 
     @Test
+    @DisplayName("The CSRF cookie is readable by the SPA")
     void csrfCookieIsReadableByTheSpa() throws Exception {
         mvc.perform(get("/actuator/health"))
                 .andExpect(cookie().exists("XSRF-TOKEN"))

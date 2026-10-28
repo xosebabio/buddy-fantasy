@@ -20,6 +20,7 @@ import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -69,6 +70,7 @@ class LeagueSettingsProviderTests {
     }
 
     @Test
+    @DisplayName("Returns the lineup parameters of the league")
     void returnsTheLineupParametersOfTheLeague() {
         League league = leagueWithFormation();
 
@@ -87,6 +89,7 @@ class LeagueSettingsProviderTests {
     }
 
     @Test
+    @DisplayName("A default league has the default lineup parameters")
     void defaultLeagueHasTheDefaultLineupParameters() {
         League league = league("Default");
 
@@ -103,11 +106,13 @@ class LeagueSettingsProviderTests {
     }
 
     @Test
+    @DisplayName("An unknown league is not found")
     void unknownLeagueIsNotFound() {
         assertThatThrownBy(() -> provider.lineupSettings(UUID.randomUUID())).isInstanceOf(NotFoundException.class);
     }
 
     @Test
+    @DisplayName("The batch returns only the requested leagues in a single query")
     void batchReturnsOnlyTheRequestedLeaguesInASingleQuery() {
         League a = leagueWithFormation();
         League b = league("B");
@@ -135,6 +140,7 @@ class LeagueSettingsProviderTests {
     }
 
     @Test
+    @DisplayName("Returns the scoring table of the requested league in a single query")
     void returnsTheScoringTableOfTheRequestedLeagueInASingleQuery() {
         League edited = leagueWithEditedScoringRules();
         league("Other");
@@ -150,6 +156,7 @@ class LeagueSettingsProviderTests {
     }
 
     @Test
+    @DisplayName("A default league has the default scoring table")
     void defaultLeagueHasTheDefaultScoringTable() {
         League league = league("Default");
 
@@ -162,16 +169,19 @@ class LeagueSettingsProviderTests {
     }
 
     @Test
+    @DisplayName("The scoring table of an unknown league is not found")
     void scoringTableOfAnUnknownLeagueIsNotFound() {
         assertThatThrownBy(() -> provider.scoringRules(UUID.randomUUID())).isInstanceOf(NotFoundException.class);
     }
 
     @Test
+    @DisplayName("Exposes the configured lock hours maximum")
     void exposesTheConfiguredLockHoursMaximum() {
         assertThat(provider.lineupLockHoursMax()).isEqualTo(limits.get().lineupLockHoursMax());
     }
 
     @Test
+    @DisplayName("An empty batch returns nothing without querying")
     void emptyBatchReturnsNothingWithoutQuerying() {
         Statistics statistics = statistics();
 

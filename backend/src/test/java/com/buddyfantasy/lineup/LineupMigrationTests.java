@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -63,6 +64,7 @@ class LineupMigrationTests {
     }
 
     @Test
+    @DisplayName("A player appears once in a version and deleting the version deletes its players")
     void aPlayerAppearsOnceInAVersionAndDeletingTheVersionDeletesItsPlayers() {
         UUID player = UUID.randomUUID();
         UUID version = insertVersion(player);
@@ -77,6 +79,7 @@ class LineupMigrationTests {
     }
 
     @Test
+    @DisplayName("Deleting a lock deletes its lineups and players but not the versions")
     void deletingALockDeletesItsLineupsAndPlayersButNotTheVersions() {
         UUID player = UUID.randomUUID();
         UUID version = insertVersion(player);
@@ -94,6 +97,7 @@ class LineupMigrationTests {
     }
 
     @Test
+    @DisplayName("A locked lineup needs an existing version and is unique per user")
     void aLockedLineupNeedsAnExistingVersionAndIsUniquePerUser() {
         UUID match = insertLock();
         UUID user = UUID.randomUUID();
@@ -107,6 +111,7 @@ class LineupMigrationTests {
     }
 
     @Test
+    @DisplayName("Locked players belong to a locked lineup")
     void lockedPlayersBelongToALockedLineup() {
         UUID match = insertLock();
 
@@ -115,6 +120,7 @@ class LineupMigrationTests {
     }
 
     @Test
+    @DisplayName("Values are non-negative and the budget is optional")
     void valuesAreNonNegativeAndTheBudgetIsOptional() {
         UUID match = insertLock();
         UUID version = insertVersion();

@@ -25,6 +25,7 @@ import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.infrastructure.ResubmitIncompleteEventsJob;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -151,6 +152,7 @@ class EventResubmissionTests {
     }
 
     @Test
+    @DisplayName("A failed listener keeps its publication and the job delivers it once it is old enough")
     void aFailedListenerKeepsItsPublicationAndTheJobDeliversItOnceItIsOld() {
         UUID id = probeFailingOnce();
         assertThat(probes.handled).isEmpty();
@@ -165,6 +167,7 @@ class EventResubmissionTests {
     }
 
     @Test
+    @DisplayName("A recent publication is not delivered again")
     void aRecentPublicationIsNotDeliveredAgain() {
         UUID id = probeFailingOnce();
 
@@ -184,6 +187,7 @@ class EventResubmissionTests {
     }
 
     @Test
+    @DisplayName("A listener that keeps failing is retried on every run")
     void aListenerThatKeepsFailingIsRetriedOnEveryRun() {
         probes.failures.set(2);
         UUID id = UUID.randomUUID();
@@ -243,6 +247,7 @@ class EventResubmissionTests {
     }
 
     @Test
+    @DisplayName("Delivering MatchClosed again neither locks nor scores twice")
     void deliveringAgainMatchClosedDoesNotLockNorScoreTwice() {
         leagueWithALineup();
         clock.now = KICKOFF_1.plus(Duration.ofHours(2));
@@ -254,6 +259,7 @@ class EventResubmissionTests {
     }
 
     @Test
+    @DisplayName("Delivering LineupsLocked again does not score twice")
     void deliveringAgainLineupsLockedDoesNotScoreTwice() {
         leagueWithALineup();
         clock.now = KICKOFF_1.minus(Duration.ofHours(1));
@@ -267,6 +273,7 @@ class EventResubmissionTests {
 
     /** A lock delivered again after its unlock must not bring back the lineups it locked. */
     @Test
+    @DisplayName("Delivering LineupsUnlocked or the lock before it again changes nothing")
     void deliveringAgainLineupsUnlockedOrTheLockBeforeItChangesNothing() {
         leagueWithALineup();
         clock.now = KICKOFF_1.minus(Duration.ofHours(1));
@@ -282,6 +289,7 @@ class EventResubmissionTests {
     }
 
     @Test
+    @DisplayName("Delivering MatchRescheduled again does not unlock twice")
     void deliveringAgainMatchRescheduledDoesNotUnlockTwice() {
         leagueWithALineup();
         clock.now = KICKOFF_1.minus(Duration.ofHours(1));
@@ -295,6 +303,7 @@ class EventResubmissionTests {
     }
 
     @Test
+    @DisplayName("Delivering MatchDeleted again changes nothing")
     void deliveringAgainMatchDeletedChangesNothing() {
         leagueWithALineup();
         clock.now = KICKOFF_1.minus(Duration.ofHours(1));

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -71,11 +72,13 @@ class MigrationChecksumsTests {
     }
 
     @Test
+    @DisplayName("Flyway applied the migrations")
     void flywayAppliedMigrations() {
         assertThat(applied()).isNotEmpty();
     }
 
     @Test
+    @DisplayName("No applied migration was edited")
     void noAppliedMigrationWasEdited() throws IOException {
         Map<String, Migration> recorded = recorded();
         Map<String, Migration> applied = applied();

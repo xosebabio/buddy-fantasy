@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.buddyfantasy.match.MatchSchedule;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +44,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("The lock time is the kickoff minus the lock hours")
     void lockAtIsTheKickoffMinusTheLockHours() {
         LineupTimeline timeline = timeline(List.of(first));
 
@@ -51,6 +53,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("A save just before the lock counts for that match")
     void aSaveJustBeforeTheLockCountsForThatMatch() {
         LineupVersion early = version(LOCK_1.minus(Duration.ofDays(1)));
         LineupVersion justBefore = version(LOCK_1.minusMillis(1));
@@ -61,6 +64,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("A save right at the lock counts for the next match")
     void aSaveRightAtTheLockCountsForTheNextMatch() {
         LineupVersion before = version(LOCK_1.minus(Duration.ofHours(1)));
         LineupVersion atLock = version(LOCK_1);
@@ -73,6 +77,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("An untouched lineup carries over to the next matches")
     void anUntouchedLineupCarriesOverToTheNextMatches() {
         LineupVersion only = version(LOCK_1.minus(Duration.ofDays(1)));
 
@@ -84,6 +89,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("Without versions before the lock there is no lineup for the match")
     void withoutVersionsBeforeTheLockThereIsNoLineupForTheMatch() {
         LineupVersion late = version(LOCK_1.plus(Duration.ofHours(1)));
 
@@ -94,6 +100,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("A postponement moves the lock and the version that counts")
     void aPostponementMovesTheLockAndTheVersionThatCounts() {
         LineupVersion before = version(LOCK_1.minus(Duration.ofDays(1)));
         LineupVersion afterOldLock = version(LOCK_1.plus(Duration.ofDays(1)));
@@ -104,6 +111,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("Matches are ordered by kickoff, not by matchday")
     void matchesAreOrderedByKickoffNotByMatchday() {
         // matchday 2 was postponed after matchday 3
         MatchSchedule postponed = match(2, KICKOFF_3, false);
@@ -117,6 +125,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("The target match is the first not closed whose lock is ahead")
     void targetMatchIsTheFirstNotClosedWhoseLockIsAhead() {
         LineupTimeline timeline = timeline(List.of(first, second));
 
@@ -126,6 +135,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("A closed match is never the target")
     void aClosedMatchIsNeverTheTarget() {
         MatchSchedule closed = match(1, KICKOFF_1, true);
 
@@ -134,6 +144,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("The baseline is the lineup locked in the last locked match")
     void baselineIsTheLineupLockedInTheLastLockedMatch() {
         LineupVersion forFirst = version(LOCK_1.minus(Duration.ofDays(1)));
         LineupVersion forSecond = version(LOCK_1.plus(Duration.ofHours(1)));
@@ -146,6 +157,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("There is no baseline if the manager had no lineup in the last locked match")
     void thereIsNoBaselineIfTheManagerHadNoLineupInTheLastLockedMatch() {
         LineupVersion late = version(LOCK_1.plus(Duration.ofHours(1)));
 
@@ -153,6 +165,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("The current lineup is the last version saved whatever the input order")
     void currentIsTheLastVersionSavedWhateverTheInputOrder() {
         LineupVersion older = version(LOCK_1.minus(Duration.ofDays(2)));
         LineupVersion newer = version(LOCK_1.plus(Duration.ofDays(2)));
@@ -162,6 +175,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("A manager who left and came back starts from scratch")
     void aManagerWhoLeftAndCameBackStartsFromScratch() {
         LineupVersion beforeLeaving = version(LOCK_1.minus(Duration.ofDays(1)));
         Instant rejoined = LOCK_1.plus(Duration.ofHours(1));
@@ -176,6 +190,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("A version saved right when joining counts")
     void aVersionSavedRightWhenJoiningCounts() {
         LineupVersion atJoin = version(MEMBER_SINCE);
         LineupVersion beforeJoin = version(MEMBER_SINCE.minusMillis(1));
@@ -187,6 +202,7 @@ class LineupTimelineTests {
     }
 
     @Test
+    @DisplayName("A locked match keeps its lock whatever the current lock hours")
     void aLockedMatchKeepsItsLockWhateverTheCurrentLockHours() {
         LineupVersion locked = version(LOCK_1.minus(Duration.ofHours(1)));
         LineupVersion afterTheLock = version(LOCK_1.plus(Duration.ofMinutes(10)));

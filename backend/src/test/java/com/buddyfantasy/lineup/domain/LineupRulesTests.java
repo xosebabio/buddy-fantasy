@@ -13,6 +13,7 @@ import com.buddyfantasy.datadefinition.Position;
 import com.buddyfantasy.league.LineupSettings;
 import com.buddyfantasy.shared.domain.ConflictException;
 import com.buddyfantasy.shared.domain.DomainValidationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,12 +66,14 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("A valid lineup passes")
     void aValidLineupPasses() {
         assertThatCode(() -> new LineupRules(PLAIN).requireValid(balancedLineup(), players))
                 .doesNotThrowAnyException();
     }
 
     @Test
+    @DisplayName("The lineup needs exactly the configured size")
     void theLineupNeedsExactlyTheConfiguredSize() {
         LineupRules rules = new LineupRules(PLAIN);
         List<UUID> lineup = balancedLineup();
@@ -82,6 +85,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("A player cannot appear twice")
     void aPlayerCannotAppearTwice() {
         List<UUID> lineup = balancedLineup();
         lineup.set(4, lineup.get(3));
@@ -90,6 +94,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Retired players cannot be lined up")
     void retiredPlayersCannotBeLinedUp() {
         List<UUID> lineup = balancedLineup();
         lineup.set(0, player(Position.GOALKEEPER, "10", false));
@@ -98,6 +103,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Players outside the league's squad are unknown")
     void playersOutsideTheLeaguesSquadAreUnknown() {
         List<UUID> lineup = balancedLineup();
         lineup.set(0, UUID.randomUUID());
@@ -106,6 +112,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("With the formation enabled each position needs its minimum")
     void withTheFormationEnabledEachPositionNeedsItsMinimum() {
         LineupRules rules = new LineupRules(settings(true, 1, 2, 1, 1, false, "100"));
         List<UUID> oneDefender = balancedLineup();
@@ -117,6 +124,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("A zero minimum allows leaving the position out")
     void aZeroMinimumAllowsLeavingThePositionOut() {
         LineupRules rules = new LineupRules(settings(true, 1, 1, 0, 1, false, "100"));
         List<UUID> lineup = balancedLineup();
@@ -126,6 +134,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("With the formation disabled positions do not matter")
     void withTheFormationDisabledPositionsDoNotMatter() {
         List<UUID> forwards = List.of(player(Position.FORWARD, "1"), player(Position.FORWARD, "1"),
                 player(Position.FORWARD, "1"), player(Position.FORWARD, "1"), player(Position.FORWARD, "1"));
@@ -135,6 +144,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Exactly the budget fits and above it is rejected")
     void exactlyTheBudgetFitsAndAboveItIsRejected() {
         List<UUID> lineup = balancedLineup();
 
@@ -145,6 +155,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("With the budget disabled any value fits")
     void withTheBudgetDisabledAnyValueFits() {
         LineupRules rules = new LineupRules(settings(false, 0, 0, 0, 0, false, "1"));
 
@@ -153,6 +164,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("The total value adds up the current values")
     void totalValueAddsTheCurrentValues() {
         List<UUID> lineup = List.of(player(Position.FORWARD, "12.5"), player(Position.DEFENDER, "7.25"));
 
@@ -160,6 +172,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Without a baseline changes are free")
     void withoutABaselineChangesAreFree() {
         LineupRules rules = new LineupRules(PLAIN);
 
@@ -169,6 +182,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Changes are the new players against the baseline")
     void changesAreTheNewPlayersAgainstTheBaseline() {
         List<UUID> previous = balancedLineup();
         List<UUID> lineup = new ArrayList<>(previous);
@@ -179,6 +193,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Putting in and removing a player is no change")
     void puttingAndRemovingAPlayerIsNoChange() {
         List<UUID> previous = balancedLineup();
         List<UUID> reordered = List.of(previous.get(4), previous.get(3), previous.get(2), previous.get(1),
@@ -189,6 +204,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Replacing a retired player is a free change")
     void replacingARetiredPlayerIsFree() {
         List<UUID> previous = balancedLineup();
         UUID retired = previous.get(0);
@@ -201,6 +217,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("A retired player kept in the lineup frees no change")
     void aRetiredPlayerKeptInTheLineupFreesNoChange() {
         List<UUID> previous = balancedLineup();
         UUID retired = previous.get(0);
@@ -212,6 +229,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("Filling the gap after the size grew is free")
     void fillingTheGapAfterTheSizeGrewIsFree() {
         List<UUID> lineup = balancedLineup();
         LineupVersion smaller = baseline(lineup.subList(0, 3));
@@ -223,6 +241,7 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("One change above the maximum is rejected")
     void oneChangeAboveTheMaximumIsRejected() {
         LineupRules rules = new LineupRules(PLAIN);
         List<UUID> previous = balancedLineup();
@@ -241,12 +260,14 @@ class LineupRulesTests {
     }
 
     @Test
+    @DisplayName("A valid lineup has no warnings")
     void aValidLineupHasNoWarnings() {
         assertThat(new LineupRules(settings(false, 0, 0, 0, 0, true, "50")).warnings(balancedLineup(), players))
                 .isEmpty();
     }
 
     @Test
+    @DisplayName("Warns when the saved lineup no longer fits")
     void warnsWhenTheSavedLineupNoLongerFits() {
         List<UUID> lineup = balancedLineup();
         UUID retired = lineup.get(0);

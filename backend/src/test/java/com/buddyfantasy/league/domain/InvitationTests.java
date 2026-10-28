@@ -2,6 +2,7 @@ package com.buddyfantasy.league.domain;
 
 import java.time.Instant;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,6 +12,7 @@ class InvitationTests {
     static final Instant NOW = Instant.parse("2026-01-10T10:00:00Z");
 
     @Test
+    @DisplayName("An issued token is URL-safe and only its hash is stored")
     void issuedTokenIsUrlSafeAndOnlyItsHashIsStored() {
         Invitation.Issued issued = Invitation.issue(LeagueId.generate(), NOW);
 
@@ -21,12 +23,14 @@ class InvitationTests {
     }
 
     @Test
+    @DisplayName("Tokens are unique")
     void tokensAreUnique() {
         LeagueId league = LeagueId.generate();
         assertThat(Invitation.issue(league, NOW).token()).isNotEqualTo(Invitation.issue(league, NOW).token());
     }
 
     @Test
+    @DisplayName("An invitation matches only its own token")
     void matchesOnlyItsOwnToken() {
         Invitation.Issued issued = Invitation.issue(LeagueId.generate(), NOW);
 
@@ -36,6 +40,7 @@ class InvitationTests {
     }
 
     @Test
+    @DisplayName("Revoking is idempotent and keeps the first instant")
     void revokeIsIdempotentAndKeepsTheFirstInstant() {
         Invitation invitation = Invitation.issue(LeagueId.generate(), NOW).invitation();
 

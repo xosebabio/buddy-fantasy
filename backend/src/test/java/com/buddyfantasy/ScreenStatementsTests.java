@@ -15,6 +15,7 @@ import com.buddyfantasy.lineup.application.usecases.lockmatchlineups.LockMatchLi
 import com.buddyfantasy.lineup.application.usecases.savelineup.SaveLineupCommand;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceLine;
 import com.buddyfantasy.shared.application.CommandBus;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -145,6 +146,7 @@ class ScreenStatementsTests {
     }
 
     @Test
+    @DisplayName("The main screens run the same statements whatever the data volume (no N+1)")
     void theMainScreensRunTheSameStatementsWhateverTheVolume() throws Exception {
         clock.now = NOW;
         admin = fixtures.user("admin");

@@ -18,6 +18,7 @@ import com.buddyfantasy.match.domain.Venue;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -70,6 +71,7 @@ class MatchApiTests {
     }
 
     @Test
+    @DisplayName("findMatches returns the league calendar ordered by kickoff, not by matchday")
     void findMatchesReturnsTheLeagueCalendarOrderedByKickoffNotByMatchday() {
         Match first = closed(LEAGUE, 1, KICKOFF);
         // matchday 2 was postponed after matchday 3
@@ -82,6 +84,7 @@ class MatchApiTests {
     }
 
     @Test
+    @DisplayName("findMatches of a league without matches is empty")
     void findMatchesOfALeagueWithoutMatchesIsEmpty() {
         scheduled(OTHER_LEAGUE, 1, KICKOFF);
 
@@ -89,6 +92,7 @@ class MatchApiTests {
     }
 
     @Test
+    @DisplayName("findScheduledKickingOffBefore returns the scheduled matches of every league before the instant")
     void findScheduledKickingOffBeforeReturnsScheduledMatchesOfEveryLeagueBeforeTheInstant() {
         Instant until = KICKOFF.plus(Duration.ofDays(7));
         closed(LEAGUE, 1, KICKOFF.minus(Duration.ofDays(7)));
@@ -102,6 +106,7 @@ class MatchApiTests {
     }
 
     @Test
+    @DisplayName("Each method is a single query without loading the sheets")
     void eachMethodIsASingleQueryWithoutLoadingTheSheets() {
         closed(LEAGUE, 1, KICKOFF);
         closed(LEAGUE, 2, KICKOFF.plus(Duration.ofDays(7)));

@@ -17,6 +17,7 @@ import com.buddyfantasy.TestFixtures;
 import com.buddyfantasy.TestFixtures.TestLeague;
 import com.buddyfantasy.lineup.adapter.in.scheduler.LockDueLineupsJob;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -189,6 +190,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("Raising the lock hours brings forward the lock of a match not locked yet")
     void raisingTheLockHoursBringsForwardTheLockOfAMatchNotLockedYet() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
 
@@ -210,6 +212,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("Lowering the lock hours delays the lock of a match not locked yet")
     void loweringTheLockHoursDelaysTheLockOfAMatchNotLockedYet() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
 
@@ -233,6 +236,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("Lowering the lock hours of a locked match before kickoff does not reopen it")
     void loweringTheLockHoursOfALockedMatchBeforeKickoffDoesNotReopenIt() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         clock.now = LOCK_1.plus(MARGIN);
@@ -260,6 +264,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("Raising the lock hours after a lock keeps the locked lineup as the baseline")
     void raisingTheLockHoursAfterALockKeepsTheLockedLineupAsTheBaseline() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         // the last-minute lineup is the one locked
@@ -282,6 +287,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("Raising the lineup size keeps the carried lineup and filling the gap is free")
     void raisingTheLineupSizeKeepsTheCarriedLineupAndFillingTheGapIsFree() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         clock.now = LOCK_1.plus(MARGIN);
@@ -309,6 +315,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("A carried lineup of the old size is locked as it is")
     void aCarriedLineupOfTheOldSizeIsLockedAsItIs() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
 
@@ -326,6 +333,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("A carried lineup outside a formation enabled later is locked as it is")
     void aCarriedLineupOutsideAFormationEnabledLaterIsLockedAsItIs() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
 
@@ -346,6 +354,7 @@ class LineupSeasonChangesTests {
     }
 
     @Test
+    @DisplayName("Disabling the budget before the lock keeps a lineup from being over budget")
     void disablingTheBudgetBeforeTheLockKeepsALineupFromBeingOverBudget() throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
         // 60 M + 41 M
@@ -373,6 +382,7 @@ class LineupSeasonChangesTests {
     }
 
     @ParameterizedTest
+    @DisplayName("A member who comes back has no lineup and their first new one has no change limit")
     @EnumSource(Exit.class)
     void aMemberWhoComesBackHasNoLineupAndTheFirstNewOneHasNoChangeLimit(Exit exit) throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
@@ -406,6 +416,7 @@ class LineupSeasonChangesTests {
     }
 
     @ParameterizedTest
+    @DisplayName("A member who comes back without saving is left out of the next lock")
     @EnumSource(Exit.class)
     void aMemberWhoComesBackWithoutSavingIsLeftOutOfTheNextLock(Exit exit) throws Exception {
         save(ana, lineupA).andExpect(status().isOk());
