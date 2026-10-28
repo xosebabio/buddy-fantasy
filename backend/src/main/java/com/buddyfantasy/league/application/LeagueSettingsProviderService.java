@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.buddyfantasy.league.LeagueSettingsProvider;
 import com.buddyfantasy.league.LineupSettings;
+import com.buddyfantasy.league.RatingSettings;
 import com.buddyfantasy.league.ScoringTable;
 import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueRepository;
@@ -49,6 +50,16 @@ class LeagueSettingsProviderService implements LeagueSettingsProvider {
         return leagues.findScoringRules(leagueId)
                 .map(rules -> new ScoringTable(rules.points()))
                 .orElseThrow(() -> new NotFoundException("League " + leagueId + " not found"));
+    }
+
+    @Override
+    public RatingSettings ratingSettings(UUID leagueId) {
+        LeagueSettings s = leagues.findSettingsByIds(List.of(leagueId)).get(leagueId);
+        if (s == null) {
+            throw new NotFoundException("League " + leagueId + " not found");
+        }
+        return new RatingSettings(s.ratingWindowHours(), s.ratingFormat(), s.ratingFactor(), s.ratingBase(),
+                s.ratingMinVotes(), s.defaultRating());
     }
 
     @Override

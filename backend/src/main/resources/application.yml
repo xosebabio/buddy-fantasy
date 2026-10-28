@@ -42,7 +42,12 @@ league:
     rating:
       window-hours: 24
       format: SPADES # SPADES (picas 0-4) o DECIMAL (nota 0-10)
-      points-per-unit: 1
+      # Puntos por valoración = factor x media + base, con la conversión del formato de la liga (RF-22).
+      # Picas: 0 = -2, 1 = 2, 2 = 6, 3 = 10, 4 = 14. Nota: 1 punto por punto de nota.
+      conversion:
+        spades: { factor: 4, base: -2 }
+        decimal: { factor: 1, base: 0 }
+      min-votes: 1 # con menos votos, el jugador cuenta como sin valoraciones (RF-23)
       # default-rating: sin definir = sin nota por defecto para jugadores sin valoraciones
     lineup:
       size: 7

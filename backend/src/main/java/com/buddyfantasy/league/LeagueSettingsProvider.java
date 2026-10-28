@@ -20,6 +20,12 @@ public interface LeagueSettingsProvider {
     ScoringTable scoringRules(UUID leagueId);
 
     /**
+     * The league's current rating parameters, with the conversion of its current format, in one query. Throws
+     * {@link com.buddyfantasy.shared.domain.NotFoundException} (404) if the league does not exist.
+     */
+    RatingSettings ratingSettings(UUID leagueId);
+
+    /**
      * The configured maximum of {@link LineupSettings#lockHours()} ({@code league.limits.lineup-lock-hours-max}),
      * checked when a league saves its parameters: how far ahead of kickoff a lineup lock can be. Lowering it does not
      * change leagues that already have more.

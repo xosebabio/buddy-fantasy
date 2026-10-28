@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.buddyfantasy.PostgresTestConfig;
 import com.buddyfantasy.datadefinition.Position;
+import com.buddyfantasy.datadefinition.RatingFormat;
 import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.league.application.port.out.LeagueDefaultsRepository;
 import com.buddyfantasy.league.application.port.out.LeagueLimitsRepository;
@@ -62,7 +63,8 @@ class LeagueSettingsProviderTests {
         League league = league("Formation");
         LeagueSettings d = defaults.settings();
         LeagueSettings settings = new LeagueSettings(d.ratingWindowHours(), d.ratingFormat(),
-                d.ratingPointsPerUnit(), d.defaultRating(), 24, 3, 9, true, 1, 3, 2, 0, false,
+                d.ratingSpadesFactor(), d.ratingSpadesBase(), d.ratingDecimalFactor(), d.ratingDecimalBase(),
+                d.ratingMinVotes(), d.defaultRating(), 24, 3, 9, true, 1, 3, 2, 0, false,
                 new BigDecimal("80"), d.marketK(), d.marketMaxChangePct(), d.marketMinValue());
         League updated = league.withSettings(settings, league.scoringRules(), limits.get());
         leagues.save(updated);
@@ -172,6 +174,62 @@ class LeagueSettingsProviderTests {
     @DisplayName("The scoring table of an unknown league is not found")
     void scoringTableOfAnUnknownLeagueIsNotFound() {
         assertThatThrownBy(() -> provider.scoringRules(UUID.randomUUID())).isInstanceOf(NotFoundException.class);
+    }
+
+    private League leagueWithRatingSettings(RatingFormat format) {
+        League league = league("Rating");
+        LeagueSettings d = defaults.settings();
+        LeagueSettings settings = new LeagueSettings(12, format, new BigDecimal("3"), new BigDecimal("-1"),
+                new BigDecimal("1.5"), new BigDecimal("0.5"), 2, new BigDecimal("2"), d.lineupLockHours(),
+                d.lineupMaxChanges(), d.lineupSize(), d.lineupFormationEnabled(), d.lineupMinGoalkeepers(),
+                d.lineupMinDefenders(), d.lineupMinMidfielders(), d.lineupMinForwards(), d.lineupBudgetEnabled(),
+                d.lineupBudget(), d.marketK(), d.marketMaxChangePct(), d.marketMinValue());
+        League updated = league.withSettings(settings, league.scoringRules(), limits.get());
+        leagues.save(updated);
+        return updated;
+    }
+
+    @Test
+    @DisplayName("Returns the rating parameters with the conversion of the current format in a single query")
+    void returnsTheRatingParametersWithTheConversionOfTheCurrentFormatInASingleQuery() {
+        League spades = leagueWithRatingSettings(RatingFormat.SPADES);
+        League decimal = leagueWithRatingSettings(RatingFormat.DECIMAL);
+        Statistics statistics = statistics();
+
+        RatingSettings settings = provider.ratingSettings(spades.id().value());
+
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
+        assertThat(settings.windowHours()).isEqualTo(12);
+        assertThat(settings.format()).isEqualTo(RatingFormat.SPADES);
+        assertThat(settings.factor()).isEqualByComparingTo("3");
+        assertThat(settings.base()).isEqualByComparingTo("-1");
+        assertThat(settings.minVotes()).isEqualTo(2);
+        assertThat(settings.defaultRating()).isEqualByComparingTo("2");
+        RatingSettings decimalSettings = provider.ratingSettings(decimal.id().value());
+        assertThat(decimalSettings.format()).isEqualTo(RatingFormat.DECIMAL);
+        assertThat(decimalSettings.factor()).isEqualByComparingTo("1.5");
+        assertThat(decimalSettings.base()).isEqualByComparingTo("0.5");
+    }
+
+    @Test
+    @DisplayName("A default league has the default rating parameters")
+    void defaultLeagueHasTheDefaultRatingParameters() {
+        League league = league("Default");
+
+        RatingSettings settings = provider.ratingSettings(league.id().value());
+
+        assertThat(settings.windowHours()).isEqualTo(24);
+        assertThat(settings.format()).isEqualTo(RatingFormat.SPADES);
+        assertThat(settings.factor()).isEqualByComparingTo("4");
+        assertThat(settings.base()).isEqualByComparingTo("-2");
+        assertThat(settings.minVotes()).isEqualTo(1);
+        assertThat(settings.defaultRating()).isNull();
+    }
+
+    @Test
+    @DisplayName("The rating parameters of an unknown league are not found")
+    void ratingParametersOfAnUnknownLeagueAreNotFound() {
+        assertThatThrownBy(() -> provider.ratingSettings(UUID.randomUUID())).isInstanceOf(NotFoundException.class);
     }
 
     @Test

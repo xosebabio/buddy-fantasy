@@ -3,7 +3,7 @@ package com.buddyfantasy.league.adapter.out.persistence;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import com.buddyfantasy.league.domain.RatingFormat;
+import com.buddyfantasy.datadefinition.RatingFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -26,8 +26,20 @@ class LeagueSettingsEntity {
     @Column(name = "rating_format", nullable = false)
     RatingFormat ratingFormat;
 
-    @Column(name = "rating_points_per_unit", nullable = false)
-    BigDecimal ratingPointsPerUnit;
+    @Column(name = "rating_spades_factor", nullable = false)
+    BigDecimal ratingSpadesFactor;
+
+    @Column(name = "rating_spades_base", nullable = false)
+    BigDecimal ratingSpadesBase;
+
+    @Column(name = "rating_decimal_factor", nullable = false)
+    BigDecimal ratingDecimalFactor;
+
+    @Column(name = "rating_decimal_base", nullable = false)
+    BigDecimal ratingDecimalBase;
+
+    @Column(name = "rating_min_votes", nullable = false)
+    int ratingMinVotes;
 
     @Column(name = "default_rating")
     BigDecimal defaultRating;
@@ -75,7 +87,8 @@ class LeagueSettingsEntity {
     }
 
     LeagueSettingsEntity(UUID leagueId, int ratingWindowHours, RatingFormat ratingFormat,
-                         BigDecimal ratingPointsPerUnit, BigDecimal defaultRating, int lineupLockHours,
+                         BigDecimal ratingSpadesFactor, BigDecimal ratingSpadesBase, BigDecimal ratingDecimalFactor,
+                         BigDecimal ratingDecimalBase, int ratingMinVotes, BigDecimal defaultRating, int lineupLockHours,
                          int lineupMaxChanges, int lineupSize, boolean lineupFormationEnabled,
                          short lineupMinGoalkeepers, short lineupMinDefenders, short lineupMinMidfielders,
                          short lineupMinForwards, boolean lineupBudgetEnabled, BigDecimal lineupBudget,
@@ -83,7 +96,11 @@ class LeagueSettingsEntity {
         this.leagueId = leagueId;
         this.ratingWindowHours = ratingWindowHours;
         this.ratingFormat = ratingFormat;
-        this.ratingPointsPerUnit = ratingPointsPerUnit;
+        this.ratingSpadesFactor = ratingSpadesFactor;
+        this.ratingSpadesBase = ratingSpadesBase;
+        this.ratingDecimalFactor = ratingDecimalFactor;
+        this.ratingDecimalBase = ratingDecimalBase;
+        this.ratingMinVotes = ratingMinVotes;
         this.defaultRating = defaultRating;
         this.lineupLockHours = lineupLockHours;
         this.lineupMaxChanges = lineupMaxChanges;

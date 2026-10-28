@@ -62,7 +62,8 @@ class LeagueLimitsTests {
 
     private static LeagueSettings withLockHours(int lockHours) {
         LeagueSettings s = TestLeagueDefaults.settings();
-        return new LeagueSettings(s.ratingWindowHours(), s.ratingFormat(), s.ratingPointsPerUnit(),
+        return new LeagueSettings(s.ratingWindowHours(), s.ratingFormat(), s.ratingSpadesFactor(),
+                s.ratingSpadesBase(), s.ratingDecimalFactor(), s.ratingDecimalBase(), s.ratingMinVotes(),
                 s.defaultRating(), lockHours, s.lineupMaxChanges(), s.lineupSize(), s.lineupFormationEnabled(),
                 s.lineupMinGoalkeepers(), s.lineupMinDefenders(), s.lineupMinMidfielders(), s.lineupMinForwards(),
                 s.lineupBudgetEnabled(), s.lineupBudget(), s.marketK(), s.marketMaxChangePct(), s.marketMinValue());

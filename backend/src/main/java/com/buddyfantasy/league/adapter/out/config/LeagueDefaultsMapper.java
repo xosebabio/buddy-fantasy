@@ -13,11 +13,14 @@ class LeagueDefaultsMapper {
         LeagueDefaultsProperties.Rating rating = require(p.rating(), "rating");
         LeagueDefaultsProperties.Lineup lineup = require(p.lineup(), "lineup");
         LeagueDefaultsProperties.Market market = require(p.market(), "market");
-        return new LeagueSettings(rating.windowHours(), rating.format(), rating.pointsPerUnit(),
-                rating.defaultRating(), lineup.lockHours(), lineup.maxChanges(), lineup.size(),
-                lineup.formationEnabled(), lineup.minGoalkeepers(), lineup.minDefenders(), lineup.minMidfielders(),
-                lineup.minForwards(), lineup.budgetEnabled(), lineup.budget(), market.k(), market.maxChangePct(),
-                market.minValue());
+        LeagueDefaultsProperties.Conversions conversion = require(rating.conversion(), "rating.conversion");
+        LeagueDefaultsProperties.Conversion spades = require(conversion.spades(), "rating.conversion.spades");
+        LeagueDefaultsProperties.Conversion decimal = require(conversion.decimal(), "rating.conversion.decimal");
+        return new LeagueSettings(rating.windowHours(), rating.format(), spades.factor(), spades.base(),
+                decimal.factor(), decimal.base(), rating.minVotes(), rating.defaultRating(), lineup.lockHours(),
+                lineup.maxChanges(), lineup.size(), lineup.formationEnabled(), lineup.minGoalkeepers(),
+                lineup.minDefenders(), lineup.minMidfielders(), lineup.minForwards(), lineup.budgetEnabled(),
+                lineup.budget(), market.k(), market.maxChangePct(), market.minValue());
     }
 
     /** Throws {@link DomainValidationException} if the table is incomplete. */

@@ -19,7 +19,7 @@ import com.buddyfantasy.league.application.usecases.getleaguesettings.LeagueSett
 import com.buddyfantasy.league.application.usecases.joinleague.JoinLeagueCommand;
 import com.buddyfantasy.league.application.usecases.updateleaguesettings.UpdateLeagueSettingsCommand;
 import com.buddyfantasy.league.domain.LeagueSettings;
-import com.buddyfantasy.league.domain.RatingFormat;
+import com.buddyfantasy.datadefinition.RatingFormat;
 import com.buddyfantasy.league.domain.ScoringRules;
 import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.PerformanceLine;
@@ -151,7 +151,11 @@ public class TestFixtures {
 
         public int ratingWindowHours;
         public RatingFormat ratingFormat;
-        public BigDecimal ratingPointsPerUnit;
+        public BigDecimal ratingSpadesFactor;
+        public BigDecimal ratingSpadesBase;
+        public BigDecimal ratingDecimalFactor;
+        public BigDecimal ratingDecimalBase;
+        public int ratingMinVotes;
         public BigDecimal defaultRating;
         public int lineupLockHours;
         public int lineupMaxChanges;
@@ -170,7 +174,11 @@ public class TestFixtures {
         EditableSettings(LeagueSettings settings) {
             ratingWindowHours = settings.ratingWindowHours();
             ratingFormat = settings.ratingFormat();
-            ratingPointsPerUnit = settings.ratingPointsPerUnit();
+            ratingSpadesFactor = settings.ratingSpadesFactor();
+            ratingSpadesBase = settings.ratingSpadesBase();
+            ratingDecimalFactor = settings.ratingDecimalFactor();
+            ratingDecimalBase = settings.ratingDecimalBase();
+            ratingMinVotes = settings.ratingMinVotes();
             defaultRating = settings.defaultRating();
             lineupLockHours = settings.lineupLockHours();
             lineupMaxChanges = settings.lineupMaxChanges();
@@ -188,10 +196,11 @@ public class TestFixtures {
         }
 
         LeagueSettings toSettings() {
-            return new LeagueSettings(ratingWindowHours, ratingFormat, ratingPointsPerUnit, defaultRating,
-                    lineupLockHours, lineupMaxChanges, lineupSize, lineupFormationEnabled, lineupMinGoalkeepers,
-                    lineupMinDefenders, lineupMinMidfielders, lineupMinForwards, lineupBudgetEnabled, lineupBudget,
-                    marketK, marketMaxChangePct, marketMinValue);
+            return new LeagueSettings(ratingWindowHours, ratingFormat, ratingSpadesFactor, ratingSpadesBase,
+                    ratingDecimalFactor, ratingDecimalBase, ratingMinVotes, defaultRating, lineupLockHours,
+                    lineupMaxChanges, lineupSize, lineupFormationEnabled, lineupMinGoalkeepers, lineupMinDefenders,
+                    lineupMinMidfielders, lineupMinForwards, lineupBudgetEnabled, lineupBudget, marketK,
+                    marketMaxChangePct, marketMinValue);
         }
     }
 }

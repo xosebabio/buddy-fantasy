@@ -96,6 +96,12 @@ class LeagueSettingsEndpointsTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ratingWindowHours").value(24))
                 .andExpect(jsonPath("$.ratingFormat").value("SPADES"))
+                .andExpect(jsonPath("$.ratingSpadesFactor").value(4))
+                .andExpect(jsonPath("$.ratingSpadesBase").value(-2))
+                .andExpect(jsonPath("$.ratingDecimalFactor").value(1))
+                .andExpect(jsonPath("$.ratingDecimalBase").value(0))
+                .andExpect(jsonPath("$.ratingMinVotes").value(1))
+                .andExpect(jsonPath("$.ratingPointsPerUnit").doesNotExist())
                 .andExpect(jsonPath("$.lineupSize").value(7))
                 .andExpect(jsonPath("$.lineupLockHours").value(2))
                 .andExpect(jsonPath("$.lineupFormationEnabled").value(false))
@@ -114,6 +120,7 @@ class LeagueSettingsEndpointsTests {
     void adminReplacesSettingsAndScoringRules() throws Exception {
         ObjectNode body = currentSettings();
         body.put("lineupSize", 9).put("ratingFormat", "DECIMAL").put("defaultRating", 5)
+                .put("ratingDecimalFactor", 1.5).put("ratingDecimalBase", -1).put("ratingMinVotes", 3)
                 .put("lineupBudgetEnabled", true).put("marketK", 0.1);
         ((ObjectNode) body.get("scoringRules").get("GOAL")).put("FORWARD", 4);
 
@@ -125,6 +132,10 @@ class LeagueSettingsEndpointsTests {
                 .andExpect(jsonPath("$.lineupSize").value(9))
                 .andExpect(jsonPath("$.ratingFormat").value("DECIMAL"))
                 .andExpect(jsonPath("$.defaultRating").value(5))
+                .andExpect(jsonPath("$.ratingDecimalFactor").value(1.5))
+                .andExpect(jsonPath("$.ratingDecimalBase").value(-1))
+                .andExpect(jsonPath("$.ratingSpadesFactor").value(4))
+                .andExpect(jsonPath("$.ratingMinVotes").value(3))
                 .andExpect(jsonPath("$.lineupBudgetEnabled").value(true))
                 .andExpect(jsonPath("$.marketK").value(0.1))
                 .andExpect(jsonPath("$.scoringRules.GOAL.FORWARD").value(4))
@@ -172,6 +183,10 @@ class LeagueSettingsEndpointsTests {
         update(admin, currentSettings().put("marketMaxChangePct", 101)).andExpect(status().isBadRequest());
         update(admin, currentSettings().put("defaultRating", 5)).andExpect(status().isBadRequest()); // SPADES max is 4
         update(admin, currentSettings().put("ratingFormat", "BOGUS")).andExpect(status().isBadRequest());
+        update(admin, currentSettings().put("ratingSpadesFactor", 0)).andExpect(status().isBadRequest());
+        update(admin, currentSettings().put("ratingDecimalFactor", 100000)).andExpect(status().isBadRequest());
+        update(admin, currentSettings().putNull("ratingSpadesBase")).andExpect(status().isBadRequest());
+        update(admin, currentSettings().put("ratingMinVotes", 0)).andExpect(status().isBadRequest());
         update(admin, currentSettings().put("lineupLockHours", 169)).andExpect(status().isBadRequest());
         update(admin, currentSettings().put("lineupMinDefenders", -1)).andExpect(status().isBadRequest());
         update(admin, currentSettings().put("lineupFormationEnabled", true).put("lineupMinMidfielders", 5))

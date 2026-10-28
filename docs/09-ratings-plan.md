@@ -141,7 +141,7 @@ Cada test nuevo se comprueba quitando a mano la defensa que prueba.
 
 | # | Tarea | Resultado | Hecho |
 | --- | --- | --- | --- |
-| 1 | `RatingFormat` a `datadefinition`; V13, conversión por formato y `ratingMinVotes` en `LeagueSettings`, defaults, persistencia y API de parámetros; `RatingSettings` y `LeagueSettingsProvider.ratingSettings`, con sus tests | Parámetros de valoración listos (parte de `league` del ítem de RF-22, RF-23) | |
+| 1 | `RatingFormat` a `datadefinition`; V13, conversión por formato y `ratingMinVotes` en `LeagueSettings`, defaults, persistencia y API de parámetros; `RatingSettings` y `LeagueSettingsProvider.ratingSettings`, con sus tests | Parámetros de valoración listos (parte de `league` del ítem de RF-22, RF-23) | ✅ |
 | 2 | V14, `RatingRules`, `RatingConversion`, `RatingWindow`, `RatingWindowClosed`, `RatingsCorrected`, con tests unitarios; `allowedDependencies` de `rating` | Dominio verificado (RF-17, RF-19, RF-22, RF-23) | |
 | 3 | Persistencia, listeners de `MatchClosed` y `MatchCorrected`, `CloseRatingWindowCommand` y `CloseDueRatingWindowsJob`; reenvíos | Ventana abierta y cerrada con job y ShedLock (RF-17) | |
 | 4 | `SaveMyRatingsCommand`, `GetMatchRatingsQuery`, `ListRatingWindowsQuery` y sus endpoints; anonimato y concurrencia con el cierre | RF-18 a RF-21 | |
