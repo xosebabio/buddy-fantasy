@@ -43,7 +43,7 @@ record LeagueSettingsBody(
                 example = "2")
         BigDecimal defaultRating,
         @Schema(description = "Horas antes del partido en que se bloquean las alineaciones. De 0 a "
-                + "`league.limits.lineup-lock-hours-max`.", minimum = "0", example = "2")
+                + "`league.limits.lineup-lock-hours-max` (`lineupLockHoursMax` de `GET /settings/limits`).", minimum = "0", example = "2")
         int lineupLockHours,
         @Schema(description = "Cambios por jornada contra la alineación bloqueada anterior. Mínimo 0.", minimum = "0",
                 example = "2")

@@ -15,21 +15,21 @@ record PlayerPerformanceRequest(
         @Schema(description = "Id de un jugador de la plantilla. Uno dado de baja solo puede seguir si ya estaba en "
                 + "el acta.", example = ApiExamples.PLAYER_ID)
         @NotNull UUID playerId,
-        @Schema(description = "Goles normales, sin contar los de penalti. De 0 a `match.limits.stat-count-max`.",
+        @Schema(description = "Goles normales, sin contar los de penalti. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).",
                 minimum = "0", example = "1")
         int goals,
-        @Schema(description = "Goles de penalti. De 0 a `match.limits.stat-count-max`.", minimum = "0",
+        @Schema(description = "Goles de penalti. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).", minimum = "0",
                 example = "1")
         int penaltyGoals,
-        @Schema(description = "Penaltis parados. De 0 a `match.limits.stat-count-max`.", minimum = "0",
+        @Schema(description = "Penaltis parados. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).", minimum = "0",
                 example = "0")
         int penaltiesSaved,
-        @Schema(description = "Penaltis fallados. De 0 a `match.limits.stat-count-max`.", minimum = "0",
+        @Schema(description = "Penaltis fallados. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).", minimum = "0",
                 example = "0")
         int penaltiesMissed,
-        @Schema(description = "Asistencias. De 0 a `match.limits.stat-count-max`.", minimum = "0", example = "1")
+        @Schema(description = "Asistencias. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).", minimum = "0", example = "1")
         int assists,
-        @Schema(description = "Goles en propia puerta. De 0 a `match.limits.stat-count-max`.", minimum = "0",
+        @Schema(description = "Goles en propia puerta. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).", minimum = "0",
                 example = "0")
         int ownGoals,
         @Schema(description = "Tarjeta amarilla.", example = "true")

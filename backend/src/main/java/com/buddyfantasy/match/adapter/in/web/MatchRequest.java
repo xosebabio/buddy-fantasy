@@ -14,11 +14,12 @@ import jakarta.validation.constraints.NotNull;
  */
 @Schema(description = "Datos de un partido del calendario (RF-12). Una jornada tiene un único partido.")
 record MatchRequest(
-        @Schema(description = "Número de jornada, desde `match.limits.matchday-min` y sin repetir en la liga.",
+        @Schema(description = "Número de jornada, desde `match.limits.matchday-min` (`matchdayMin` de `GET /matches/limits`) y sin repetir en la "
+                + "liga.",
                 example = "3")
         @NotNull Integer matchday,
         @Schema(description = "Nombre del rival, sin espacios al principio ni al final. Como mucho "
-                + "`match.limits.opponent-max-length` caracteres.", example = "Atlético Lavadores")
+                + "`match.limits.opponent-max-length` caracteres (`opponentMaxLength` de `GET /matches/limits`).", example = "Atlético Lavadores")
         @NotBlank String opponent,
         @Schema(description = "Si el equipo juega en casa o fuera.", example = "HOME")
         @NotNull Venue venue,

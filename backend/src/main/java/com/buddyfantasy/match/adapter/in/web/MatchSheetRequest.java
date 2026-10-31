@@ -17,6 +17,7 @@ record MatchSheetRequest(
                 + "necesita.", nullable = true)
         @Valid MatchResultRequest result,
         @ArraySchema(arraySchema = @Schema(description = "Los jugadores que jugaron, cada uno una vez y como mucho "
-                + "`match.limits.sheet-players-max`. Un partido cerrado necesita al menos uno."))
+                + "`match.limits.sheet-players-max` (`sheetPlayersMax` de `GET /matches/limits`). Un partido "
+                + "cerrado necesita al menos uno."))
         @NotNull List<@NotNull @Valid PlayerPerformanceRequest> performances) {
 }

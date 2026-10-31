@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.buddyfantasy.league.application.usecases.createleague.CreateLeagueCommand;
 import com.buddyfantasy.league.application.usecases.createleague.CreatedLeague;
 import com.buddyfantasy.league.application.usecases.getleague.GetLeagueQuery;
+import com.buddyfantasy.league.application.usecases.getleaguelimits.GetLeagueLimitsQuery;
 import com.buddyfantasy.league.application.usecases.getleaguesettings.GetLeagueSettingsQuery;
 import com.buddyfantasy.league.application.usecases.updateleaguesettings.UpdateLeagueSettingsCommand;
 import com.buddyfantasy.shared.application.CommandBus;
@@ -75,6 +76,17 @@ class LeagueController {
                                 @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
                                 @PathVariable UUID id) {
         return LeagueSettingsWebMapper.toBody(bus.ask(new GetLeagueSettingsQuery(user.userId(), id)));
+    }
+
+    @Operation(summary = "Ver los límites de los parámetros",
+            description = "Rol mínimo: administrador. Los límites de `league.limits` que acotan el formulario de parámetros, para validarlo antes de enviarlo (RF-07). Solo lectura y globales.")
+    @ApiResponse(responseCode = "200", description = "Los límites configurados.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga (o no existe).")
+    @GetMapping("/api/leagues/{id}/settings/limits")
+    LeagueLimitsResponse limits(@AuthenticationPrincipal CurrentUser user,
+                                @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                                @PathVariable UUID id) {
+        return LeagueLimitsResponse.from(bus.ask(new GetLeagueLimitsQuery(user.userId(), id)));
     }
 
     @Operation(summary = "Cambiar los parámetros de la liga",

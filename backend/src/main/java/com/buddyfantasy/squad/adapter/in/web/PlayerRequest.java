@@ -14,10 +14,11 @@ import jakarta.validation.constraints.NotNull;
 @Schema(description = "Ficha de un jugador del equipo real (RF-09, RF-10).")
 record PlayerRequest(
         @Schema(description = "Nombre, sin espacios al principio ni al final. Como mucho "
-                + "`squad.limits.name-max-length` caracteres.", example = "Iago Aspas")
+                + "`squad.limits.name-max-length` caracteres (`nameMaxLength` de `GET /players/limits`).", example = "Iago Aspas")
         @NotBlank String name,
         @Schema(description = "Dorsal, opcional. Entre `squad.limits.shirt-number-min` y "
-                + "`squad.limits.shirt-number-max`, y sin repetir entre los jugadores activos de la liga.",
+                + "`squad.limits.shirt-number-max` (`shirtNumberMin` y `shirtNumberMax` de `GET /players/limits`), y sin "
+                + "repetir entre los jugadores activos de la liga.",
                 nullable = true, example = "10")
         Integer shirtNumber,
         @Schema(description = "Posición en el campo.", example = "FORWARD")

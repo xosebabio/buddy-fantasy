@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Resultado final, desde el punto de vista del equipo.")
 record MatchResultRequest(
-        @Schema(description = "Goles a favor, de 0 a `match.limits.goals-max`.", minimum = "0", example = "3")
+        @Schema(description = "Goles a favor, de 0 a `match.limits.goals-max` (`goalsMax` de `GET /matches/limits`).", minimum = "0", example = "3")
         @NotNull Integer goalsFor,
-        @Schema(description = "Goles en contra, de 0 a `match.limits.goals-max`.", minimum = "0", example = "1")
+        @Schema(description = "Goles en contra, de 0 a `match.limits.goals-max` (`goalsMax` de `GET /matches/limits`).", minimum = "0", example = "1")
         @NotNull Integer goalsAgainst) {
 }

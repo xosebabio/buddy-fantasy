@@ -196,6 +196,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/leagues/{id}/matches/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver los límites de los partidos y el acta
+         * @description Rol mínimo: administrador. Los límites de `match.limits` que acotan los formularios de partido y acta, para validarlos antes de enviarlos (RF-12, RF-13). Solo lectura y globales.
+         */
+        get: operations["limits_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/leagues/{id}/matches/{matchId}": {
         parameters: {
             query?: never;
@@ -362,6 +382,26 @@ export interface paths {
          * @description Rol mínimo: administrador. Alta en la plantilla con su valor inicial (RF-09).
          */
         post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/leagues/{id}/players/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver los límites de la ficha de un jugador
+         * @description Rol mínimo: administrador. Los límites de `squad.limits` que acotan el formulario del jugador, para validarlo antes de enviarlo (RF-09, RF-10). Solo lectura y globales.
+         */
+        get: operations["limits_1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -548,6 +588,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/leagues/{id}/settings/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver los límites de los parámetros
+         * @description Rol mínimo: administrador. Los límites de `league.limits` que acotan el formulario de parámetros, para validarlo antes de enviarlo (RF-07). Solo lectura y globales.
+         */
+        get: operations["limits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/leagues/{id}/standings": {
         parameters: {
             query?: never;
@@ -698,6 +758,15 @@ export interface components {
              */
             leagueId: string;
         };
+        /** @description Límites configurados de los parámetros de la liga (`league.limits`), para validar el formulario antes de enviarlo. Son globales, no cambian por liga. */
+        LeagueLimitsResponse: {
+            /**
+             * Format: int32
+             * @description Horas máximas de antelación del bloqueo de alineaciones (`league.limits.lineup-lock-hours-max`).
+             * @example 168
+             */
+            lineupLockHoursMax: number;
+        };
         /** @description Liga vista por uno de sus miembros, con el rol que tiene en ella. */
         LeagueResponse: {
             /**
@@ -748,7 +817,7 @@ export interface components {
             lineupFormationEnabled: boolean;
             /**
              * Format: int32
-             * @description Horas antes del partido en que se bloquean las alineaciones. De 0 a `league.limits.lineup-lock-hours-max`.
+             * @description Horas antes del partido en que se bloquean las alineaciones. De 0 a `league.limits.lineup-lock-hours-max` (`lineupLockHoursMax` de `GET /settings/limits`).
              * @example 2
              */
             lineupLockHours: number;
@@ -1124,6 +1193,39 @@ export interface components {
              */
             occurredAt: string;
         };
+        /** @description Límites configurados de los partidos y el acta (`match.limits`), para validar los formularios antes de enviarlos. Son globales, no cambian por liga. */
+        MatchLimitsResponse: {
+            /**
+             * Format: int32
+             * @description Goles máximos por equipo en el resultado (`match.limits.goals-max`).
+             * @example 99
+             */
+            goalsMax: number;
+            /**
+             * Format: int32
+             * @description Jornada mínima (`match.limits.matchday-min`).
+             * @example 1
+             */
+            matchdayMin: number;
+            /**
+             * Format: int32
+             * @description Caracteres máximos del rival (`match.limits.opponent-max-length`).
+             * @example 100
+             */
+            opponentMaxLength: number;
+            /**
+             * Format: int32
+             * @description Jugadores máximos en el acta (`match.limits.sheet-players-max`).
+             * @example 30
+             */
+            sheetPlayersMax: number;
+            /**
+             * Format: int32
+             * @description Máximo por jugador y estadística del acta (`match.limits.stat-count-max`).
+             * @example 99
+             */
+            statCountMax: number;
+        };
         /** @description Las valoraciones de un partido vistas por un miembro, según el reloj del servidor (RF-18 a RF-21): sus propios votos y, cuando el job cierra la ventana, la media de cada jugador. Nunca los votos de otro miembro, tampoco para el administrador. */
         MatchRatingsResponse: {
             /**
@@ -1182,12 +1284,12 @@ export interface components {
             kickoffAt: string;
             /**
              * Format: int32
-             * @description Número de jornada, desde `match.limits.matchday-min` y sin repetir en la liga.
+             * @description Número de jornada, desde `match.limits.matchday-min` (`matchdayMin` de `GET /matches/limits`) y sin repetir en la liga.
              * @example 3
              */
             matchday: number;
             /**
-             * @description Nombre del rival, sin espacios al principio ni al final. Como mucho `match.limits.opponent-max-length` caracteres.
+             * @description Nombre del rival, sin espacios al principio ni al final. Como mucho `match.limits.opponent-max-length` caracteres (`opponentMaxLength` de `GET /matches/limits`).
              * @example Atlético Lavadores
              */
             opponent: string;
@@ -1257,13 +1359,13 @@ export interface components {
         MatchResultRequest: {
             /**
              * Format: int32
-             * @description Goles en contra, de 0 a `match.limits.goals-max`.
+             * @description Goles en contra, de 0 a `match.limits.goals-max` (`goalsMax` de `GET /matches/limits`).
              * @example 1
              */
             goalsAgainst: number;
             /**
              * Format: int32
-             * @description Goles a favor, de 0 a `match.limits.goals-max`.
+             * @description Goles a favor, de 0 a `match.limits.goals-max` (`goalsMax` de `GET /matches/limits`).
              * @example 3
              */
             goalsFor: number;
@@ -1285,7 +1387,7 @@ export interface components {
         };
         /** @description Acta completa del partido (RF-13, RF-14): reemplaza la anterior. */
         MatchSheetRequest: {
-            /** @description Los jugadores que jugaron, cada uno una vez y como mucho `match.limits.sheet-players-max`. Un partido cerrado necesita al menos uno. */
+            /** @description Los jugadores que jugaron, cada uno una vez y como mucho `match.limits.sheet-players-max` (`sheetPlayersMax` de `GET /matches/limits`). Un partido cerrado necesita al menos uno. */
             performances: components["schemas"]["PlayerPerformanceRequest"][];
             /** @description Resultado; null en un borrador de un partido sin cerrar. Un partido cerrado lo necesita. */
             result?: components["schemas"]["MatchResultRequest"] | null;
@@ -1682,7 +1784,7 @@ export interface components {
         PlayerPerformanceRequest: {
             /**
              * Format: int32
-             * @description Asistencias. De 0 a `match.limits.stat-count-max`.
+             * @description Asistencias. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).
              * @example 1
              */
             assists?: number;
@@ -1693,31 +1795,31 @@ export interface components {
             doubleYellow?: boolean;
             /**
              * Format: int32
-             * @description Goles normales, sin contar los de penalti. De 0 a `match.limits.stat-count-max`.
+             * @description Goles normales, sin contar los de penalti. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).
              * @example 1
              */
             goals?: number;
             /**
              * Format: int32
-             * @description Goles en propia puerta. De 0 a `match.limits.stat-count-max`.
+             * @description Goles en propia puerta. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).
              * @example 0
              */
             ownGoals?: number;
             /**
              * Format: int32
-             * @description Penaltis fallados. De 0 a `match.limits.stat-count-max`.
+             * @description Penaltis fallados. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).
              * @example 0
              */
             penaltiesMissed?: number;
             /**
              * Format: int32
-             * @description Penaltis parados. De 0 a `match.limits.stat-count-max`.
+             * @description Penaltis parados. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).
              * @example 0
              */
             penaltiesSaved?: number;
             /**
              * Format: int32
-             * @description Goles de penalti. De 0 a `match.limits.stat-count-max`.
+             * @description Goles de penalti. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).
              * @example 1
              */
             penaltyGoals?: number;
@@ -1865,7 +1967,7 @@ export interface components {
              */
             initialValue: number;
             /**
-             * @description Nombre, sin espacios al principio ni al final. Como mucho `squad.limits.name-max-length` caracteres.
+             * @description Nombre, sin espacios al principio ni al final. Como mucho `squad.limits.name-max-length` caracteres (`nameMaxLength` de `GET /players/limits`).
              * @example Iago Aspas
              */
             name: string;
@@ -1877,7 +1979,7 @@ export interface components {
             position: "GOALKEEPER" | "DEFENDER" | "MIDFIELDER" | "FORWARD";
             /**
              * Format: int32
-             * @description Dorsal, opcional. Entre `squad.limits.shirt-number-min` y `squad.limits.shirt-number-max`, y sin repetir entre los jugadores activos de la liga.
+             * @description Dorsal, opcional. Entre `squad.limits.shirt-number-min` y `squad.limits.shirt-number-max` (`shirtNumberMin` y `shirtNumberMax` de `GET /players/limits`), y sin repetir entre los jugadores activos de la liga.
              * @example 10
              */
             shirtNumber?: number | null;
@@ -2034,6 +2136,27 @@ export interface components {
          * @enum {string}
          */
         ScoringAction: "GOAL" | "PENALTY_GOAL" | "PENALTY_SAVED" | "PENALTY_MISSED" | "ASSIST" | "OWN_GOAL" | "YELLOW_CARD" | "DOUBLE_YELLOW" | "RED_CARD";
+        /** @description Límites configurados de la ficha de un jugador (`squad.limits`), para validar el formulario antes de enviarlo. Son globales, no cambian por liga. */
+        SquadLimitsResponse: {
+            /**
+             * Format: int32
+             * @description Caracteres máximos del nombre (`squad.limits.name-max-length`).
+             * @example 100
+             */
+            nameMaxLength: number;
+            /**
+             * Format: int32
+             * @description Dorsal máximo (`squad.limits.shirt-number-max`).
+             * @example 99
+             */
+            shirtNumberMax: number;
+            /**
+             * Format: int32
+             * @description Dorsal mínimo (`squad.limits.shirt-number-min`).
+             * @example 0
+             */
+            shirtNumberMin: number;
+        };
         /** @description Fila de la clasificación general. */
         StandingResponse: {
             /**
@@ -2767,6 +2890,48 @@ export interface operations {
                      *       "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/matches"
                      *     }
                      */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    limits_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Id de la liga.
+                 * @example 3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e
+                 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Los límites configurados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchLimitsResponse"];
+                };
+            };
+            /** @description No hay sesión iniciada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no es el administrador de la liga (o no existe). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/problem+json": components["schemas"]["Problem"];
                 };
             };
@@ -3531,6 +3696,48 @@ export interface operations {
                      *       "instance": "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/players"
                      *     }
                      */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    limits_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Id de la liga.
+                 * @example 3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e
+                 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Los límites configurados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SquadLimitsResponse"];
+                };
+            };
+            /** @description No hay sesión iniciada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no es el administrador de la liga (o no existe). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/problem+json": components["schemas"]["Problem"];
                 };
             };
@@ -4440,6 +4647,48 @@ export interface operations {
                 content?: never;
             };
             /** @description El usuario no es el administrador de la liga. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    limits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Id de la liga.
+                 * @example 3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e
+                 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Los límites configurados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeagueLimitsResponse"];
+                };
+            };
+            /** @description No hay sesión iniciada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no es el administrador de la liga (o no existe). */
             403: {
                 headers: {
                     [name: string]: unknown;

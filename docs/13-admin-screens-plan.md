@@ -287,7 +287,7 @@ En el cambio de la tarea que los provoca:
 | # | Tarea | Resultado | Hecho |
 | --- | --- | --- | --- |
 | 1 | Revisar este plan con el usuario y cerrar las propuestas (§2) | Decisiones cerradas | ✅ |
-| 2 | Endpoints de límites de `league`, `squad` y `match` con sus tests; spec y tipos regenerados (§3.2) | Límites en el API (FE-09) | |
+| 2 | Endpoints de límites de `league`, `squad` y `match` con sus tests; spec y tipos regenerados (§3.2) | Límites en el API (FE-09) | ✅ |
 | 3 | Boceto de las pantallas de admin con la skill, revisado con el usuario; *Composición* en `ui/README.md` (§6.1, §6.2) | Composición cerrada (FE-28) | |
 | 4 | Métodos de admin y de límites en `LeagueApi`, `SquadApi`, `MatchApi` y `RatingApi`, con sus tests (§5) | Contrato de las pantallas (FE-05 a FE-08) | |
 | 5 | `bfCheckbox`, `bfSwitch` y `bf-stepper` sin límites en `ui/` y `/_ui`; `bf-match-row` y los textos de avisos en `shared/` (§6.3, §6.4) | Componentes de admin (FE-16 a FE-20) | |

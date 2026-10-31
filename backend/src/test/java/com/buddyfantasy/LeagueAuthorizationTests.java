@@ -105,6 +105,7 @@ class LeagueAuthorizationTests {
         rules.put(endpoint(GET, "/api/leagues/{id}"), member());
         rules.put(endpoint(GET, "/api/leagues/{id}/settings"), member());
         rules.put(endpoint(PUT, "/api/leagues/{id}/settings"), admin(settings));
+        rules.put(endpoint(GET, "/api/leagues/{id}/settings/limits"), admin());
         rules.put(endpoint(POST, "/api/leagues/{id}/invitation"), admin());
         rules.put(endpoint(DELETE, "/api/leagues/{id}/invitation"), admin());
         rules.put(endpoint(GET, "/api/leagues/{id}/members"), member());
@@ -113,6 +114,7 @@ class LeagueAuthorizationTests {
         // squad
         rules.put(endpoint(POST, "/api/leagues/{id}/players"), admin(player));
         rules.put(endpoint(GET, "/api/leagues/{id}/players"), member());
+        rules.put(endpoint(GET, "/api/leagues/{id}/players/limits"), admin());
         rules.put(endpoint(GET, "/api/leagues/{id}/players/{playerId}"), member());
         rules.put(endpoint(PUT, "/api/leagues/{id}/players/{playerId}"), admin(player));
         rules.put(endpoint(DELETE, "/api/leagues/{id}/players/{playerId}"), admin());
@@ -124,6 +126,7 @@ class LeagueAuthorizationTests {
         // match
         rules.put(endpoint(POST, "/api/leagues/{id}/matches"), admin(match));
         rules.put(endpoint(GET, "/api/leagues/{id}/matches"), member());
+        rules.put(endpoint(GET, "/api/leagues/{id}/matches/limits"), admin());
         rules.put(endpoint(GET, "/api/leagues/{id}/matches/{matchId}"), member());
         rules.put(endpoint(PUT, "/api/leagues/{id}/matches/{matchId}"), admin(match));
         rules.put(endpoint(DELETE, "/api/leagues/{id}/matches/{matchId}"), admin());

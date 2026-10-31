@@ -904,6 +904,61 @@
         "tags" : [ "Partidos" ]
       }
     },
+    "/api/leagues/{id}/matches/limits" : {
+      "get" : {
+        "description" : "Rol mínimo: administrador. Los límites de `match.limits` que acotan los formularios de partido y acta, para validarlos antes de enviarlos (RF-12, RF-13). Solo lectura y globales.",
+        "operationId" : "limits_2",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MatchLimitsResponse"
+                }
+              }
+            },
+            "description" : "Los límites configurados."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver los límites de los partidos y el acta",
+        "tags" : [ "Partidos" ]
+      }
+    },
     "/api/leagues/{id}/matches/{matchId}" : {
       "delete" : {
         "description" : "Rol mínimo: administrador. Solo un partido sin cerrar, por ejemplo uno suspendido que no se va a jugar: no hay estado «cancelado».",
@@ -1963,6 +2018,61 @@
           "session" : [ ]
         } ],
         "summary" : "Dar de alta un jugador",
+        "tags" : [ "Plantilla" ]
+      }
+    },
+    "/api/leagues/{id}/players/limits" : {
+      "get" : {
+        "description" : "Rol mínimo: administrador. Los límites de `squad.limits` que acotan el formulario del jugador, para validarlo antes de enviarlo (RF-09, RF-10). Solo lectura y globales.",
+        "operationId" : "limits_1",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SquadLimitsResponse"
+                }
+              }
+            },
+            "description" : "Los límites configurados."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver los límites de la ficha de un jugador",
         "tags" : [ "Plantilla" ]
       }
     },
@@ -3256,6 +3366,61 @@
         "tags" : [ "Ligas" ]
       }
     },
+    "/api/leagues/{id}/settings/limits" : {
+      "get" : {
+        "description" : "Rol mínimo: administrador. Los límites de `league.limits` que acotan el formulario de parámetros, para validarlo antes de enviarlo (RF-07). Solo lectura y globales.",
+        "operationId" : "limits",
+        "parameters" : [ {
+          "description" : "Id de la liga.",
+          "example" : "3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LeagueLimitsResponse"
+                }
+              }
+            },
+            "description" : "Los límites configurados."
+          },
+          "401" : {
+            "description" : "No hay sesión iniciada."
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "examples" : {
+                  "403" : {
+                    "value" : {
+                      "type" : "about:blank",
+                      "title" : "Forbidden",
+                      "status" : 403,
+                      "detail" : "Forbidden",
+                      "instance" : "/api/leagues/3f6c2a1e-8b4d-4f5a-9c7e-1d2b3a4c5d6e/settings"
+                    }
+                  }
+                },
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "El usuario no es el administrador de la liga (o no existe)."
+          }
+        },
+        "summary" : "Ver los límites de los parámetros",
+        "tags" : [ "Ligas" ]
+      }
+    },
     "/api/leagues/{id}/standings" : {
       "get" : {
         "description" : "Rol mínimo: miembro. Los miembros actuales por puntos acumulados (RF-32); a cada uno le cuentan las jornadas que empezaron después de unirse a la liga. Los empatados comparten posición.",
@@ -3558,6 +3723,18 @@
         },
         "description" : "Liga a la que se ha unido el usuario."
       },
+      "LeagueLimitsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "lineupLockHoursMax" : {
+            "type" : "integer",
+            "description" : "Horas máximas de antelación del bloqueo de alineaciones (`league.limits.lineup-lock-hours-max`).",
+            "format" : "int32",
+            "example" : 168
+          }
+        },
+        "description" : "Límites configurados de los parámetros de la liga (`league.limits`), para validar el formulario antes de enviarlo. Son globales, no cambian por liga."
+      },
       "LeagueResponse" : {
         "type" : "object",
         "properties" : {
@@ -3616,7 +3793,7 @@
           "lineupLockHours" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Horas antes del partido en que se bloquean las alineaciones. De 0 a `league.limits.lineup-lock-hours-max`.",
+            "description" : "Horas antes del partido en que se bloquean las alineaciones. De 0 a `league.limits.lineup-lock-hours-max` (`lineupLockHoursMax` de `GET /settings/limits`).",
             "format" : "int32",
             "example" : 2
           },
@@ -4132,6 +4309,42 @@
         },
         "description" : "Un cambio del administrador en el partido, con su estado antes y después (RNF-04)."
       },
+      "MatchLimitsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "goalsMax" : {
+            "type" : "integer",
+            "description" : "Goles máximos por equipo en el resultado (`match.limits.goals-max`).",
+            "format" : "int32",
+            "example" : 99
+          },
+          "matchdayMin" : {
+            "type" : "integer",
+            "description" : "Jornada mínima (`match.limits.matchday-min`).",
+            "format" : "int32",
+            "example" : 1
+          },
+          "opponentMaxLength" : {
+            "type" : "integer",
+            "description" : "Caracteres máximos del rival (`match.limits.opponent-max-length`).",
+            "format" : "int32",
+            "example" : 100
+          },
+          "sheetPlayersMax" : {
+            "type" : "integer",
+            "description" : "Jugadores máximos en el acta (`match.limits.sheet-players-max`).",
+            "format" : "int32",
+            "example" : 30
+          },
+          "statCountMax" : {
+            "type" : "integer",
+            "description" : "Máximo por jugador y estadística del acta (`match.limits.stat-count-max`).",
+            "format" : "int32",
+            "example" : 99
+          }
+        },
+        "description" : "Límites configurados de los partidos y el acta (`match.limits`), para validar los formularios antes de enviarlos. Son globales, no cambian por liga."
+      },
       "MatchRatingsResponse" : {
         "type" : "object",
         "properties" : {
@@ -4208,14 +4421,14 @@
           },
           "matchday" : {
             "type" : "integer",
-            "description" : "Número de jornada, desde `match.limits.matchday-min` y sin repetir en la liga.",
+            "description" : "Número de jornada, desde `match.limits.matchday-min` (`matchdayMin` de `GET /matches/limits`) y sin repetir en la liga.",
             "format" : "int32",
             "example" : 3
           },
           "opponent" : {
             "minLength" : 1,
             "type" : "string",
-            "description" : "Nombre del rival, sin espacios al principio ni al final. Como mucho `match.limits.opponent-max-length` caracteres.",
+            "description" : "Nombre del rival, sin espacios al principio ni al final. Como mucho `match.limits.opponent-max-length` caracteres (`opponentMaxLength` de `GET /matches/limits`).",
             "example" : "Atlético Lavadores"
           },
           "venue" : {
@@ -4307,14 +4520,14 @@
           "goalsAgainst" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Goles en contra, de 0 a `match.limits.goals-max`.",
+            "description" : "Goles en contra, de 0 a `match.limits.goals-max` (`goalsMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 1
           },
           "goalsFor" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Goles a favor, de 0 a `match.limits.goals-max`.",
+            "description" : "Goles a favor, de 0 a `match.limits.goals-max` (`goalsMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 3
           }
@@ -4345,7 +4558,7 @@
         "properties" : {
           "performances" : {
             "type" : "array",
-            "description" : "Los jugadores que jugaron, cada uno una vez y como mucho `match.limits.sheet-players-max`. Un partido cerrado necesita al menos uno.",
+            "description" : "Los jugadores que jugaron, cada uno una vez y como mucho `match.limits.sheet-players-max` (`sheetPlayersMax` de `GET /matches/limits`). Un partido cerrado necesita al menos uno.",
             "items" : {
               "$ref" : "#/components/schemas/PlayerPerformanceRequest"
             }
@@ -4852,7 +5065,7 @@
           "assists" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Asistencias. De 0 a `match.limits.stat-count-max`.",
+            "description" : "Asistencias. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 1
           },
@@ -4864,35 +5077,35 @@
           "goals" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Goles normales, sin contar los de penalti. De 0 a `match.limits.stat-count-max`.",
+            "description" : "Goles normales, sin contar los de penalti. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 1
           },
           "ownGoals" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Goles en propia puerta. De 0 a `match.limits.stat-count-max`.",
+            "description" : "Goles en propia puerta. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 0
           },
           "penaltiesMissed" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Penaltis fallados. De 0 a `match.limits.stat-count-max`.",
+            "description" : "Penaltis fallados. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 0
           },
           "penaltiesSaved" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Penaltis parados. De 0 a `match.limits.stat-count-max`.",
+            "description" : "Penaltis parados. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 0
           },
           "penaltyGoals" : {
             "minimum" : 0,
             "type" : "integer",
-            "description" : "Goles de penalti. De 0 a `match.limits.stat-count-max`.",
+            "description" : "Goles de penalti. De 0 a `match.limits.stat-count-max` (`statCountMax` de `GET /matches/limits`).",
             "format" : "int32",
             "example" : 1
           },
@@ -5064,7 +5277,7 @@
           "name" : {
             "minLength" : 1,
             "type" : "string",
-            "description" : "Nombre, sin espacios al principio ni al final. Como mucho `squad.limits.name-max-length` caracteres.",
+            "description" : "Nombre, sin espacios al principio ni al final. Como mucho `squad.limits.name-max-length` caracteres (`nameMaxLength` de `GET /players/limits`).",
             "example" : "Iago Aspas"
           },
           "position" : {
@@ -5075,7 +5288,7 @@
           },
           "shirtNumber" : {
             "type" : "integer",
-            "description" : "Dorsal, opcional. Entre `squad.limits.shirt-number-min` y `squad.limits.shirt-number-max`, y sin repetir entre los jugadores activos de la liga.",
+            "description" : "Dorsal, opcional. Entre `squad.limits.shirt-number-min` y `squad.limits.shirt-number-max` (`shirtNumberMin` y `shirtNumberMax` de `GET /players/limits`), y sin repetir entre los jugadores activos de la liga.",
             "format" : "int32",
             "nullable" : true,
             "example" : 10
@@ -5262,6 +5475,30 @@
         "description" : "Acción que suma o resta puntos según la posición (RF-15). Es la clave de los mapas de acciones (`actions`) y de la tabla de puntos (`scoringRules`).",
         "example" : "PENALTY_GOAL",
         "enum" : [ "GOAL", "PENALTY_GOAL", "PENALTY_SAVED", "PENALTY_MISSED", "ASSIST", "OWN_GOAL", "YELLOW_CARD", "DOUBLE_YELLOW", "RED_CARD" ]
+      },
+      "SquadLimitsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "nameMaxLength" : {
+            "type" : "integer",
+            "description" : "Caracteres máximos del nombre (`squad.limits.name-max-length`).",
+            "format" : "int32",
+            "example" : 100
+          },
+          "shirtNumberMax" : {
+            "type" : "integer",
+            "description" : "Dorsal máximo (`squad.limits.shirt-number-max`).",
+            "format" : "int32",
+            "example" : 99
+          },
+          "shirtNumberMin" : {
+            "type" : "integer",
+            "description" : "Dorsal mínimo (`squad.limits.shirt-number-min`).",
+            "format" : "int32",
+            "example" : 0
+          }
+        },
+        "description" : "Límites configurados de la ficha de un jugador (`squad.limits`), para validar el formulario antes de enviarlo. Son globales, no cambian por liga."
       },
       "StandingResponse" : {
         "type" : "object",

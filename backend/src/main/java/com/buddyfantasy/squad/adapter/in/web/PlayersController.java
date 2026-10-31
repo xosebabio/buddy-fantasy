@@ -8,6 +8,7 @@ import com.buddyfantasy.shared.application.CommandBus;
 import com.buddyfantasy.shared.security.CurrentUser;
 import com.buddyfantasy.shared.web.ApiExamples;
 import com.buddyfantasy.squad.application.usecases.getplayer.GetPlayerQuery;
+import com.buddyfantasy.squad.application.usecases.getsquadlimits.GetSquadLimitsQuery;
 import com.buddyfantasy.squad.application.usecases.listplayers.ListPlayersQuery;
 import com.buddyfantasy.squad.application.usecases.registerplayer.RegisterPlayerCommand;
 import com.buddyfantasy.squad.application.usecases.retireplayer.RetirePlayerCommand;
@@ -90,6 +91,17 @@ class PlayersController {
         return bus.ask(new ListPlayersQuery(user.userId(), id, includeRetired)).stream()
                 .map(PlayerResponse::from)
                 .toList();
+    }
+
+    @Operation(summary = "Ver los límites de la ficha de un jugador",
+            description = "Rol mínimo: administrador. Los límites de `squad.limits` que acotan el formulario del jugador, para validarlo antes de enviarlo (RF-09, RF-10). Solo lectura y globales.")
+    @ApiResponse(responseCode = "200", description = "Los límites configurados.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga (o no existe).")
+    @GetMapping("/api/leagues/{id}/players/limits")
+    SquadLimitsResponse limits(@AuthenticationPrincipal CurrentUser user,
+                               @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                               @PathVariable UUID id) {
+        return SquadLimitsResponse.from(bus.ask(new GetSquadLimitsQuery(user.userId(), id)));
     }
 
     @Operation(summary = "Ver un jugador",

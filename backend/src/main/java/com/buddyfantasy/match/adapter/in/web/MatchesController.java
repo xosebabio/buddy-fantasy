@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.buddyfantasy.match.application.usecases.closematch.CloseMatchCommand;
 import com.buddyfantasy.match.application.usecases.deletematch.DeleteMatchCommand;
 import com.buddyfantasy.match.application.usecases.getmatch.GetMatchQuery;
+import com.buddyfantasy.match.application.usecases.getmatchlimits.GetMatchLimitsQuery;
 import com.buddyfantasy.match.application.usecases.listmatchaudit.ListMatchAuditQuery;
 import com.buddyfantasy.match.application.usecases.listmatches.ListMatchesQuery;
 import com.buddyfantasy.match.application.usecases.recordmatchsheet.RecordMatchSheetCommand;
@@ -89,6 +90,17 @@ class MatchesController {
                                     @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
                                     @PathVariable UUID id) {
         return bus.ask(new ListMatchesQuery(user.userId(), id)).stream().map(MatchSummaryResponse::from).toList();
+    }
+
+    @Operation(summary = "Ver los límites de los partidos y el acta",
+            description = "Rol mínimo: administrador. Los límites de `match.limits` que acotan los formularios de partido y acta, para validarlos antes de enviarlos (RF-12, RF-13). Solo lectura y globales.")
+    @ApiResponse(responseCode = "200", description = "Los límites configurados.")
+    @ApiResponse(responseCode = "403", description = "El usuario no es el administrador de la liga (o no existe).")
+    @GetMapping("/api/leagues/{id}/matches/limits")
+    MatchLimitsResponse limits(@AuthenticationPrincipal CurrentUser user,
+                               @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
+                               @PathVariable UUID id) {
+        return MatchLimitsResponse.from(bus.ask(new GetMatchLimitsQuery(user.userId(), id)));
     }
 
     @Operation(summary = "Ver un partido",
