@@ -3,13 +3,12 @@ import { LucideUserX } from '@lucide/angular';
 
 import type { MemberResponse } from '../../core/api/league/league-api';
 import { ROLE_TEXTS } from '../../core/layout/role-texts';
+import { displayName } from '../../shared/roster/roster';
 import { BfDatePipe } from '../../shared/time/date-pipe';
 import { Avatar } from '../../ui/avatar/avatar';
 import { Badge } from '../../ui/badge/badge';
 import { IconButton } from '../../ui/button/icon-button';
 import { List, ListItem } from '../../ui/list/list';
-
-const UNKNOWN_NAME = $localize`:@@league.members.unknownName:Usuario sin nombre`;
 
 /**
  * The members of a league with their role and since when they play (RF-08). With `removable`, each
@@ -21,7 +20,7 @@ const UNKNOWN_NAME = $localize`:@@league.members.unknownName:Usuario sin nombre`
   template: `
     <ul bfList bleed>
       @for (member of members(); track member.userId) {
-        @let name = member.displayName ?? unknownName;
+        @let name = displayName(member);
         <li bfListItem size="compact">
           <bf-avatar bfListItemLeading [name]="name" [src]="member.avatarUrl" />
           {{ name }}
@@ -64,7 +63,7 @@ export class MemberList {
   readonly remove = output<MemberResponse>();
 
   protected readonly roles = ROLE_TEXTS;
-  protected readonly unknownName = UNKNOWN_NAME;
+  protected readonly displayName = displayName;
 
   protected removeLabel(name: string): string {
     return $localize`:@@league.members.remove:Expulsar a ${name}:name:`;

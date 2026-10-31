@@ -278,7 +278,7 @@ En el cambio de la tarea que los provoca:
 | 1 | Revisar este plan con el usuario y cerrar las propuestas (§2) | Decisiones cerradas | ✅ |
 | 2 | `includeRetired` para miembros, `ScoringAction` en el spec, reloj de pruebas con el perfil `e2e` y sus tests; spec y tipos regenerados (§3) | Backend listo (FE-05, FE-34) | ✅ |
 | 3 | Boceto de las pantallas nuevas con la skill, revisado con el usuario; *Composición* en `ui/README.md` (§6.1, §6.2) | Composición cerrada (FE-28) | ✅ |
-| 4 | `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi` y `ScoringApi`, y los cruces de `shared/roster` (§5) | Contrato de las pantallas (FE-05 a FE-09) | |
+| 4 | `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi` y `ScoringApi`, y los cruces de `shared/roster` (§5) | Contrato de las pantallas (FE-05 a FE-09) | ✅ |
 | 5 | Componentes de `ui/` de §6.3 y `/_ui` | Catálogo de FE-18 completo (FE-17, FE-18, FE-20) | |
 | 6 | Componentes y pipes de `shared/` de §6.4 | Catálogo de FE-19 (FE-19, FE-23) | |
 | 7 | Navegación de cinco destinos con prefijos, índice *Liga*, `onVisible` y `canDeactivate` (§4.2, §8) | Shell completo (FE-30) | |
