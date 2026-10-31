@@ -4,7 +4,7 @@ Actualiza este archivo (y el resumen de *Estado* en `AGENTS.md`) cuando cierres 
 
 ## Estado actual
 
-Fase 1 completa y Fase 2 (valoraciones) con el desarrollo del backend completo (plan 09). En la Fase 0 están hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` con las pantallas de identidad y liga (plan 11, cerrado); faltan Dockerfile, Compose de producción y VPS. Pendiente en la Fase 2: las pantallas de manager y de admin, el E2E de la jornada completa y la prueba real; sus planes (`12` manager y `13` admin, decisión 1 del plan 11) están por redactar.
+Fase 1 completa y Fase 2 (valoraciones) con el desarrollo del backend completo (plan 09). En la Fase 0 están hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` con las pantallas de identidad y liga (plan 11, cerrado); faltan Dockerfile, Compose de producción y VPS. Pendiente en la Fase 2: las pantallas de manager y de admin, el E2E de la jornada completa y la prueba real; el plan `12` (manager, `docs/12-manager-screens-plan.md`) está redactado y revisado (decisiones cerradas, implementación pendiente), y el `13` (admin) está por redactar.
 
 ### Fase 0 · Fundamentos (en curso)
 
