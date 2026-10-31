@@ -1,0 +1,66 @@
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (history.value() && players(); as players) {
+  <h1>{{ name() }}</h1>
+  <ul bfList bleed>
+    @for (matchday of matchdays(); track matchday.matchId) {
+      <li bfDisclosure size="compact">
+        <ng-container i18n="@@scoring.history.matchday"
+          >Jornada {{ matchday.matchday }}</ng-container
+        >
+        <span bfListItemMeta>
+          {{ matchday.kickoffAt | bfDate: 'date' }}
+          @if (!matchday.inStandings) {
+            <bf-badge i18n="@@scoring.history.beforeJoin">Antes de su última alta</bf-badge>
+          }
+          @if (matchday.overBudget) {
+            <bf-badge tone="warning" i18n="@@scoring.history.overBudget"
+              >Fuera de presupuesto</bf-badge
+            >
+          }
+        </span>
+        <bf-points bfListItemTrailing [value]="matchday.points" />
+        <ul bfDisclosurePanel bfList>
+          @for (lined of matchday.players; track lined.id) {
+            @let player = players.get(lined.id);
+            @if (player) {
+              @if (lined.played) {
+                <li bfDisclosure size="compact">
+                  <bf-player-row
+                    [player]="{ ...player, position: lined.position ?? player.position }"
+                  />
+                  <bf-points bfListItemTrailing [value]="lined.points" />
+                  <div bfDisclosurePanel>
+                    <bf-points-breakdown [breakdown]="lined" />
+                  </div>
+                </li>
+              } @else {
+                <li class="idle">
+                  <bf-player-row [player]="player">
+                    <span bfPlayerRowMeta i18n="@@scoring.history.didNotPlay">No jugó</span>
+                    <bf-points bfPlayerRowTrailing [value]="0" />
+                  </bf-player-row>
+                </li>
+              }
+            }
+          } @empty {
+            <li class="none" i18n="@@scoring.history.noLineup">
+              No tenía una alineación bloqueada.
+            </li>
+          }
+        </ul>
+      </li>
+    } @empty {
+      <li>
+        <bf-empty-state i18n="@@scoring.history.empty"
+          >Aún no hay jornadas puntuadas.</bf-empty-state
+        >
+      </li>
+    }
+  </ul>
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+  </div>
+}

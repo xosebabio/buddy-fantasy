@@ -9,6 +9,7 @@ import { leagueAdminRoutes, leagueRoutes, leaguesRoutes } from './features/leagu
 import { lineupRoutes } from './features/lineup/lineup.routes';
 import { matchRoutes } from './features/match/match.routes';
 import { ratingRoutes } from './features/rating/rating.routes';
+import { scoringRoutes } from './features/scoring/scoring.routes';
 import { squadRoutes } from './features/squad/squad.routes';
 
 // Lazy as well, to keep the initial bundle under its budget (RNF-13).
@@ -40,6 +41,7 @@ export const routes: Routes = [
       ...lineupRoutes,
       ...matchRoutes,
       ...ratingRoutes,
+      ...scoringRoutes,
       { path: 'admin', canActivate: [adminGuard], children: leagueAdminRoutes },
     ],
   },

@@ -1,0 +1,28 @@
+@use 'ui/styles/page';
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+ul {
+  margin-top: var(--bf-space-3);
+}
+
+bf-badge {
+  margin-left: var(--bf-space-2);
+}
+
+.none {
+  color: var(--bf-color-text-muted);
+  padding: var(--bf-space-3) 0;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

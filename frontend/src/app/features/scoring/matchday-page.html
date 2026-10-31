@@ -1,0 +1,132 @@
+<h1 i18n="@@scoring.matchday.title">Clasificación</h1>
+<bf-standings-nav [leagueId]="leagueId() ?? ''" [matchId]="matchId() ?? null" />
+
+@if (closed().length > 0) {
+  <bf-field label="Jornada" i18n-label="@@scoring.matchday.pick">
+    <select bfSelect #picker (change)="choose(picker.value)">
+      @for (match of closed(); track match.id) {
+        <option
+          [value]="match.id"
+          [selected]="match.id === matchId()"
+          i18n="@@scoring.matchday.option"
+        >
+          Jornada {{ match.matchday }}, contra {{ match.opponent }}
+        </option>
+      }
+    </select>
+  </bf-field>
+}
+
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (notScored()) {
+  <bf-empty-state i18n="@@scoring.matchday.notScored">
+    Los puntos se publican al cerrar las valoraciones.
+  </bf-empty-state>
+  @if (rateable()) {
+    <a
+      bfButton
+      variant="secondary"
+      block
+      class="rate"
+      [routerLink]="['/leagues', leagueId(), 'ratings', matchId()]"
+      i18n="@@scoring.matchday.rate"
+    >
+      Valorar la jornada {{ matchday() }}
+    </a>
+  }
+} @else if (managers(); as managers) {
+  <bf-tabs label="Puntos de la jornada" i18n-label="@@scoring.matchday.tabs" [(selected)]="tab">
+    <button bfTab="managers" i18n="@@scoring.matchday.managers">Managers</button>
+    <button bfTab="players" i18n="@@scoring.matchday.players">Jugadores</button>
+
+    <section bfTabPanel="managers">
+      <ul bfList bleed>
+        @for (row of managers; track row.standing.userId) {
+          <li bfDisclosure size="compact">
+            <span bfListItemLeading class="lead">
+              <span class="position">{{ row.standing.position }}</span>
+              <bf-avatar [name]="row.name" [src]="row.avatarUrl" />
+            </span>
+            {{ row.name }}
+            @if (row.standing.overBudget) {
+              <bf-badge bfListItemMeta tone="warning" i18n="@@scoring.matchday.overBudget"
+                >Fuera de presupuesto</bf-badge
+              >
+            }
+            <bf-points bfListItemTrailing [value]="row.standing.points" />
+            <div bfDisclosurePanel>
+              <ul bfList>
+                @for (entry of row.lineup; track entry.player.id) {
+                  <li>
+                    <bf-player-row [player]="entry.player">
+                      @if (entry.sheet; as sheet) {
+                        <span bfPlayerRowMeta i18n="@@scoring.matchday.split"
+                          >Acciones {{ sheet.actionPoints | bfPoints }}, valoración
+                          {{ sheet.ratingPoints | bfPoints }}</span
+                        >
+                      }
+                      <bf-points bfPlayerRowTrailing [value]="entry.sheet?.points ?? 0" />
+                    </bf-player-row>
+                  </li>
+                } @empty {
+                  <li class="none" i18n="@@scoring.matchday.noLineup">
+                    No tenía una alineación bloqueada.
+                  </li>
+                }
+              </ul>
+              <a
+                bfButton
+                variant="quiet"
+                [routerLink]="['/leagues', leagueId(), 'managers', row.standing.userId]"
+                i18n="@@scoring.matchday.history"
+              >
+                Ver su historial
+              </a>
+            </div>
+          </li>
+        } @empty {
+          <li>
+            <bf-empty-state i18n="@@scoring.matchday.noManagers">
+              Nadie jugó esta jornada.
+            </bf-empty-state>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section bfTabPanel="players">
+      <ul bfList bleed>
+        @for (row of players(); track row.player.id) {
+          <li>
+            <a
+              bfListItem
+              size="compact"
+              [routerLink]="['/leagues', leagueId(), 'squad', row.player.id]"
+            >
+              <bf-player-row [player]="row.player">
+                <span bfPlayerRowMeta i18n="@@scoring.matchday.split"
+                  >Acciones {{ row.sheet.actionPoints | bfPoints }}, valoración
+                  {{ row.sheet.ratingPoints | bfPoints }}</span
+                >
+                <bf-points bfPlayerRowTrailing [value]="row.sheet.points" />
+              </bf-player-row>
+            </a>
+          </li>
+        } @empty {
+          <li>
+            <bf-empty-state i18n="@@scoring.matchday.noPlayers">
+              El acta no tiene jugadores.
+            </bf-empty-state>
+          </li>
+        }
+      </ul>
+    </section>
+  </bf-tabs>
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3, 4]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

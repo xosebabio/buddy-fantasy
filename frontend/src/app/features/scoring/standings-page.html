@@ -1,0 +1,51 @@
+<h1 i18n="@@scoring.standings.title">Clasificación</h1>
+<bf-standings-nav [leagueId]="leagueId() ?? ''" [matchId]="latestMatchId()" />
+
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (rows(); as rows) {
+  @if (started()) {
+    <ul bfList bleed>
+      @for (row of rows; track row.standing.userId) {
+        <li>
+          <a
+            bfListItem
+            size="compact"
+            [current]="row.standing.userId === session.user()?.id"
+            [routerLink]="['/leagues', leagueId(), 'managers', row.standing.userId]"
+          >
+            <span bfListItemLeading class="lead">
+              <span class="position" [class.tied]="row.tied">{{ row.standing.position }}</span>
+              <bf-avatar [name]="row.name" [src]="row.avatarUrl" />
+            </span>
+            {{ row.name }}
+            <span bfListItemMeta>
+              @if (row.standing.matchdays === 1) {
+                <ng-container i18n="@@scoring.standings.oneMatchday"
+                  >1 jornada, {{ row.standing.lastMatchdayPoints | bfPoints }} en la
+                  última</ng-container
+                >
+              } @else {
+                <ng-container i18n="@@scoring.standings.matchdays"
+                  >{{ row.standing.matchdays }} jornadas,
+                  {{ row.standing.lastMatchdayPoints | bfPoints }} en la última</ng-container
+                >
+              }
+            </span>
+            <bf-points bfListItemTrailing unsigned [value]="row.standing.points" />
+          </a>
+        </li>
+      }
+    </ul>
+  } @else {
+    <bf-empty-state i18n="@@scoring.standings.empty">
+      La clasificación empieza cuando se puntúe la primera jornada.
+    </bf-empty-state>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3, 4]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

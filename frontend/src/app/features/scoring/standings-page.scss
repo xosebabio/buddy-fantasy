@@ -1,0 +1,39 @@
+@use 'ui/styles/page';
+@use 'ui/styles/typography' as type;
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+bf-standings-nav,
+ul,
+bf-empty-state {
+  margin-top: var(--bf-space-4);
+}
+
+.lead {
+  display: flex;
+  gap: var(--bf-space-3);
+  align-items: center;
+}
+
+.position {
+  @include type.display(5);
+
+  min-width: 1.5ch;
+  text-align: center;
+}
+
+.tied {
+  color: var(--bf-color-text-muted);
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

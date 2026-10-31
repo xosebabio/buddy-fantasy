@@ -1875,6 +1875,220 @@
           <context context-type="linenumber">39,42</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="scoring.history.matchday" datatype="html">
+        <source>Jornada <x id="INTERPOLATION" equiv-text="{{ matchday.matchday }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/manager-history-page.html</context>
+          <context context-type="linenumber">9,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.history.beforeJoin" datatype="html">
+        <source>Antes de su última alta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/manager-history-page.html</context>
+          <context context-type="linenumber">14,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.history.overBudget" datatype="html">
+        <source>Fuera de presupuesto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/manager-history-page.html</context>
+          <context context-type="linenumber">18,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.history.didNotPlay" datatype="html">
+        <source>No jugó</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/manager-history-page.html</context>
+          <context context-type="linenumber">40,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.history.noLineup" datatype="html">
+        <source> No tenía una alineación bloqueada. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/manager-history-page.html</context>
+          <context context-type="linenumber">48,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.history.empty" datatype="html">
+        <source>Aún no hay jornadas puntuadas.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/manager-history-page.html</context>
+          <context context-type="linenumber">56,58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.title" datatype="html">
+        <source>Clasificación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">1,2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.pick" datatype="html">
+        <source>Jornada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.option" datatype="html">
+        <source> Jornada <x id="INTERPOLATION" equiv-text="{{ match.matchday }}"/>, contra <x id="INTERPOLATION_1" equiv-text="{{ match.opponent }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">13,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.notScored" datatype="html">
+        <source> Los puntos se publican al cerrar las valoraciones. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">24,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.rate" datatype="html">
+        <source> Valorar la jornada <x id="INTERPOLATION" equiv-text="{{ matchday() }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">35,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.tabs" datatype="html">
+        <source>Puntos de la jornada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.managers" datatype="html">
+        <source>Managers</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">40,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.players" datatype="html">
+        <source>Jugadores</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">41,43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.overBudget" datatype="html">
+        <source>Fuera de presupuesto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">54,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.split" datatype="html">
+        <source>Acciones <x id="INTERPOLATION" equiv-text="{{ sheet.actionPoints | bfPoints }}"/>, valoración <x id="INTERPOLATION_1" equiv-text="{{ sheet.ratingPoints | bfPoints }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">65,67</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">109,111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.noLineup" datatype="html">
+        <source> No tenía una alineación bloqueada. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">74,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.history" datatype="html">
+        <source> Ver su historial </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">84,86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.noManagers" datatype="html">
+        <source> Nadie jugó esta jornada. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">91,92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.noPlayers" datatype="html">
+        <source> El acta no tiene jugadores. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/matchday-page.html</context>
+          <context context-type="linenumber">119,120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.standings.pageTitle" datatype="html">
+        <source>Clasificación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/scoring.routes.ts</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.matchday.pageTitle" datatype="html">
+        <source>Puntos de la jornada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/scoring.routes.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.history.pageTitle" datatype="html">
+        <source>Historial de un manager</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/scoring.routes.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.nav.label" datatype="html">
+        <source>Clasificación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/standings-nav.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.nav.general" datatype="html">
+        <source>General</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/standings-nav.ts</context>
+          <context context-type="linenumber">22,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.nav.matchday" datatype="html">
+        <source>Por jornada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/standings-nav.ts</context>
+          <context context-type="linenumber">28,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.standings.title" datatype="html">
+        <source>Clasificación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/standings-page.html</context>
+          <context context-type="linenumber">1,2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.standings.oneMatchday" datatype="html">
+        <source>1 jornada, <x id="INTERPOLATION" equiv-text="{{ row.standing.lastMatchdayPoints | bfPoints }}"/> en la última</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/standings-page.html</context>
+          <context context-type="linenumber">25,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.standings.matchdays" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ row.standing.matchdays }}"/> jornadas, <x id="INTERPOLATION_1" equiv-text="{{ row.standing.lastMatchdayPoints | bfPoints }}"/> en la última</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/standings-page.html</context>
+          <context context-type="linenumber">30,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="scoring.standings.empty" datatype="html">
+        <source> La clasificación empieza cuando se puntúe la primera jornada. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/scoring/standings-page.html</context>
+          <context context-type="linenumber">42,45</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="squad.player.retired" datatype="html">
         <source>Dado de baja</source>
         <context-group purpose="location">
