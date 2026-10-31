@@ -237,8 +237,8 @@ class PlayersEndpointsTests {
     }
 
     @Test
-    @DisplayName("includeRetired is honoured for the admin and ignored for managers")
-    void includeRetiredIsHonouredForTheAdminAndIgnoredForManagers() throws Exception {
+    @DisplayName("includeRetired adds the retired players for any member")
+    void includeRetiredAddsTheRetiredPlayersForAnyMember() throws Exception {
         fixtures.player(peña, "Activo", 9, Position.FORWARD);
         retire(fixtures.player(peña, "Retirado", 2, Position.DEFENDER));
 
@@ -251,8 +251,10 @@ class PlayersEndpointsTests {
                 .andExpect(jsonPath("$.length()").value(1));
         mvc.perform(get("/api/leagues/{id}/players", league).param("includeRetired", "true").with(as(ana)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value("Activo"));
+                .andExpect(jsonPath("$[*].name").value(contains("Retirado", "Activo")))
+                .andExpect(jsonPath("$[0].retiredAt").exists());
+        mvc.perform(get("/api/leagues/{id}/players", league).with(as(ana)))
+                .andExpect(jsonPath("$[*].name").value(contains("Activo")));
     }
 
     @Test

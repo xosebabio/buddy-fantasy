@@ -842,7 +842,7 @@ export interface components {
              */
             ratingWindowHours: number;
             /**
-             * @description Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada una.
+             * @description Puntos por acción y posición: la acción (`ScoringAction`) y después la posición como claves. Tabla completa: las 9 acciones con las 4 posiciones cada una.
              * @example {
              *       "ASSIST": {
              *         "DEFENDER": 1,
@@ -915,7 +915,7 @@ export interface components {
              */
             actionPoints: number;
             /**
-             * @description Puntos de cada acción que suma o resta; vacío si no jugó.
+             * @description Puntos de cada acción que suma o resta, con la acción (`ScoringAction`) como clave; vacío si no jugó.
              * @example {
              *       "GOAL": 3,
              *       "PENALTY_GOAL": 3,
@@ -1631,7 +1631,7 @@ export interface components {
              */
             actionPoints: number;
             /**
-             * @description Puntos de cada acción que suma o resta.
+             * @description Puntos de cada acción que suma o resta, con la acción (`ScoringAction`) como clave.
              * @example {
              *       "GOAL": 3,
              *       "PENALTY_GOAL": 3,
@@ -2028,6 +2028,12 @@ export interface components {
             /** @description Sus votos, en cualquier orden y como mucho uno por jugador. Reemplazan los anteriores: un jugador que no aparece se queda sin su voto. Vacía para retirarlos todos. */
             ratings: components["schemas"]["PlayerRatingRequest"][];
         };
+        /**
+         * @description Acción que suma o resta puntos según la posición (RF-15). Es la clave de los mapas de acciones (`actions`) y de la tabla de puntos (`scoringRules`).
+         * @example PENALTY_GOAL
+         * @enum {string}
+         */
+        ScoringAction: "GOAL" | "PENALTY_GOAL" | "PENALTY_SAVED" | "PENALTY_MISSED" | "ASSIST" | "OWN_GOAL" | "YELLOW_CARD" | "DOUBLE_YELLOW" | "RED_CARD";
         /** @description Fila de la clasificación general. */
         StandingResponse: {
             /**
@@ -3400,7 +3406,7 @@ export interface operations {
         parameters: {
             query?: {
                 /**
-                 * @description Incluir también los jugadores dados de baja. Solo vale para el administrador: a un manager se le ignora.
+                 * @description Incluir también los jugadores dados de baja, para cruzar los ids de alineaciones, actas y puntos.
                  * @example false
                  */
                 includeRetired?: boolean;

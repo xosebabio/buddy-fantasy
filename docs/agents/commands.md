@@ -60,7 +60,7 @@ docker compose -f deploy/docker-compose.dev.yml --profile caddy restart caddy   
 
 ### E2E
 
-Playwright en móvil (Chromium y WebKit, tema claro y oscuro) contra el backend real con el perfil `e2e` (ver *Login de pruebas*). Por defecto, contra el build servido por Caddy en local, como en CI:
+Playwright en móvil (Chromium y WebKit, tema claro y oscuro) contra el backend real con el perfil `e2e` (ver *Login y reloj de pruebas*). Por defecto, contra el build servido por Caddy en local, como en CI:
 
 ```bash
 docker compose -f deploy/docker-compose.dev.yml up -d postgres
@@ -103,8 +103,8 @@ Valores por defecto en `backend/src/main/resources/application.yml`.
 | `league.defaults` (p. ej. `LEAGUE_DEFAULTS_LINEUP_SIZE`) | Valores con los que nace una liga |
 | `league.limits`, `squad.limits`, `match.limits` (p. ej. `MATCH_LIMITS_SHEETPLAYERSMAX`) | Límites de negocio |
 | `squad.photos.s3.upload-ttl` | Validez de la URL de subida de fotos |
-| `LINEUP_LOCK_JOB_CRON` | Job de bloqueo de alineaciones (cada minuto; `-` lo desactiva, como en los tests, que lo ejecutan a mano) |
-| `RATING_CLOSE_JOB_CRON` | Job de cierre de las ventanas de valoración (cada minuto; `-` lo desactiva, como en los tests) |
+| `LINEUP_LOCK_JOB_CRON` | Job de bloqueo de alineaciones (cada minuto; `-` lo desactiva, como en los tests, que lo ejecutan a mano; con el perfil `e2e`, cada 2 s) |
+| `RATING_CLOSE_JOB_CRON` | Job de cierre de las ventanas de valoración (cada minuto; `-` lo desactiva, como en los tests; con el perfil `e2e`, cada 2 s) |
 | `EVENTS_RESUBMIT_JOB_CRON` | Job que reenvía los eventos cuyo listener falló (cada 5 minutos, solo los de hace al menos `shared.events.resubmit-job.min-age`; `-` lo desactiva, como en los tests) |
 | `S3_BUCKET`, `S3_REGION` | Bucket de fotos |
 | `S3_ENDPOINT` | Solo en local; vacía en AWS |
@@ -123,9 +123,11 @@ Del `deploy/Caddyfile` (en local las fija el servicio `caddy` de `deploy/docker-
 
 Las credenciales de S3 salen de la cadena por defecto del AWS SDK (rol IAM en producción, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` en local; las de SeaweedFS están en `deploy/seaweedfs/s3.json` y solo valen en local).
 
-## Login de pruebas (E2E)
+## Login y reloj de pruebas (E2E)
 
 Con el perfil `e2e` (`SPRING_PROFILES_ACTIVE=e2e`; solo para los E2E, nunca en producción: al arrancar lo avisa con un `WARN`), `POST /api/e2e/login` con `{"email", "displayName"}` registra o reutiliza al usuario (sujeto `e2e:<email>`) y abre su sesión sin Google, como el login real. Pasa por CSRF: antes, un `GET` cualquiera (`/actuator/health`) da la cookie `XSRF-TOKEN`, cuyo valor va en la cabecera `X-XSRF-TOKEN`. Responde `204`; no está en el spec. Sin el perfil la ruta no existe (`401`).
+
+Con el mismo perfil, el reloj del servidor es ajustable (`E2eClock`): empieza en la hora real y solo avanza. Con sesión (cualquier usuario), `GET /api/e2e/clock` devuelve `{"now"}` y `POST /api/e2e/clock` con `{"advance": "PT26H"}` (duración ISO-8601, positiva; si no, `400`) lo adelanta y devuelve la hora nueva; el `POST` lleva CSRF, como el login. El perfil (`application-e2e.yml`) pone los jobs de bloqueo y de cierre de valoraciones cada 2 s, así que al adelantar el reloj encuentran solos lo que ha vencido (el bloqueo, un minuto después de `lockAt`: `lineup.lock-job.margin`). El reloj es de todo el backend: los specs que lo mueven van en serie. Sin el perfil la ruta no existe (`401` sin sesión, `404` con ella). También avisa al arrancar.
 
 ## Login con Google
 

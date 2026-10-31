@@ -1,0 +1,8 @@
+# Perfil de los E2E del front (FE-34); nunca en producción. Además del login de pruebas (/api/e2e/login) y del reloj
+# ajustable (/api/e2e/clock), los jobs corren cada 2 s: al adelantar el reloj encuentran solos lo que ha vencido.
+lineup:
+  lock-job:
+    cron: "*/2 * * * * *"
+rating:
+  close-job:
+    cron: "*/2 * * * * *"

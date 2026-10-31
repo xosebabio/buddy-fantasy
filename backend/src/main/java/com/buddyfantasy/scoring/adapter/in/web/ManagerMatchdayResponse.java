@@ -46,7 +46,8 @@ record ManagerMatchdayResponse(
             boolean played,
             @Schema(description = "Posición con la que jugó; null si no jugó.", nullable = true, example = "FORWARD")
             Position position,
-            @Schema(description = "Puntos de cada acción que suma o resta; vacío si no jugó.",
+            @Schema(description = "Puntos de cada acción que suma o resta, con la acción "
+                    + "(`ScoringAction`) como clave; vacío si no jugó.",
                     example = "{\"GOAL\": 3, \"PENALTY_GOAL\": 3, \"YELLOW_CARD\": -1}")
             Map<ScoringAction, Integer> actions,
             @Schema(description = "Puntos por acciones.", example = "5")

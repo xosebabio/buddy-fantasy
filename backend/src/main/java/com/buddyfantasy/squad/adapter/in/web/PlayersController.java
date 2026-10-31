@@ -84,8 +84,8 @@ class PlayersController {
     List<PlayerResponse> list(@AuthenticationPrincipal CurrentUser user,
                               @Parameter(description = "Id de la liga.", example = ApiExamples.LEAGUE_ID)
                               @PathVariable UUID id,
-                              @Parameter(description = "Incluir también los jugadores dados de baja. Solo vale para "
-                                      + "el administrador: a un manager se le ignora.", example = "false")
+                              @Parameter(description = "Incluir también los jugadores dados de baja, para cruzar los "
+                                      + "ids de alineaciones, actas y puntos.", example = "false")
                               @RequestParam(defaultValue = "false") boolean includeRetired) {
         return bus.ask(new ListPlayersQuery(user.userId(), id, includeRetired)).stream()
                 .map(PlayerResponse::from)

@@ -24,7 +24,7 @@ Usa Testcontainers con PostgreSQL para tests de integración, no H2. La infraest
   - `MutableClock`: el reloj del servidor, que el test mueve a mano; `at(instante, tarea)` lo fija solo para un hilo, para carreras entre peticiones que leen el reloj en momentos distintos.
   - `Listeners.await(jdbc)`: espera a los listeners asíncronos antes de comprobar sus efectos.
   - `TestUsers.as(userId)`: MockMvc con sesión.
-  - El login de pruebas del perfil `e2e` (`POST /api/e2e/login`, para los E2E del front) se prueba en `E2eLoginTests`, el único contexto con ese perfil; `SessionTests` comprueba que sin él no existe.
+  - El login y el reloj de pruebas del perfil `e2e` (`POST /api/e2e/login` y `GET/POST /api/e2e/clock`, para los E2E del front) se prueban en `E2eLoginTests` y `E2eClockTests`, los únicos contextos con ese perfil; `SessionTests` comprueba que sin él no existen. Con el perfil, los jobs corren solos cada 2 s con la hora real, así que esas clases llevan `@DirtiesContext`: en la caché, bloquearían y cerrarían los datos de las demás.
   - `with(csrf())` sustituye para siempre el repositorio CSRF del contexto cacheado por uno sin cookies: lo que dependa de la cookie `XSRF-TOKEN` se prueba contra el servidor real (`SessionTests`), no con MockMvc.
   - `TestFixtures`: prepara datos por los casos de uso reales (usuarios, liga, miembros, plantilla, calendario, acta, parámetros); `closeRatings` mueve el reloj al cierre de la ventana de valoración y ejecuta su job, sin el cual un partido no puntúa.
   - `RecordedEvents`: eventos que publican los listeners asíncronos (`@RecordApplicationEvents` solo vale para los del hilo del test).

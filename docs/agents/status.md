@@ -4,7 +4,7 @@ Actualiza este archivo (y el resumen de *Estado* en `AGENTS.md`) cuando cierres 
 
 ## Estado actual
 
-Fase 1 completa y Fase 2 (valoraciones) con el desarrollo del backend completo (plan 09). En la Fase 0 están hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` con las pantallas de identidad y liga (plan 11, cerrado); faltan Dockerfile, Compose de producción y VPS. Pendiente en la Fase 2: las pantallas de manager y de admin, el E2E de la jornada completa y la prueba real; el plan `12` (manager, `docs/12-manager-screens-plan.md`) está redactado y revisado (decisiones cerradas, implementación pendiente), y el `13` (admin) está por redactar.
+Fase 1 completa y Fase 2 (valoraciones) con el desarrollo del backend completo (plan 09). En la Fase 0 están hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` con las pantallas de identidad y liga (plan 11, cerrado); faltan Dockerfile, Compose de producción y VPS. Pendiente en la Fase 2: las pantallas de manager y de admin, el E2E de la jornada completa y la prueba real; el plan `12` (manager, `docs/12-manager-screens-plan.md`) está en curso, con su backend hecho (tarea 2: plantilla completa para los miembros, `ScoringAction` en el spec y reloj de pruebas), y el `13` (admin) está por redactar.
 
 ### Fase 0 · Fundamentos (en curso)
 
@@ -36,6 +36,7 @@ Fase 1 completa y Fase 2 (valoraciones) con el desarrollo del backend completo (
 - **Cancelación (RF-41):** con la ventana abierta, el admin cancela las valoraciones de un miembro en un partido: se borran sus votos, queda excluido de valorarlo para siempre (tomando la ventana `for update`, así que un voto a la vez queda borrado o recibe `409`) y se publica `RaterExcluded` (sin consumidores hasta la Fase 3). El excluido ve que lo está; solo el admin ve a quién ha excluido, nunca sus votos.
 - **Puntos por valoración (RF-22, RF-23, RF-30):** `scoring` consume `RatingWindowClosed` y `RatingsCorrected` (`RatingEventsListener`): guarda su copia de los puntos por valoración, puntúa el partido solo cuando tiene acta, alineaciones bloqueadas **y** valoraciones (la jornada no aparece en clasificaciones ni historiales mientras la ventana siga abierta, y `MatchdayScored` sale ya con los puntos definitivos) y recalcula si una corrección cambia las valoraciones.
 - **Tests:** las pantallas de `rating` (listado y partido) en `ScreenStatementsTests`, y la jornada de `MatchdayFlowTests` con votos de los dos miembros por HTTP, el cierre por el job y los puntos por valoración en clasificaciones e historiales, también tras una corrección.
+- **Pantallas de manager** (`docs/12-manager-screens-plan.md`, en curso): hecho el backend que piden (tarea 2): `GET /players?includeRetired=true` para cualquier miembro, el enum `ScoringAction` en el spec (clave de `actions` y `scoringRules`) y, con el perfil `e2e`, el reloj ajustable `E2eClock` (`GET/POST /api/e2e/clock`) con los jobs de bloqueo y cierre cada 2 s. Siguiente: el boceto de las pantallas (tarea 3).
 - **Falta:** la prueba real con los amigos, que necesita las pantallas de manager y de admin y el VPS de la Fase 0.
 
 ### Tests de integración

@@ -21,6 +21,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,11 +29,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * FE-34: the E2E tests' login, against the real server as Playwright uses it: a CSRF cookie from any GET, then the
  * POST with its header. Without the profile it does not exist ({@code SessionTests}). The output is captured from
- * the class on, so it includes the start of this context, the only one with the profile.
+ * the class on, so it includes the start of this context. The profile's jobs run on their own every 2 s with the real
+ * time, so the context is closed after the class: cached, it would lock and close the data of the other tests.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("e2e")
 @Import(PostgresTestConfig.class)
+@DirtiesContext
 @ExtendWith(OutputCaptureExtension.class)
 class E2eLoginTests {
 

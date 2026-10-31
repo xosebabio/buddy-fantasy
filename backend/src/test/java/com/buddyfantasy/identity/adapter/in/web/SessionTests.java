@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -247,6 +248,17 @@ class SessionTests {
         assertThat(login.statusCode()).isEqualTo(401);
         assertThat(sessions()).isZero();
         assertThat(jdbc.queryForObject("select count(*) from identity_user", Integer.class)).isZero();
+    }
+
+    /** FE-34: the E2E tests' clock only exists with the {@code e2e} profile ({@code E2eClockTests}). */
+    @Test
+    @DisplayName("Without the e2e profile there is no test clock and the server clock is the real one")
+    void withoutTheE2eProfileThereIsNoTestClock() throws Exception {
+        assertThat(get("/api/e2e/clock").statusCode()).isEqualTo(401);
+
+        logIn(ANA);
+        assertThat(get("/api/e2e/clock").statusCode()).isEqualTo(404);
+        assertThat(context.getBean(Clock.class)).isEqualTo(Clock.systemUTC());
     }
 
     /** Caddy sends the public origin in {@code X-Forwarded-*}; Google only accepts the registered redirect URI. */

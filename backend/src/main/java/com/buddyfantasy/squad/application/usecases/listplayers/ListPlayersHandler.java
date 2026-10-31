@@ -4,9 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.buddyfantasy.league.LeagueAccess;
-import com.buddyfantasy.league.LeagueRole;
 import com.buddyfantasy.shared.application.QueryHandler;
-import com.buddyfantasy.shared.domain.ForbiddenException;
 import com.buddyfantasy.squad.application.port.out.ImageStorage;
 import com.buddyfantasy.squad.application.port.out.PlayerRepository;
 import com.buddyfantasy.squad.application.usecases.getplayer.PlayerView;
@@ -28,10 +26,8 @@ class ListPlayersHandler implements QueryHandler<ListPlayersQuery, List<PlayerVi
 
     @Override
     public List<PlayerView> handle(ListPlayersQuery query) {
-        LeagueRole role = access.roleOf(query.userId(), query.leagueId())
-                .orElseThrow(() -> new ForbiddenException("Not a member of league " + query.leagueId()));
-        boolean includeRetired = query.includeRetired() && role == LeagueRole.ADMIN;
-        return players.findByLeagueId(query.leagueId(), includeRetired).stream()
+        access.requireMember(query.userId(), query.leagueId());
+        return players.findByLeagueId(query.leagueId(), query.includeRetired()).stream()
                 .map(player -> PlayerView.from(player, images))
                 .sorted(SQUAD_ORDER)
                 .toList();

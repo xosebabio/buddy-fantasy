@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.buddyfantasy.ApiEndpoints.Endpoint;
+import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.shared.domain.ErrorCode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -173,6 +174,22 @@ class OpenApiDocumentationTests {
         assertThat(published).doesNotHaveDuplicates().isSorted().containsExactlyInAnyOrderElementsOf(codes);
         assertThat(document.at("/components/schemas/Problem/properties/code/allOf/0/$ref").asText())
                 .isEqualTo("#/components/schemas/ErrorCode");
+    }
+
+    @Test
+    @DisplayName("The ScoringAction enum has every action and the maps of actions cite it")
+    void scoringActionEnumHasEveryAction() {
+        List<String> published = elements(document.at("/components/schemas/ScoringAction/enum"))
+                .map(JsonNode::asText)
+                .toList();
+
+        assertThat(published).containsExactly(Stream.of(ScoringAction.values()).map(Enum::name)
+                .toArray(String[]::new));
+        assertThat(Stream.of("/components/schemas/PlayerMatchdayResponse/properties/actions",
+                "/components/schemas/LinedUpPlayerResponse/properties/actions",
+                "/components/schemas/LeagueSettingsBody/properties/scoringRules")
+                .map(field -> document.at(field).path("description").asText()))
+                .allMatch(description -> description.contains("`ScoringAction`"));
     }
 
     @Test

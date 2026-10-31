@@ -1800,7 +1800,7 @@
             "format" : "uuid"
           }
         }, {
-          "description" : "Incluir también los jugadores dados de baja. Solo vale para el administrador: a un manager se le ignora.",
+          "description" : "Incluir también los jugadores dados de baja, para cruzar los ids de alineaciones, actas y puntos.",
           "example" : false,
           "in" : "query",
           "name" : "includeRetired",
@@ -3730,10 +3730,10 @@
               "type" : "object",
               "additionalProperties" : {
                 "type" : "integer",
-                "description" : "Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
+                "description" : "Puntos por acción y posición: la acción (`ScoringAction`) y después la posición como claves. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
                 "format" : "int32"
               },
-              "description" : "Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
+              "description" : "Puntos por acción y posición: la acción (`ScoringAction`) y después la posición como claves. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
               "example" : {
                 "ASSIST" : {
                   "DEFENDER" : 1,
@@ -3791,7 +3791,7 @@
                 }
               }
             },
-            "description" : "Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
+            "description" : "Puntos por acción y posición: la acción (`ScoringAction`) y después la posición como claves. Tabla completa: las 9 acciones con las 4 posiciones cada una.",
             "example" : {
               "ASSIST" : {
                 "DEFENDER" : 1,
@@ -3865,10 +3865,10 @@
             "type" : "object",
             "additionalProperties" : {
               "type" : "integer",
-              "description" : "Puntos de cada acción que suma o resta; vacío si no jugó.",
+              "description" : "Puntos de cada acción que suma o resta, con la acción (`ScoringAction`) como clave; vacío si no jugó.",
               "format" : "int32"
             },
-            "description" : "Puntos de cada acción que suma o resta; vacío si no jugó.",
+            "description" : "Puntos de cada acción que suma o resta, con la acción (`ScoringAction`) como clave; vacío si no jugó.",
             "example" : {
               "GOAL" : 3,
               "PENALTY_GOAL" : 3,
@@ -4796,10 +4796,10 @@
             "type" : "object",
             "additionalProperties" : {
               "type" : "integer",
-              "description" : "Puntos de cada acción que suma o resta.",
+              "description" : "Puntos de cada acción que suma o resta, con la acción (`ScoringAction`) como clave.",
               "format" : "int32"
             },
-            "description" : "Puntos de cada acción que suma o resta.",
+            "description" : "Puntos de cada acción que suma o resta, con la acción (`ScoringAction`) como clave.",
             "example" : {
               "GOAL" : 3,
               "PENALTY_GOAL" : 3,
@@ -5256,6 +5256,12 @@
           }
         },
         "description" : "Todas las valoraciones del miembro en el partido (RF-18, RF-20)."
+      },
+      "ScoringAction" : {
+        "type" : "string",
+        "description" : "Acción que suma o resta puntos según la posición (RF-15). Es la clave de los mapas de acciones (`actions`) y de la tabla de puntos (`scoringRules`).",
+        "example" : "PENALTY_GOAL",
+        "enum" : [ "GOAL", "PENALTY_GOAL", "PENALTY_SAVED", "PENALTY_MISSED", "ASSIST", "OWN_GOAL", "YELLOW_CARD", "DOUBLE_YELLOW", "RED_CARD" ]
       },
       "StandingResponse" : {
         "type" : "object",

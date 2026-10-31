@@ -75,8 +75,8 @@ record LeagueSettingsBody(
         @Schema(description = "Valor de mercado mínimo de un jugador, en millones. Mayor que 0.",
                 exclusiveMinimum = true, minimum = "0", example = "1")
         BigDecimal marketMinValue,
-        @Schema(description = "Puntos por acción y posición. Tabla completa: las 9 acciones con las 4 posiciones cada "
-                + "una.", example = """
+        @Schema(description = "Puntos por acción y posición: la acción (`ScoringAction`) y después la posición como "
+                + "claves. Tabla completa: las 9 acciones con las 4 posiciones cada una.", example = """
                 {"GOAL": {"GOALKEEPER": 6, "DEFENDER": 5, "MIDFIELDER": 4, "FORWARD": 3},
                  "PENALTY_GOAL": {"GOALKEEPER": 3, "DEFENDER": 3, "MIDFIELDER": 3, "FORWARD": 3},
                  "PENALTY_SAVED": {"GOALKEEPER": 3, "DEFENDER": 3, "MIDFIELDER": 3, "FORWARD": 3},

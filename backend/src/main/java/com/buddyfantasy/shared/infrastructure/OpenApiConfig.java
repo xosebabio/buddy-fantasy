@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import com.buddyfantasy.datadefinition.ScoringAction;
 import com.buddyfantasy.shared.domain.ErrorCode;
 import com.buddyfantasy.shared.domain.UnexpectedException;
 import com.buddyfantasy.shared.web.ApiExamples;
@@ -43,7 +44,8 @@ import org.springframework.util.ClassUtils;
  * responses; this adds what every operation shares, so the controllers do not repeat it: the session and CSRF
  * requirements, the {@code 401} without a session, and the {@link ApiProblem} body and a generic example on every
  * error response that does not bring its own, with its {@code code} as the {@code ErrorCode} enum: the codes of every
- * module (FE-08). The server is the relative {@code /}, not the one springdoc deduces from
+ * module (FE-08). It also publishes {@link ScoringAction}, the keys of the maps of actions, which OpenAPI 3.0 cannot
+ * type (FE-23). The server is the relative {@code /}, not the one springdoc deduces from
  * the request, so the document is the same whatever the host and port (it is versioned in {@code api/openapi.json}).
  */
 @Configuration
@@ -52,6 +54,7 @@ class OpenApiConfig {
     private static final String SESSION = "session";
     private static final String CSRF = "csrf";
     private static final String ERROR_CODE = "ErrorCode";
+    private static final String SCORING_ACTION = "ScoringAction";
     /** Each module keeps its {@link ErrorCode} enum in its domain package; anything else (tests) is left out. */
     private static final Pattern ERROR_CODE_TYPE = Pattern.compile("com\\.buddyfantasy\\.\\w+\\.domain\\.\\w+");
     private static final String PROBLEM_JSON = org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
@@ -104,6 +107,7 @@ class OpenApiConfig {
             openApi.getComponents().getSchemas().values().forEach(schema -> schema.setNullable(null));
             ModelConverters.getInstance().read(ApiProblem.class).forEach(openApi.getComponents()::addSchemas);
             withErrorCodes(openApi.getComponents());
+            withScoringActions(openApi.getComponents());
             Schema<?> problem = new Schema<>().$ref("#/components/schemas/Problem");
             openApi.getPaths().values().forEach(path -> path.readOperationsMap().forEach((method, operation) -> {
                 if (MUTATING.contains(method)) {
@@ -162,6 +166,18 @@ class OpenApiConfig {
                 .addAllOfItem(new Schema<>().$ref("#/components/schemas/" + ERROR_CODE))
                 .description(code.getDescription())
                 .nullable(code.getNullable()));
+    }
+
+    /**
+     * Publishes the actions as the {@code ScoringAction} enum. No field references it: they are the keys of the maps
+     * of actions and points, whose descriptions cite it, so the client can check the keys and have a text for each.
+     */
+    private static void withScoringActions(Components components) {
+        components.addSchemas(SCORING_ACTION, new StringSchema()
+                ._enum(Arrays.stream(ScoringAction.values()).map(ScoringAction::name).toList())
+                .description("Acción que suma o resta puntos según la posición (RF-15). Es la clave de los mapas de "
+                        + "acciones (`actions`) y de la tabla de puntos (`scoringRules`).")
+                .example("PENALTY_GOAL"));
     }
 
     /** The names of every {@link ErrorCode}, sorted so the document does not depend on the scan order. */
