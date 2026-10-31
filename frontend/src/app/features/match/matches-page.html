@@ -7,17 +7,7 @@
     @for (match of byMatchday(); track match.id) {
       <li>
         <a bfListItem [routerLink]="['/leagues', leagueId(), 'matches', match.id]">
-          <ng-container i18n="@@match.matches.row">
-            Jornada {{ match.matchday }}, contra {{ match.opponent }}
-          </ng-container>
-          <span bfListItemMeta>
-            {{ venueTexts[match.venue] }}, {{ match.kickoffAt | bfDate: 'dateTime' }}
-          </span>
-          @if (match.result; as result) {
-            <span bfListItemTrailing class="result">
-              {{ result.goalsFor }}–{{ result.goalsAgainst }}
-            </span>
-          }
+          <bf-match-row [match]="match" />
         </a>
       </li>
     }

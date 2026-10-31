@@ -94,4 +94,41 @@ describe('Stepper', () => {
     await userEvent.keyboard('{ArrowUp}');
     expect(value()).toBe(3);
   });
+
+  describe('without limits', () => {
+    async function renderUnbounded(initial: number | null) {
+      const value = signal(initial);
+      await render(`<bf-stepper label="Gol de portero" empty="Sin marcar" [(value)]="value" />`, {
+        imports: [Stepper],
+        componentProperties: { value },
+      });
+      return value;
+    }
+
+    it('goes below zero with the typographic minus and no range in the spinbutton', async () => {
+      const value = await renderUnbounded(0);
+      const spinbutton = screen.getByRole('spinbutton', { name: 'Gol de portero' });
+      expect(spinbutton).not.toHaveAttribute('aria-valuemin');
+      expect(spinbutton).not.toHaveAttribute('aria-valuemax');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Bajar' }));
+
+      expect(value()).toBe(-1);
+      expect(spinbutton).toHaveTextContent('−1');
+      expect(spinbutton).toHaveClass('negative');
+      expect(screen.getByRole('button', { name: 'Bajar' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Subir' })).toBeEnabled();
+    });
+
+    it('starts at 0 from the empty value, and Home and End do nothing', async () => {
+      const value = await renderUnbounded(null);
+      await userEvent.click(screen.getByRole('button', { name: 'Subir' }));
+      expect(value()).toBe(0);
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Home}{End}');
+
+      expect(value()).toBe(0);
+    });
+  });
 });

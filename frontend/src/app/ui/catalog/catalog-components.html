@@ -72,6 +72,31 @@
 </div>
 <p class="muted">Con valor, vacío (el primer toque pone 5), en el máximo y desactivado.</p>
 
+<h3>Stepper sin límites</h3>
+<div class="row">
+  <bf-stepper label="Puntos negativos" [(value)]="score" />
+  <bf-stepper label="Puntos en cero" [value]="0" />
+  <bf-stepper label="Puntos vacíos" empty="Sin marcar" [(value)]="blankScore" />
+</div>
+<p class="muted">Negativo (menos tipográfico y en rojo), cero y vacío (el primer toque pone 0).</p>
+
+<h3>Casilla</h3>
+<div class="row">
+  <label><input type="checkbox" bfCheckbox [(checked)]="played" /> Jugó</label>
+  <label><input type="checkbox" bfCheckbox /> Jugó</label>
+  <label><input type="checkbox" bfCheckbox disabled /> Roja directa</label>
+  <label><input type="checkbox" bfCheckbox checked disabled /> Doble amarilla</label>
+</div>
+<p class="muted">Marcada, sin marcar y deshabilitada (con el tabulador se ve el foco).</p>
+
+<h3>Interruptor</h3>
+<div class="row">
+  <button bfSwitch aria-label="Presupuesto" [(checked)]="budget"></button>
+  <button bfSwitch aria-label="Formación por posiciones"></button>
+  <button bfSwitch aria-label="Nota sin votos desactivada" disabled></button>
+</div>
+<p class="muted">Encendido, apagado y deshabilitado.</p>
+
 <h3>Control segmentado</h3>
 <div class="stack">
   <bf-segmented label="Tema" [options]="themes" [(value)]="theme" />

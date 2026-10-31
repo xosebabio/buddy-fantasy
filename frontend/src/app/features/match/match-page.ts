@@ -5,13 +5,13 @@ import { MatchApi } from '../../core/api/match/match-api';
 import { SquadApi } from '../../core/api/squad/squad-api';
 import { PlayerRow } from '../../shared/player/player-row';
 import { playerIndex } from '../../shared/roster/roster';
+import { VENUE_TEXTS } from '../../shared/match/venue';
 import { BfDatePipe } from '../../shared/time/date-pipe';
 import { EmptyState } from '../../ui/empty-state/empty-state';
 import { List, ListItem } from '../../ui/list/list';
 import { LoadError } from '../../ui/load-error/load-error';
 import { Skeleton } from '../../ui/skeleton/skeleton';
 import { performanceSummary } from '../../shared/performance/performance';
-import { VENUE_TEXTS } from './venue';
 
 /**
  * A match with its result and, once it is closed, its sheet (RF-13, RF-14) and the way to rate it,

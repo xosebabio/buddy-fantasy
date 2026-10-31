@@ -61,3 +61,7 @@
 :host(.disabled) .value {
   opacity: 0.45;
 }
+
+.value.negative {
+  color: var(--bf-color-danger-text);
+}

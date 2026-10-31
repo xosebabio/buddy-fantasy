@@ -10,11 +10,13 @@ import { LucideMinus, LucidePlus } from '@lucide/angular';
 
 /**
  * A whole number with − and + (FE-18), such as a mark from 0 to 10, with the figure large in the
- * middle. `min`, `max` and `step` come from the page. With `empty`, the value can be `null`, shown as
- * that text, and the first step from it goes to `start` (`min` if not given).
+ * middle. `min`, `max` and `step` come from the page; a `null` bound (the default) is no limit, for
+ * what has none, such as a score in the points table, which can be negative (shown with the
+ * typographic minus, in red). With `empty`, the value can be `null`, shown as that text, and the
+ * first step from it goes to `start` (`min`, or 0 without it).
  *
  * The figure is a `spinbutton` named by `label`: the up and down arrows change it by `step`, and
- * Home and End take it to `min` and `max`. As in the ARIA pattern, the buttons are for touch and the
+ * Home and End take it to `min` and `max` if they are set. As in the ARIA pattern, the buttons are for touch and the
  * pointer and stay out of the tab order.
  */
 @Component({
@@ -36,6 +38,7 @@ import { LucideMinus, LucidePlus } from '@lucide/angular';
       class="value"
       role="spinbutton"
       [class.blank]="value() === null"
+      [class.negative]="isNegative()"
       [attr.tabindex]="disabled() ? -1 : 0"
       [attr.aria-label]="label()"
       [attr.aria-valuenow]="value()"
@@ -45,7 +48,7 @@ import { LucideMinus, LucidePlus } from '@lucide/angular';
       [attr.aria-disabled]="disabled() || null"
       (keydown)="onKeydown($event)"
     >
-      {{ value() ?? empty() }}
+      {{ text() }}
     </span>
     <button
       type="button"
@@ -65,8 +68,8 @@ import { LucideMinus, LucidePlus } from '@lucide/angular';
 })
 export class Stepper {
   readonly label = input.required<string>();
-  readonly min = input.required<number>();
-  readonly max = input.required<number>();
+  readonly min = input<number | null>(null);
+  readonly max = input<number | null>(null);
   readonly step = input(1);
   readonly value = model<number | null>(null);
   /** The text of the empty value, such as _Sin voto_; without it the value is never `null`. */
@@ -77,16 +80,23 @@ export class Stepper {
 
   protected readonly canDecrease = computed(() => {
     const value = this.value();
-    return value === null || value > this.min();
+    const min = this.min();
+    return value === null || min === null || value > min;
   });
   protected readonly canIncrease = computed(() => {
     const value = this.value();
-    return value === null || value < this.max();
+    const max = this.max();
+    return value === null || max === null || value < max;
+  });
+  protected readonly isNegative = computed(() => (this.value() ?? 0) < 0);
+  protected readonly text = computed(() => {
+    const value = this.value();
+    return value === null ? this.empty() : String(value).replace('-', '−');
   });
 
   protected stepBy(direction: 1 | -1): void {
     const value = this.value();
-    this.set(value === null ? (this.start() ?? this.min()) : value + direction * this.step());
+    this.set(value === null ? (this.start() ?? this.min() ?? 0) : value + direction * this.step());
   }
 
   protected onKeydown(event: KeyboardEvent): void {
@@ -100,12 +110,22 @@ export class Stepper {
       case 'ArrowDown':
         this.stepBy(-1);
         break;
-      case 'Home':
-        this.set(this.min());
+      case 'Home': {
+        const min = this.min();
+        if (min === null) {
+          return;
+        }
+        this.set(min);
         break;
-      case 'End':
-        this.set(this.max());
+      }
+      case 'End': {
+        const max = this.max();
+        if (max === null) {
+          return;
+        }
+        this.set(max);
         break;
+      }
       default:
         return;
     }
@@ -113,6 +133,6 @@ export class Stepper {
   }
 
   private set(value: number): void {
-    this.value.set(Math.min(this.max(), Math.max(this.min(), value)));
+    this.value.set(Math.min(this.max() ?? value, Math.max(this.min() ?? value, value)));
   }
 }

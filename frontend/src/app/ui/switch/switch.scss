@@ -1,0 +1,44 @@
+:host {
+  display: flex;
+  flex: none;
+  box-sizing: border-box;
+  width: 52px;
+  height: 32px;
+  padding: var(--bf-space-1);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-round);
+  background-color: var(--bf-color-surface);
+  cursor: pointer;
+  transition: background-color var(--bf-motion-fast) var(--bf-ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+// The knob.
+:host::after {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: var(--bf-radius-round);
+  background-color: var(--bf-color-border-strong);
+  transition: translate var(--bf-motion-fast) var(--bf-ease-out);
+}
+
+:host([aria-checked='true']) {
+  border-color: var(--bf-color-accent);
+  background-color: var(--bf-color-accent);
+}
+
+:host([aria-checked='true'])::after {
+  background-color: var(--bf-color-on-color);
+  translate: 20px 0;
+}
+
+:host(:focus-visible) {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+
+:host(:disabled) {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

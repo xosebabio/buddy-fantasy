@@ -25,6 +25,7 @@ import { Badge } from '../badge/badge';
 import { Button } from '../button/button';
 import { IconButton } from '../button/icon-button';
 import { Card } from '../card/card';
+import { Checkbox } from '../checkbox/checkbox';
 import { Countdown } from '../countdown/countdown';
 import { Disclosure } from '../disclosure/disclosure';
 import { EmptyState } from '../empty-state/empty-state';
@@ -37,6 +38,7 @@ import { Notice } from '../notice/notice';
 import { Segmented, type SegmentedOption } from '../segmented/segmented';
 import { Skeleton } from '../skeleton/skeleton';
 import { Stepper } from '../stepper/stepper';
+import { Switch } from '../switch/switch';
 import { Tab, TabLink, TabNav, TabPanel, Tabs } from '../tabs/tabs';
 import { TopBar } from '../top-bar/top-bar';
 import { Wordmark } from '../top-bar/wordmark';
@@ -56,6 +58,7 @@ interface NavDemo {
     Button,
     Card,
     CdkAccordion,
+    Checkbox,
     Countdown,
     Disclosure,
     EmptyState,
@@ -85,6 +88,7 @@ interface NavDemo {
     SideNav,
     Skeleton,
     Stepper,
+    Switch,
     Tab,
     TabLink,
     TabNav,
@@ -121,6 +125,11 @@ export class CatalogComponents {
 
   protected readonly mark = signal<number | null>(7);
   protected readonly blankMark = signal<number | null>(null);
+  protected readonly score = signal<number | null>(-4);
+  protected readonly blankScore = signal<number | null>(null);
+
+  protected readonly played = signal(true);
+  protected readonly budget = signal(true);
 
   /** Deadlines from when the catalog opens: far, under 3 h (amber) and in the last minute. */
   private readonly opened = Date.now();

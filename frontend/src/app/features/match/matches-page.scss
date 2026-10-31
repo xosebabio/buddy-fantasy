@@ -1,5 +1,4 @@
 @use 'ui/styles/page';
-@use 'ui/styles/typography' as type;
 
 :host {
   @include page.page;
@@ -12,14 +11,6 @@ h1 {
 ul,
 bf-empty-state {
   margin-top: var(--bf-space-5);
-}
-
-.result {
-  @include type.figures;
-
-  font-size: var(--bf-font-size-3);
-  font-weight: 600;
-  white-space: nowrap;
 }
 
 .loading {
