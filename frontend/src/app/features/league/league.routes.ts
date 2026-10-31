@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from '../../core/auth/guards';
+import { lazyUnsavedChangesGuard } from '../../core/layout/lazy-unsaved-changes-guard';
 
 /** The pages outside a league, in the shell. `leagues/new` goes before `leagues/:leagueId`. */
 export const leaguesRoutes: Routes = [
@@ -51,6 +52,12 @@ export const leagueRoutes: Routes = [
 
 /** The admin pages of a league, under `leagues/:leagueId/admin`. */
 export const leagueAdminRoutes: Routes = [
+  {
+    path: 'settings',
+    loadComponent: () => import('./admin/admin-settings-page').then((m) => m.AdminSettingsPage),
+    canDeactivate: [lazyUnsavedChangesGuard],
+    title: $localize`:@@league.admin.settings.pageTitle:Parámetros`,
+  },
   {
     path: 'members',
     loadComponent: () => import('./admin/admin-members-page').then((m) => m.AdminMembersPage),

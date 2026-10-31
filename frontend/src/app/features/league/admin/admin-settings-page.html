@@ -1,0 +1,363 @@
+<h1 i18n="@@league.admin.settings.title">Parámetros</h1>
+
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (draft(); as draft) {
+  <bf-notice class="intro" i18n="@@league.admin.settings.intro">
+    Los cambios valen para lo que venga: las ventanas abiertas y las jornadas ya puntuadas conservan
+    los suyos.
+  </bf-notice>
+
+  <div class="columns">
+    <div class="column">
+      <section aria-labelledby="lineup-title">
+        <h2 id="lineup-title" i18n="@@league.admin.settings.lineup">Alineaciones</h2>
+        <ul class="settings">
+          <li class="setting">
+            <span class="name" i18n="@@league.admin.settings.size">Jugadores por alineación</span>
+            <bf-stepper
+              label="Jugadores por alineación"
+              i18n-label="@@league.admin.settings.size"
+              [min]="1"
+              [value]="draft.lineupSize"
+              (valueChange)="setNumber('lineupSize', $event)"
+            />
+            @if (fieldErrors()['lineupSize']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          <li class="setting">
+            <span class="name">
+              <ng-container i18n="@@league.admin.settings.lock"
+                >Se bloquea antes del partido</ng-container
+              >
+              @if (lockMax(); as max) {
+                <span class="hint" i18n="@@league.admin.settings.lockHint"
+                  >Entre 0 y {{ max }} horas</span
+                >
+              }
+            </span>
+            <bf-stepper
+              label="Horas de bloqueo antes del partido"
+              i18n-label="@@league.admin.settings.lockLabel"
+              [min]="0"
+              [max]="lockMax()"
+              [value]="draft.lineupLockHours"
+              (valueChange)="setNumber('lineupLockHours', $event)"
+            />
+            <span class="unit" i18n="@@league.admin.settings.hours">h</span>
+            @if (fieldErrors()['lineupLockHours']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          <li class="setting">
+            <span class="name" i18n="@@league.admin.settings.changes">Cambios por jornada</span>
+            <bf-stepper
+              label="Cambios por jornada"
+              i18n-label="@@league.admin.settings.changes"
+              [min]="0"
+              [value]="draft.lineupMaxChanges"
+              (valueChange)="setNumber('lineupMaxChanges', $event)"
+            />
+            @if (fieldErrors()['lineupMaxChanges']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          <li class="setting">
+            <span class="name">
+              <ng-container i18n="@@league.admin.settings.budget">Presupuesto</ng-container>
+              <span class="hint" i18n="@@league.admin.settings.budgetHint"
+                >Tope de valor de la alineación</span
+              >
+            </span>
+            <button
+              bfSwitch
+              aria-label="Presupuesto"
+              i18n-aria-label="@@league.admin.settings.budget"
+              [checked]="draft.budgetEnabled"
+              (checkedChange)="setBudget($event)"
+            ></button>
+          </li>
+          @if (draft.budgetEnabled) {
+            <li class="setting sub">
+              <bf-field
+                label="Importe (M)"
+                i18n-label="@@league.admin.settings.amount"
+                [error]="fieldErrors()['lineupBudget'] ?? null"
+              >
+                <input
+                  bfInput
+                  type="text"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  [value]="draft.budget"
+                  (input)="setDecimal('budget', $event)"
+                />
+              </bf-field>
+            </li>
+          }
+          <li class="setting">
+            <span class="name">
+              <ng-container i18n="@@league.admin.settings.formation"
+                >Formación por posiciones</ng-container
+              >
+              <span class="hint" i18n="@@league.admin.settings.formationHint"
+                >Mínimo de cada posición</span
+              >
+            </span>
+            <button
+              bfSwitch
+              aria-label="Formación por posiciones"
+              i18n-aria-label="@@league.admin.settings.formation"
+              [checked]="draft.formationEnabled"
+              (checkedChange)="setFormation($event)"
+            ></button>
+            @if (fieldErrors()['lineupFormation']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          @if (draft.formationEnabled) {
+            <li class="setting sub">
+              <span class="name" i18n="@@league.admin.settings.minGoalkeepers">Porteros</span>
+              <bf-stepper
+                label="Porteros mínimos"
+                i18n-label="@@league.admin.settings.minGoalkeepersLabel"
+                [min]="0"
+                [value]="draft.minGoalkeepers"
+                (valueChange)="setNumber('minGoalkeepers', $event)"
+              />
+            </li>
+            <li class="setting sub">
+              <span class="name" i18n="@@league.admin.settings.minDefenders">Defensas</span>
+              <bf-stepper
+                label="Defensas mínimos"
+                i18n-label="@@league.admin.settings.minDefendersLabel"
+                [min]="0"
+                [value]="draft.minDefenders"
+                (valueChange)="setNumber('minDefenders', $event)"
+              />
+            </li>
+            <li class="setting sub">
+              <span class="name" i18n="@@league.admin.settings.minMidfielders">Medios</span>
+              <bf-stepper
+                label="Medios mínimos"
+                i18n-label="@@league.admin.settings.minMidfieldersLabel"
+                [min]="0"
+                [value]="draft.minMidfielders"
+                (valueChange)="setNumber('minMidfielders', $event)"
+              />
+            </li>
+            <li class="setting sub">
+              <span class="name" i18n="@@league.admin.settings.minForwards">Delanteros</span>
+              <bf-stepper
+                label="Delanteros mínimos"
+                i18n-label="@@league.admin.settings.minForwardsLabel"
+                [min]="0"
+                [value]="draft.minForwards"
+                (valueChange)="setNumber('minForwards', $event)"
+              />
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="rating-title">
+        <h2 id="rating-title" i18n="@@league.admin.settings.rating">Valoraciones</h2>
+        <ul class="settings">
+          <li class="setting stack">
+            <bf-segmented
+              label="Formato"
+              i18n-label="@@league.admin.settings.format"
+              [options]="formatOptions"
+              [value]="draft.ratingFormat"
+              (valueChange)="setFormat($event)"
+            />
+            @if (fieldErrors()['ratingFormat']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          <li class="setting">
+            <span class="name" i18n="@@league.admin.settings.window">Duración de la ventana</span>
+            <bf-stepper
+              label="Duración de la ventana de valoración"
+              i18n-label="@@league.admin.settings.windowLabel"
+              [min]="1"
+              [value]="draft.ratingWindowHours"
+              (valueChange)="setNumber('ratingWindowHours', $event)"
+            />
+            <span class="unit" i18n="@@league.admin.settings.hours">h</span>
+            @if (fieldErrors()['ratingWindowHours']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          <li class="setting">
+            <span class="name">
+              <ng-container i18n="@@league.admin.settings.minVotes">Votos mínimos</ng-container>
+              <span class="hint" i18n="@@league.admin.settings.minVotesHint"
+                >Con menos votos no cuenta la valoración</span
+              >
+            </span>
+            <bf-stepper
+              label="Votos mínimos"
+              i18n-label="@@league.admin.settings.minVotes"
+              [min]="1"
+              [value]="draft.ratingMinVotes"
+              (valueChange)="setNumber('ratingMinVotes', $event)"
+            />
+            @if (fieldErrors()['ratingMinVotes']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          <li class="setting">
+            <span class="name">
+              <ng-container i18n="@@league.admin.settings.default">Nota sin votos</ng-container>
+              <span class="hint" i18n="@@league.admin.settings.defaultHint"
+                >Qué puntúa quien no llega al mínimo de votos</span
+              >
+            </span>
+            <button
+              bfSwitch
+              aria-label="Nota sin votos"
+              i18n-aria-label="@@league.admin.settings.default"
+              [checked]="draft.defaultRating !== null"
+              (checkedChange)="setDefaultRating($event)"
+            ></button>
+            @if (fieldErrors()['defaultRating']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+          @if (draft.defaultRating !== null) {
+            <li class="setting sub">
+              <span class="name" i18n="@@league.admin.settings.mark">Nota</span>
+              <bf-stepper
+                label="Nota sin votos"
+                i18n-label="@@league.admin.settings.default"
+                [min]="0"
+                [max]="maxMark()"
+                [value]="draft.defaultRating"
+                (valueChange)="setMark($event)"
+              />
+            </li>
+          }
+          <li class="setting stack">
+            <span class="name">
+              <ng-container i18n="@@league.admin.settings.conversion"
+                >Conversión a puntos</ng-container
+              >
+              <span class="hint" i18n="@@league.admin.settings.conversionHint"
+                >puntos = factor × media + base, la del formato elegido</span
+              >
+            </span>
+            <div class="conversion">
+              @if (draft.ratingFormat === 'SPADES') {
+                <bf-field label="Factor" i18n-label="@@league.admin.settings.factor">
+                  <input
+                    bfInput
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    [value]="draft.spadesFactor"
+                    (input)="setDecimal('spadesFactor', $event)"
+                  />
+                </bf-field>
+                <bf-field label="Base" i18n-label="@@league.admin.settings.base">
+                  <input
+                    bfInput
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    [value]="draft.spadesBase"
+                    (input)="setDecimal('spadesBase', $event)"
+                  />
+                </bf-field>
+              } @else {
+                <bf-field label="Factor" i18n-label="@@league.admin.settings.factor">
+                  <input
+                    bfInput
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    [value]="draft.decimalFactor"
+                    (input)="setDecimal('decimalFactor', $event)"
+                  />
+                </bf-field>
+                <bf-field label="Base" i18n-label="@@league.admin.settings.base">
+                  <input
+                    bfInput
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    [value]="draft.decimalBase"
+                    (input)="setDecimal('decimalBase', $event)"
+                  />
+                </bf-field>
+              }
+            </div>
+            @if (fieldErrors()['ratingConversion']; as error) {
+              <p class="error">{{ error }}</p>
+            }
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="column">
+      <section aria-labelledby="scoring-title">
+        <h2 id="scoring-title" i18n="@@league.admin.settings.scoring">Puntos por acción</h2>
+        <ul bfList cdkAccordion>
+          @for (row of draft.scoring; track row.action) {
+            <li bfDisclosure>
+              {{ row.text }}
+              <span bfListItemTrailing class="four">
+                @for (position of positions; track position) {
+                  <span
+                    class="figure"
+                    [class]="positionClasses[position]"
+                    [class.negative]="(row.points[$index] ?? 0) < 0"
+                    >{{ row.points[$index] ?? 0 | bfPoints: false }}</span
+                  >
+                }
+              </span>
+              <div bfDisclosurePanel class="points">
+                @for (position of positions; track position) {
+                  <div class="points-row">
+                    <bf-position-chip [position]="position" />
+                    <bf-stepper
+                      [label]="row.text + ', ' + positionTexts[position]"
+                      [value]="row.points[$index] ?? 0"
+                      (valueChange)="setPoints(row.action, position, $event)"
+                    />
+                  </div>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <div class="actions">
+    @if (notice(); as notice) {
+      <bf-notice tone="danger" role="alert">{{ notice }}</bf-notice>
+    }
+    <button
+      bfButton
+      type="button"
+      variant="primary"
+      block
+      [loading]="saving()"
+      [disabled]="!online.online()"
+      (click)="save()"
+      i18n="@@league.admin.settings.save"
+    >
+      Guardar parámetros
+    </button>
+  </div>
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3, 4, 5]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

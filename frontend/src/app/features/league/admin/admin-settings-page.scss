@@ -1,0 +1,142 @@
+@use 'ui/styles/breakpoints';
+@use 'ui/styles/page';
+@use 'ui/styles/typography' as type;
+
+:host {
+  @include page.page;
+
+  max-width: none;
+}
+
+h1 {
+  @include page.title;
+}
+
+h2 {
+  @include type.display(4);
+
+  margin-top: var(--bf-space-6);
+}
+
+.intro {
+  display: block;
+  max-width: page.$max-width;
+  margin-top: var(--bf-space-3);
+}
+
+.columns {
+  display: grid;
+  gap: 0 var(--bf-space-8);
+
+  @include breakpoints.lg {
+    grid-template-columns: repeat(2, minmax(0, page.$max-width));
+    align-items: start;
+  }
+}
+
+.column {
+  max-width: page.$max-width;
+}
+
+// A setting per row, with its control on the right and no cards.
+.setting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2) var(--bf-space-3);
+  min-height: 56px;
+  padding: var(--bf-space-2) 0;
+  border-bottom: 1px solid var(--bf-color-border);
+
+  &.sub {
+    padding-inline-start: var(--bf-space-4);
+  }
+
+  &.stack {
+    display: grid;
+  }
+}
+
+.name {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.hint {
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}
+
+.unit {
+  color: var(--bf-color-text-muted);
+}
+
+.error {
+  flex-basis: 100%;
+  color: var(--bf-color-danger-text);
+  font-size: var(--bf-font-size-1);
+}
+
+.conversion {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bf-space-3);
+}
+
+// The four scores of an action, each in the color of its position.
+.four {
+  display: inline-flex;
+  gap: var(--bf-space-3);
+}
+
+.figure {
+  @include type.display(4);
+
+  font-variant-numeric: tabular-nums;
+
+  &.goalkeeper {
+    color: var(--bf-color-position-goalkeeper);
+  }
+
+  &.defender {
+    color: var(--bf-color-position-defender);
+  }
+
+  &.midfielder {
+    color: var(--bf-color-position-midfielder);
+  }
+
+  &.forward {
+    color: var(--bf-color-position-forward);
+  }
+
+  &.negative {
+    color: var(--bf-color-danger-text);
+  }
+}
+
+.points {
+  display: grid;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-2) 0 var(--bf-space-3);
+}
+
+.points-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+}
+
+.actions {
+  @include page.actions;
+
+  max-width: page.$max-width;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}
