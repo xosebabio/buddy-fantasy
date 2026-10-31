@@ -12,7 +12,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) con el desarrollo del backend completo (plan 09). Fase 0: hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` (plan 11, cerrado: Angular 22, contrato tipado con el OpenAPI, sistema de diseño, shell, pantallas de identidad y liga, Caddy, E2E de humo y CI); faltan Dockerfile, Compose de producción y VPS. Siguiente en la Fase 2: las pantallas de manager (plan `12`, en curso: hecho su backend, tarea 2) y las de admin con el E2E de la jornada completa (plan `13`, por redactar); la prueba real necesita además el VPS. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el desarrollo del backend completo (plan 09). Fase 0: hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` (plan 11, cerrado: Angular 22, contrato tipado con el OpenAPI, sistema de diseño, shell, pantallas de identidad y liga, Caddy, E2E de humo y CI); faltan Dockerfile, Compose de producción y VPS. Siguiente en la Fase 2: las pantallas de manager (plan `12`, en curso: hechos su backend y el boceto, tareas 2 y 3) y las de admin con el E2E de la jornada completa (plan `13`, por redactar); la prueba real necesita además el VPS. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 

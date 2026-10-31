@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pantallas de manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- Tokens: los de styles/_themes.scss compilados (npx sass) ---------- */
+  .theme {
+    --bf-font-display: "Barlow Condensed", system-ui, sans-serif;
+    --bf-font-text: "Barlow", system-ui, sans-serif;
+    --bf-font-size-1: 0.8125rem; --bf-font-size-2: 1rem; --bf-font-size-3: 1.25rem; --bf-font-size-4: 1.5625rem;
+    --bf-font-size-5: 1.9375rem; --bf-font-size-6: 2.4375rem; --bf-font-size-7: 3.0625rem; --bf-font-size-8: 3.8125rem;
+    --bf-space-1: 4px; --bf-space-2: 8px; --bf-space-3: 12px; --bf-space-4: 16px;
+    --bf-space-5: 24px; --bf-space-6: 32px; --bf-space-7: 48px; --bf-space-8: 64px;
+    --bf-radius-tag: 4px; --bf-radius-control: 10px; --bf-radius-sheet: 20px; --bf-radius-round: 999px;
+    --bf-motion-fast: 120ms; --bf-motion-base: 220ms; --bf-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --bf-color-bg: #f8f7f4;
+    --bf-color-surface: #fff;
+    --bf-color-border: #e3e0da;
+    --bf-color-border-strong: #87837a;
+    --bf-color-text: #1c1b18;
+    --bf-color-text-muted: #65615a;
+    --bf-color-brand: #00a375;
+    --bf-color-brand-text: #006f4f;
+    --bf-color-brand-subtle: #e2f8ed;
+    --bf-color-on-color: #1c1b18;
+    --bf-color-accent: #7a86ee;
+    --bf-color-accent-text: #4a51ae;
+    --bf-color-accent-subtle: #eef1ff;
+    --bf-color-focus: #5f68cd;
+    --bf-color-danger: #d23b32;
+    --bf-color-danger-text: #ac1b18;
+    --bf-color-warning: #f2b33d;
+    --bf-color-warning-text: #5f4100;
+    --bf-color-warning-subtle: #fdf0dc;
+    --bf-color-position-goalkeeper: #e2794e;
+    --bf-color-position-defender: #009dc2;
+    --bf-color-position-midfielder: #84941d;
+    --bf-color-position-forward: #de5ea5;
+    --bf-color-pitch: #123d29;
+    --bf-color-pitch-stripe: #164530;
+    --bf-color-pitch-line: rgba(255, 255, 255, 0.55);
+    --bf-color-on-pitch: #fff;
+    --bf-color-on-pitch-muted: rgba(255, 255, 255, 0.78);
+    --bf-color-scrim: rgba(28, 27, 24, 0.45);
+    --bf-shadow-overlay: 0 -1px 0 rgba(28, 27, 24, 0.06), 0 -12px 32px rgba(28, 27, 24, 0.14);
+    --bf-shadow-raised: 0 1px 2px rgba(28, 27, 24, 0.12), 0 4px 12px rgba(28, 27, 24, 0.08);
+    color-scheme: light;
+  }
+  .theme[data-theme="dark"] {
+    --bf-color-bg: #121211;
+    --bf-color-surface: #1c1b18;
+    --bf-color-border: #312f2b;
+    --bf-color-border-strong: #87837a;
+    --bf-color-text: #f8f7f4;
+    --bf-color-text-muted: #a8a399;
+    --bf-color-brand-text: #3cb78a;
+    --bf-color-brand-subtle: #0e3023;
+    --bf-color-accent-text: #9eabff;
+    --bf-color-accent-subtle: #222643;
+    --bf-color-focus: #9eabff;
+    --bf-color-danger-text: #ff8e80;
+    --bf-color-warning-text: #f2b33d;
+    --bf-color-warning-subtle: #362506;
+    --bf-color-scrim: rgba(0, 0, 0, 0.6);
+    --bf-shadow-overlay: 0 -1px 0 rgba(255, 255, 255, 0.06), 0 -12px 32px rgba(0, 0, 0, 0.5);
+    --bf-shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+  }
+
+  /* ---------- Página del boceto (no es parte del sistema) ---------- */
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #d9d6cf; color: #1c1b18; font: 16px/1.5 "Barlow", system-ui, sans-serif; }
+  .doc { max-width: 1680px; margin: 0 auto; padding: 32px 24px 80px; }
+  .doc > h1 { font: 700 2.4375rem/1.1 "Barlow Condensed", sans-serif; margin: 0 0 8px; }
+  .doc > p { max-width: 75ch; margin: 0 0 16px; color: #4b4741; }
+  .doc > h2 { font: 600 1.5625rem/1.2 "Barlow Condensed", sans-serif; margin: 56px 0 8px; }
+  .doc > h2 + p { margin-bottom: 20px; }
+  .row { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { font-size: 13px; color: #4b4741; margin-top: 10px; max-width: 360px; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  /* ---------- Marco de móvil ---------- */
+  .phone {
+    width: 360px; height: 740px; border-radius: 28px; overflow: hidden; position: relative;
+    background: var(--bf-color-bg); color: var(--bf-color-text);
+    font-family: var(--bf-font-text); font-size: var(--bf-font-size-2); line-height: 1.5;
+    display: flex; flex-direction: column;
+    box-shadow: 0 0 0 8px #1c1b18, 0 20px 40px rgb(0 0 0 / 0.25);
+  }
+  .phone.short { height: 560px; }
+  .phone.tall { height: 900px; }
+  .status { height: 28px; flex: none; }
+  .content { flex: 1; min-height: 0; overflow: hidden; padding: var(--bf-space-4) var(--bf-space-4) var(--bf-space-4); }
+  .dock { flex: none; display: grid; gap: var(--bf-space-2); padding: var(--bf-space-3) var(--bf-space-4); border-top: 1px solid var(--bf-color-border); background: var(--bf-color-bg); }
+  .dock .hint { margin: 0; text-align: center; font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); }
+
+  /* Iconos Lucide (sprite) */
+  .i { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .i.s { width: 16px; height: 16px; }
+  .i.l { width: 24px; height: 24px; }
+
+  /* ---------- Shell ---------- */
+  .topbar { flex: none; display: flex; align-items: center; gap: var(--bf-space-2); padding: 0 var(--bf-space-2) 0 var(--bf-space-4); min-height: 56px; border-bottom: 1px solid var(--bf-color-border); background: var(--bf-color-surface); }
+  .switcher { display: flex; align-items: center; gap: var(--bf-space-1); min-height: 44px; padding: 0; background: none; border: 0; color: inherit; font: 600 var(--bf-font-size-3)/1.1 var(--bf-font-display); }
+  .switcher .i { color: var(--bf-color-text-muted); }
+  .spacer { flex: 1; }
+  .avatar { width: 32px; height: 32px; border-radius: var(--bf-radius-round); flex: none; background: var(--bf-color-accent-subtle); color: var(--bf-color-accent-text); display: grid; place-items: center; font: 600 var(--bf-font-size-1)/1 var(--bf-font-text); }
+  .avatar-hit { width: 44px; height: 44px; display: grid; place-items: center; }
+  .wordmark { font: 700 var(--bf-font-size-4)/1 var(--bf-font-display); letter-spacing: -0.01em; }
+  .wordmark b { color: var(--bf-color-brand-text); font-weight: 700; }
+  .tabbar { flex: none; display: flex; border-top: 1px solid var(--bf-color-border); background: var(--bf-color-surface); padding-bottom: 14px; }
+  .tabbar a { flex: 1 1 auto; position: relative; display: grid; justify-items: center; gap: 2px; min-height: 56px; padding: 8px 4px 4px; color: var(--bf-color-text-muted); font: 500 var(--bf-font-size-1)/1.2 var(--bf-font-text); text-decoration: none; }
+  .tabbar a span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tabbar a.active { color: var(--bf-color-brand-text); font-weight: 600; }
+  .tabbar a.active::before { content: ""; position: absolute; top: -1px; left: 22%; right: 22%; height: 3px; border-radius: 0 0 4px 4px; background: var(--bf-color-brand); }
+
+  /* ---------- Tipografía ---------- */
+  .title { font: 700 var(--bf-font-size-5)/1.1 var(--bf-font-display); margin: 0; }
+  .title-l { font: 700 var(--bf-font-size-6)/1.05 var(--bf-font-display); margin: 0; letter-spacing: -0.01em; }
+  .subtitle { font: 600 var(--bf-font-size-3)/1.2 var(--bf-font-display); margin: var(--bf-space-5) 0 var(--bf-space-2); }
+  .lead { margin: var(--bf-space-1) 0 0; color: var(--bf-color-text-muted); font-size: 15px; }
+  .heading { display: flex; align-items: center; justify-content: space-between; gap: var(--bf-space-3); }
+  .num { font-family: var(--bf-font-display); font-variant-numeric: tabular-nums; }
+  .muted { color: var(--bf-color-text-muted); }
+  .help { margin: var(--bf-space-3) 0 0; font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); max-width: 40ch; }
+
+  /* ---------- bf-countdown ---------- */
+  .cd { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 2px 8px 2px 6px; border: 1px solid var(--bf-color-border); border-radius: var(--bf-radius-tag); color: var(--bf-color-text-muted); font: 600 var(--bf-font-size-1)/1.3 var(--bf-font-text); white-space: nowrap; }
+  .cd.warn { border-color: transparent; background: var(--bf-color-warning-subtle); color: var(--bf-color-warning-text); }
+
+  /* ---------- bf-badge ---------- */
+  .badge { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 8px; border: 1px solid transparent; border-radius: var(--bf-radius-tag); font: 600 var(--bf-font-size-1)/1.3 var(--bf-font-text); white-space: nowrap; }
+  .badge.neutral { border-color: var(--bf-color-border); color: var(--bf-color-text-muted); }
+  .badge.warning { background: var(--bf-color-warning-subtle); color: var(--bf-color-warning-text); }
+  .badge.accent { background: var(--bf-color-accent-subtle); color: var(--bf-color-accent-text); }
+
+  /* ---------- bf-position-chip ---------- */
+  .chip { display: inline-flex; align-items: center; min-height: 22px; padding: 0 8px; border-radius: var(--bf-radius-tag); color: var(--bf-color-on-color); font: 600 var(--bf-font-size-1)/1.3 var(--bf-font-text); }
+  .chip.gk { background: var(--bf-color-position-goalkeeper); } .chip.df { background: var(--bf-color-position-defender); }
+  .chip.mf { background: var(--bf-color-position-midfielder); } .chip.fw { background: var(--bf-color-position-forward); }
+
+  /* ---------- bf-figure ---------- */
+  .figures { display: flex; gap: var(--bf-space-5); margin-top: var(--bf-space-4); align-items: flex-end; }
+  .figure .value { font: 600 var(--bf-font-size-4)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .figure .value small { font-size: var(--bf-font-size-3); color: var(--bf-color-text-muted); font-weight: 500; }
+  .figure .value.over { color: var(--bf-color-danger-text); }
+  .figure .label { font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); margin-top: 2px; }
+
+  /* ---------- bf-points ---------- */
+  .pts { font: 600 var(--bf-font-size-4)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pts.sm { font-size: var(--bf-font-size-3); }
+  .pts.pos { color: var(--bf-color-brand-text); }
+  .pts.neg { color: var(--bf-color-danger-text); }
+  .pts.hero { font-size: var(--bf-font-size-7); font-weight: 700; line-height: 0.95; }
+
+  /* ---------- Botones ---------- */
+  .btn { display: flex; align-items: center; justify-content: center; gap: var(--bf-space-2); min-height: 48px; padding: 0 var(--bf-space-5); width: 100%; border-radius: var(--bf-radius-control); border: 1px solid transparent; background: transparent; color: var(--bf-color-text); font: 600 var(--bf-font-size-2)/1.2 var(--bf-font-text); }
+  .btn.primary { background: var(--bf-color-brand); color: var(--bf-color-on-color); }
+  .btn.secondary { border-color: var(--bf-color-border-strong); }
+  .btn.auto { width: auto; }
+  .btn.small { min-height: 44px; padding: 0 var(--bf-space-3); }
+  .linkbtn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--bf-space-2); border: 0; background: none; color: var(--bf-color-text); font: 600 var(--bf-font-size-2)/1 var(--bf-font-text); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--bf-color-border-strong); }
+  .link { color: var(--bf-color-accent-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---------- bfList / bfListItem ---------- */
+  .list { list-style: none; margin: var(--bf-space-4) calc(var(--bf-space-4) * -1) 0; padding: 0; border-top: 1px solid var(--bf-color-border); }
+  .list.flush { margin-top: 0; }
+  .item { display: flex; align-items: center; gap: var(--bf-space-3); min-height: 72px; padding: var(--bf-space-3) var(--bf-space-2) var(--bf-space-3) var(--bf-space-4); border-bottom: 1px solid var(--bf-color-border); }
+  .item.compact { min-height: 56px; }
+  .item .body { flex: 1; min-width: 0; display: grid; gap: 2px; }
+  .item .t { font-weight: 500; overflow-wrap: anywhere; }
+  .item.large .t { font: 600 var(--bf-font-size-4)/1.1 var(--bf-font-display); }
+  .item.current .t { color: var(--bf-color-brand-text); font-weight: 600; }
+  .item .m { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; color: var(--bf-color-text-muted); font-size: var(--bf-font-size-1); }
+  .item .chev { color: var(--bf-color-text-muted); }
+  .item .trail { display: flex; align-items: center; gap: var(--bf-space-2); }
+  .item .rank { width: 32px; flex: none; font: 700 var(--bf-font-size-5)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; text-align: center; }
+  .item .rank.tie { color: var(--bf-color-text-muted); }
+  .item .money { font: 600 var(--bf-font-size-3)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .item .money small { font-size: var(--bf-font-size-2); color: var(--bf-color-text-muted); font-weight: 500; }
+
+  /* ---------- bf-disclosure ---------- */
+  .item.open { border-bottom-color: transparent; }
+  .item.open .chev { transform: rotate(180deg); }
+  .panel { margin: 0 calc(var(--bf-space-4) * -1); padding: 0 var(--bf-space-2) var(--bf-space-3) var(--bf-space-4); border-bottom: 1px solid var(--bf-color-border); }
+  .desk .panel { margin: 0; }
+  .panel.indent { padding-left: calc(var(--bf-space-4) + 44px); }
+  .panel .breakdown { padding-right: var(--bf-space-6); }
+  .sub { list-style: none; margin: 0; padding: 0; }
+  .sub li { display: flex; align-items: center; gap: var(--bf-space-3); min-height: 48px; border-top: 1px solid var(--bf-color-border); }
+  .sub li:first-child { border-top: 0; }
+  .sub .n { flex: 1; min-width: 0; display: grid; }
+  .sub .n b { font-weight: 500; }
+  .sub .n span { font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); }
+
+  /* ---------- bf-points-breakdown ---------- */
+  .breakdown { margin: 0; display: grid; grid-template-columns: 1fr auto; }
+  .breakdown dt, .breakdown dd { margin: 0; padding: 6px 0; }
+  .breakdown dt { color: var(--bf-color-text-muted); }
+  .breakdown dd { padding-left: var(--bf-space-4); text-align: right; font: 600 var(--bf-font-size-3)/1.2 var(--bf-font-display); font-variant-numeric: tabular-nums; }
+  .breakdown .total { border-top: 1px solid var(--bf-color-border); color: var(--bf-color-text); font-weight: 600; }
+  .breakdown dd.pos { color: var(--bf-color-brand-text); } .breakdown dd.neg { color: var(--bf-color-danger-text); }
+
+  /* ---------- bf-notice ---------- */
+  .notice { display: flex; gap: var(--bf-space-3); align-items: flex-start; margin-top: var(--bf-space-4); padding: var(--bf-space-3); border: 1px solid var(--bf-color-border); border-left: 3px solid var(--tone); border-radius: var(--bf-radius-tag); background: var(--bf-color-surface); font-size: 15px; line-height: 1.4; }
+  .notice .i { color: var(--tone-text); margin-top: 1px; }
+  .notice.info { --tone: var(--bf-color-accent); --tone-text: var(--bf-color-accent-text); }
+  .notice.warning { --tone: var(--bf-color-warning); --tone-text: var(--bf-color-warning-text); }
+  .notice.danger { --tone: var(--bf-color-danger); --tone-text: var(--bf-color-danger-text); }
+  .notice.danger p { color: var(--bf-color-danger-text); }
+  .notice p { margin: 0; }
+
+  /* ---------- bf-tabs ---------- */
+  .tabs { display: flex; margin: var(--bf-space-3) calc(var(--bf-space-4) * -1) 0; padding: 0 var(--bf-space-4); border-bottom: 1px solid var(--bf-color-border); }
+  .tabs a { position: relative; flex: 1; display: grid; place-items: center; min-height: 44px; color: var(--bf-color-text-muted); font-weight: 500; text-decoration: none; }
+  .tabs a.active { color: var(--bf-color-brand-text); font-weight: 600; }
+  .tabs a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--bf-color-brand); }
+  .tabs.left a { flex: none; padding: 0 var(--bf-space-3); }
+  .tabs.left { gap: var(--bf-space-2); }
+
+  /* ---------- bf-segmented ---------- */
+  .seg { display: flex; gap: 4px; padding: 4px; margin-top: var(--bf-space-4); border: 1px solid var(--bf-color-border-strong); border-radius: var(--bf-radius-control); background: var(--bf-color-surface); }
+  .seg span { flex: 1; display: grid; place-items: center; min-height: 36px; border: 1px solid transparent; border-radius: 6px; color: var(--bf-color-text-muted); font-weight: 500; }
+  .figures .seg { margin: 0 0 0 auto; padding: 2px; align-self: center; }
+  .figures .seg span { min-height: 42px; padding: 0 8px; border-radius: 8px; }
+  .phone .figures { gap: var(--bf-space-4); }
+  .seg span.on { border-color: var(--bf-color-accent); background: var(--bf-color-accent-subtle); color: var(--bf-color-accent-text); font-weight: 600; }
+
+  /* ---------- bf-field + select[bfSelect] ---------- */
+  .field { display: grid; gap: 4px; margin-top: var(--bf-space-4); }
+  .field label { font-size: var(--bf-font-size-1); font-weight: 600; }
+  .select { position: relative; display: flex; align-items: center; min-height: 48px; padding: 0 44px 0 12px; border: 1px solid var(--bf-color-border-strong); border-radius: var(--bf-radius-control); background: var(--bf-color-surface); }
+  .select .i { position: absolute; right: 12px; color: var(--bf-color-text-muted); }
+
+  /* ---------- Peto ---------- */
+  .peto { --size: 44px; width: var(--size); height: calc(var(--size) * 1.12); flex: none; clip-path: polygon(0 10%, 30% 0, 50% 16%, 70% 0, 100% 10%, 100% 100%, 0 100%); background: var(--bf-color-border-strong); color: var(--bf-color-on-color); display: grid; place-items: center; padding-top: calc(var(--size) * 0.14); font: 700 calc(var(--size) * 0.5)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; }
+  .peto.s { --size: 30px; } .peto.l { --size: 72px; }
+  .peto.gk { background: var(--bf-color-position-goalkeeper); } .peto.df { background: var(--bf-color-position-defender); }
+  .peto.mf { background: var(--bf-color-position-midfielder); } .peto.fw { background: var(--bf-color-position-forward); }
+  .ghost { width: 44px; height: 49px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 4 3; }
+
+  /* ---------- bf-pitch ---------- */
+  .pitch { position: relative; margin: var(--bf-space-4) 0 0; border-radius: var(--bf-radius-tag); overflow: hidden; color: var(--bf-color-on-pitch); background: repeating-linear-gradient(to bottom, var(--bf-color-pitch) 0 36px, var(--bf-color-pitch-stripe) 36px 72px); }
+  .pitch .field-lines { position: absolute; inset: 10px; border: 1.5px solid var(--bf-color-pitch-line); pointer-events: none; overflow: hidden; }
+  .pitch .field-lines i { position: absolute; border: 1.5px solid var(--bf-color-pitch-line); }
+  .pitch .half { left: 0; right: 0; top: 0; border-width: 1.5px 0 0 !important; }
+  .pitch .circle { width: 84px; height: 84px; border-radius: 50%; left: calc(50% - 42px); top: -42px; }
+  .pitch .box { left: 22%; right: 22%; bottom: -1.5px; height: 56px; border-bottom: 0 !important; }
+  .pitch .goalbox { left: 37%; right: 37%; bottom: -1.5px; height: 22px; border-bottom: 0 !important; }
+  .pitch .lines-wrap { position: relative; }
+  .pitch .rows { position: relative; display: flex; flex-direction: column; justify-content: space-around; gap: 0; padding: 12px 8px 8px; }
+  .pitch .prow { display: flex; justify-content: space-evenly; }
+  .pl { display: grid; justify-items: center; gap: 4px; width: 72px; min-height: 44px; padding: 0; border-radius: var(--bf-radius-control); position: relative; }
+  .pl .pn { font: 600 14px/1 var(--bf-font-display); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pl .pv { font: 500 12px/1 var(--bf-font-display); color: var(--bf-color-on-pitch-muted); font-variant-numeric: tabular-nums; }
+  .pl.sel::before { content: ""; position: absolute; top: -4px; left: calc(50% - 27px); width: 54px; height: 57px; border-radius: var(--bf-radius-control); border: 2px solid var(--bf-color-accent); }
+  .pl.free { color: var(--bf-color-on-pitch-muted); }
+  .pitch.dense .pl { width: 60px; }
+  .pitch .foot { position: relative; display: flex; justify-content: space-evenly; gap: var(--bf-space-3); padding: 10px 12px 12px; border-top: 1.5px solid var(--bf-color-pitch-line); background: var(--bf-color-pitch); }
+  .pitch .foot .lbl { font: 600 14px/1.2 var(--bf-font-display); color: var(--bf-color-on-pitch-muted); flex: 1; }
+
+  /* ---------- Hoja inferior ---------- */
+  .scrim { position: absolute; inset: 0; background: var(--bf-color-scrim); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 78%; display: flex; flex-direction: column; background: var(--bf-color-surface); border-radius: var(--bf-radius-sheet) var(--bf-radius-sheet) 0 0; box-shadow: var(--bf-shadow-overlay); }
+  .sheet .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--bf-color-border-strong); margin: 8px auto 12px; flex: none; }
+  .sheet header { padding: 0 var(--bf-space-4); flex: none; }
+  .sheet h3 { font: 700 var(--bf-font-size-4)/1.1 var(--bf-font-display); margin: 0; }
+  .sheet header p { margin: 2px 0 0; color: var(--bf-color-text-muted); font-size: 15px; }
+  .sheet .scroll { overflow: hidden; flex: 1; min-height: 0; padding: 0 var(--bf-space-4); }
+  .sheet .list { margin-top: var(--bf-space-2); }
+  .sheet .item { min-height: 60px; }
+  .group { padding: var(--bf-space-4) var(--bf-space-4) var(--bf-space-1); font-weight: 600; font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); border-bottom: 1px solid var(--bf-color-border); }
+  .group:first-child { padding-top: var(--bf-space-2); }
+  .sheet .list.grouped { border-top: 0; margin: var(--bf-space-3) calc(var(--bf-space-4) * -1) 0; }
+  .sheet .actions { flex: none; padding: var(--bf-space-3) var(--bf-space-4) 28px; border-top: 1px solid var(--bf-color-border); }
+  .state { font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); white-space: nowrap; }
+  .state.ok { color: var(--bf-color-brand-text); font-weight: 600; display: inline-flex; gap: 4px; align-items: center; }
+  .state.warn { color: var(--bf-color-warning-text); font-weight: 600; }
+  .theme[data-theme="dark"] .state.warn { color: var(--bf-color-warning-text); }
+
+  /* ---------- Valorar ---------- */
+  .rate { display: grid; grid-template-columns: 30px 1fr; gap: var(--bf-space-2) var(--bf-space-3); padding: var(--bf-space-3) var(--bf-space-2) var(--bf-space-3) var(--bf-space-4); border-bottom: 1px solid var(--bf-color-border); align-items: center; }
+  .rate .who { display: grid; gap: 2px; min-width: 0; }
+  .rate .who b { font-weight: 500; }
+  .rate .who .m { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); }
+  .rate .ctl { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--bf-space-2); }
+  .rate .ctl .end { margin-left: auto; }
+  .rate .ctl .none { margin-left: auto; padding-right: var(--bf-space-2); font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); }
+  .rate .res { display: flex; align-items: center; gap: var(--bf-space-3); }
+  .rate.closed { grid-template-columns: 30px 1fr auto; }
+  .spades { display: flex; gap: 4px; }
+  .spades span { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--bf-color-border-strong); border-radius: var(--bf-radius-control); background: var(--bf-color-surface); font: 600 var(--bf-font-size-3)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; }
+  .spades span.on { border: 2px solid var(--bf-color-accent); background: var(--bf-color-accent-subtle); color: var(--bf-color-accent-text); font-weight: 700; }
+  .spades span.focus { outline: 2px solid var(--bf-color-focus); outline-offset: 2px; }
+
+  /* ---------- bf-stepper ---------- */
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--bf-color-border-strong); border-radius: var(--bf-radius-control); background: var(--bf-color-surface); }
+  .stepper button { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; color: var(--bf-color-text); }
+  .stepper output { min-width: 72px; height: 44px; display: grid; place-items: center; border-inline: 1px solid var(--bf-color-border); font: 700 var(--bf-font-size-4)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; }
+  .stepper output.blank { font: 500 var(--bf-font-size-1)/1 var(--bf-font-text); color: var(--bf-color-text-muted); }
+  .stepper.focus output { outline: 2px solid var(--bf-color-focus); outline-offset: 2px; border-radius: 2px; }
+
+  /* ---------- Inicio ---------- */
+  .hero { display: flex; align-items: flex-end; gap: var(--bf-space-6); margin-top: var(--bf-space-5); text-decoration: none; color: inherit; }
+  .hero .label { font-size: var(--bf-font-size-1); color: var(--bf-color-text-muted); margin-top: 6px; }
+  .hero .rankfig { font: 700 var(--bf-font-size-5)/1 var(--bf-font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hero .rankfig small { font-size: var(--bf-font-size-3); font-weight: 500; color: var(--bf-color-text-muted); }
+  .hero .chev { color: var(--bf-color-text-muted); margin-left: auto; align-self: center; }
+
+  /* ---------- Vacío ---------- */
+  .empty { margin-top: var(--bf-space-6); display: grid; justify-items: start; gap: var(--bf-space-3); }
+  .empty p { margin: 0; color: var(--bf-color-text-muted); max-width: 32ch; }
+  .empty .ghost { color: var(--bf-color-border-strong); }
+
+  /* ---------- Ficha ---------- */
+  .card-head { display: flex; gap: var(--bf-space-4); align-items: center; }
+  .card-head .who { display: grid; gap: 6px; justify-items: start; }
+
+  /* ---------- Skeleton ---------- */
+  .sk { background: color-mix(in srgb, var(--bf-color-text) 8%, transparent); border-radius: var(--bf-radius-tag); }
+
+  /* ---------- Escritorio lg ---------- */
+  .desk { width: 1180px; height: 760px; border-radius: 12px; overflow: hidden; background: var(--bf-color-bg); color: var(--bf-color-text); font-family: var(--bf-font-text); line-height: 1.5; display: grid; grid-template-columns: 248px 1fr; box-shadow: 0 0 0 1px #1c1b18, 0 20px 40px rgb(0 0 0 / 0.25); }
+  .side { border-right: 1px solid var(--bf-color-border); background: var(--bf-color-surface); padding: var(--bf-space-4) var(--bf-space-3); display: flex; flex-direction: column; gap: var(--bf-space-1); }
+  .side .wordmark { padding: var(--bf-space-2) var(--bf-space-2) var(--bf-space-3); }
+  .side .switcher { padding: 0 var(--bf-space-2); margin-bottom: var(--bf-space-3); }
+  .side a { display: flex; align-items: center; gap: var(--bf-space-3); min-height: 44px; padding: 0 var(--bf-space-3); border-radius: var(--bf-radius-control); color: var(--bf-color-text-muted); font-weight: 500; text-decoration: none; }
+  .side a.active { color: var(--bf-color-brand-text); font-weight: 600; background: var(--bf-color-brand-subtle); }
+  .side .me { margin-top: auto; display: flex; align-items: center; gap: var(--bf-space-3); padding: var(--bf-space-2); font-size: 15px; }
+  .desk main { padding: var(--bf-space-6) var(--bf-space-7); overflow: hidden; }
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--bf-space-6); margin-top: var(--bf-space-5); align-items: start; }
+  .cols.even { grid-template-columns: 1fr 1fr; }
+  .desk .pitch { margin-top: 0; background: repeating-linear-gradient(to bottom, var(--bf-color-pitch) 0 46px, var(--bf-color-pitch-stripe) 46px 92px); }
+  .desk .pitch .rows { padding: 36px 24px 28px; gap: 28px; }
+  .desk .pl { gap: 6px; }
+  .desk .pitch .box { height: 72px; } .desk .pitch .goalbox { height: 28px; }
+  .desk .list { margin-left: 0; margin-right: 0; }
+  .desk .item { padding-left: 0; }
+  .desk .tabs { margin-left: 0; margin-right: 0; padding: 0; }
+  .panel-inline { border-top: 1px solid var(--bf-color-border); margin-top: var(--bf-space-4); padding-top: var(--bf-space-4); }
+  .panel-inline h3 { font: 700 var(--bf-font-size-4)/1.1 var(--bf-font-display); margin: 0; }
+  .panel-inline > p { margin: 2px 0 0; color: var(--bf-color-text-muted); font-size: 15px; }
+  .panel-inline .group { margin: 0; padding-left: 0; padding-right: 0; }
+  .panel-inline .item { min-height: 56px; padding-right: 0; }
+
+  /* ---------- Muestras de piezas ---------- */
+  .specimen { width: 560px; padding: 24px; border-radius: 12px; background: var(--bf-color-bg); color: var(--bf-color-text); font-family: var(--bf-font-text); line-height: 1.5; display: grid; gap: 20px; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15); }
+  .specimen h4 { margin: 0 0 8px; font-size: var(--bf-font-size-1); font-weight: 600; color: var(--bf-color-text-muted); }
+  .specimen .line { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .specimen .notice { margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- Iconos de Lucide que usan estas pantallas -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+  <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+  <symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-shirt" viewBox="0 0 24 24"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-bib" viewBox="0 0 44 49"><path d="M1 5.4 13.2 1 22 8.2 30.8 1 43 5.4V48H1z"/></symbol>
+</svg>
+
+<div class="doc">
+  <h1>Pantallas de manager</h1>
+  <p>Boceto de la tarea 3 del plan 12 (FE-28), sobre la dirección de <code>frontend/src/app/ui/README.md</code> y su boceto <code>visual-direction.html</code>, que no se reabren. Los colores son los tokens reales de <code>styles/_themes.scss</code>; las fuentes vienen de Google Fonts solo aquí. Los datos son de ejemplo y cuadran con los parámetros por defecto (7 jugadores, 100 M, 2 cambios, picas con <code>4 × media − 2</code>).</p>
+  <p>Cada pantalla va en 360 px y, al lado, en oscuro. Lo que no cabe en el marco sigue con scroll; la acción principal y la navegación quedan fijas abajo.</p>
+
+  <!-- ====================================================== INICIO -->
+  <h2>Inicio de la jornada</h2>
+  <p>Ruta <code>''</code>. El protagonista es la cifra de tu última jornada; encima, lo que tienes pendiente, y abajo la acción que toca (decisión 14).</p>
+  <div class="row">
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 12</h1><span class="cd"><svg class="i s"><use href="#i-clock"/></svg>Se bloquea en 5 h</span></div>
+          <p class="lead">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+          <ul class="list">
+            <li class="item">
+              <div class="body"><span class="t">Tu alineación</span><span class="m">1 de 2 cambios</span></div>
+              <span class="money">96,2 <small>/ 100 M</small></span>
+              <svg class="i chev"><use href="#i-chevron-right"/></svg>
+            </li>
+            <li class="item">
+              <div class="body"><span class="t">Valora la jornada 11</span><span class="m"><span class="cd"><svg class="i s"><use href="#i-clock"/></svg>Cierra en 14 h</span></span></div>
+              <span class="money">3 <small>de 9</small></span>
+              <svg class="i chev"><use href="#i-chevron-right"/></svg>
+            </li>
+          </ul>
+          <a class="hero">
+            <div><div class="pts hero pos">+38</div><div class="label">En la jornada 11</div></div>
+            <div><div class="rankfig">2.º <small>de 6</small></div><div class="label">En la general</div></div>
+            <svg class="i chev"><use href="#i-chevron-right"/></svg>
+          </a>
+        </div>
+        <div class="dock"><button class="btn primary">Valorar la jornada 11</button></div>
+        <nav class="tabbar" data-active="0"></nav>
+      </div>
+      <figcaption>Con una ventana abierta y jugadores sin valorar, la acción es <em>Valorar la jornada 11</em>; si no, <em>Editar alineación</em>. El plazo es neutro hasta las 3 últimas horas. La cifra y la posición enlazan a la clasificación. Sin alineación guardada, la fila dice <em>Aún no tienes alineación</em> y la acción es <em>Hacer alineación</em>.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme short" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <h1 class="title">Jornada 13</h1>
+          <p class="lead">Contra Atlético Lavadores, domingo 9 de noviembre, 11:00</p>
+          <ul class="list">
+            <li class="item">
+              <div class="body"><span class="t">Alineaciones de la jornada 12</span><span class="m"><svg class="i s" style="animation: spin 900ms linear infinite"><use href="#i-loader"/></svg>Bloqueándose…</span></div>
+            </li>
+            <li class="item">
+              <div class="body"><span class="t">Tu alineación</span><span class="m">0 de 2 cambios</span></div>
+              <span class="money">96,2 <small>/ 100 M</small></span>
+              <svg class="i chev"><use href="#i-chevron-right"/></svg>
+            </li>
+          </ul>
+        </div>
+        <div class="dock"><button class="btn primary">Editar alineación</button></div>
+        <nav class="tabbar" data-active="0"></nav>
+      </div>
+      <figcaption>Justo después del bloqueo: <code>GET /lineup</code> ya da la jornada 13, pero el job aún no ha bloqueado la 12. La fila dice <em>Bloqueándose…</em> y la página recarga; después enlaza a <code>lineups/:matchId</code> como <em>Alineaciones de la jornada 12</em>.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme short" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <h1 class="title">Jornada</h1>
+          <div class="empty">
+            <svg class="ghost" aria-hidden="true"><use href="#i-bib"/></svg>
+            <p>Aún no hay partidos. Cuando se programe el siguiente, lo verás aquí.</p>
+          </div>
+        </div>
+        <nav class="tabbar" data-active="0"></nav>
+      </div>
+      <figcaption>Sin partidos por jugar: el vacío con el contorno del peto y sin acción, porque el manager no puede llenarlo.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ====================================================== ALINEACIÓN -->
+  <h2>Alineación</h2>
+  <p>Ruta <code>lineup</code>. El campo es el protagonista. Las filas salen de la posición de cada jugador, con la portería propia abajo; cada peto es un botón con nombre, posición y valor en su etiqueta.</p>
+  <div class="row">
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 12</h1><span class="cd warn"><svg class="i s"><use href="#i-clock"/></svg>Se bloquea en 2 h 40 min</span></div>
+          <p class="lead">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+          <div class="figures">
+            <div class="figure"><div class="value">96,2 <small>/ 100 M</small></div><div class="label">Presupuesto</div></div>
+            <div class="figure"><div class="value">1 <small>de 2</small></div><div class="label">Cambios</div></div>
+            <div class="seg" role="radiogroup" aria-label="Vista"><span class="on">Campo</span><span>Lista</span></div>
+          </div>
+          <div class="pitch">
+            <div class="field-lines"><i class="half"></i><i class="circle"></i><i class="box"></i><i class="goalbox"></i></div>
+            <div class="rows">
+              <div class="prow"><div class="pl"><span class="peto fw">9</span><span class="pn">Pablo</span><span class="pv">17,2 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto mf">10</span><span class="pn">Óscar</span><span class="pv">14,6 M</span></div><div class="pl"><span class="peto mf">8</span><span class="pn">Martín</span><span class="pv">13,1 M</span></div><div class="pl"><span class="peto mf">6</span><span class="pn">Iago</span><span class="pv">11,8 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto df">4</span><span class="pn">Brais</span><span class="pv">12,3 M</span></div><div class="pl"><span class="peto df">5</span><span class="pn">Xurxo</span><span class="pv">10,8 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto gk">1</span><span class="pn">Diego</span><span class="pv">16,4 M</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="dock"><button class="btn primary">Guardar alineación</button></div>
+        <nav class="tabbar" data-active="1"></nav>
+      </div>
+      <figcaption>Guardada y sin cambios. Con menos de 3 h, el plazo pasa a ámbar. <em>Cambios</em> es el <code>changesUsed</code> / <code>maxChanges</code> del último guardado (decisión 10): el cliente no los cuenta.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 12</h1><span class="cd warn"><svg class="i s"><use href="#i-clock"/></svg>Se bloquea en 2 h 40 min</span></div>
+          <p class="lead">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+          <div class="figures">
+            <div class="figure"><div class="value">96,2 <small>/ 100 M</small></div><div class="label">Presupuesto</div></div>
+            <div class="figure"><div class="value">1 <small>de 2</small></div><div class="label">Cambios</div></div>
+            <div class="seg"><span class="on">Campo</span><span>Lista</span></div>
+          </div>
+          <div class="pitch">
+            <div class="field-lines"><i class="half"></i><i class="circle"></i><i class="box"></i><i class="goalbox"></i></div>
+            <div class="rows">
+              <div class="prow"><div class="pl sel"><span class="peto fw">9</span><span class="pn">Pablo</span><span class="pv">17,2 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto mf">10</span><span class="pn">Óscar</span><span class="pv">14,6 M</span></div><div class="pl"><span class="peto mf">8</span><span class="pn">Martín</span><span class="pv">13,1 M</span></div><div class="pl"><span class="peto mf">6</span><span class="pn">Iago</span><span class="pv">11,8 M</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="scrim"></div>
+        <div class="sheet" role="dialog" aria-labelledby="sheet-title">
+          <div class="grip"></div>
+          <header><h3 id="sheet-title">Cambiar a Pablo</h3><p>Sin él te quedan 21,0 M</p></header>
+          <div class="scroll">
+            <ul class="list grouped">
+              <li class="group">Delanteros</li>
+              <li class="item compact current"><span class="peto s fw">9</span><div class="body"><span class="t">Pablo</span></div><span class="state ok"><svg class="i s"><use href="#i-check"/></svg>En la alineación</span><span class="money">17,2 M</span></li>
+              <li class="item compact"><span class="peto s fw">17</span><div class="body"><span class="t">Rubén</span></div><span class="money">13,0 M</span></li>
+              <li class="item compact"><span class="peto s fw">11</span><div class="body"><span class="t">Uxío</span></div><span class="money">12,6 M</span></li>
+              <li class="item compact"><span class="peto s fw">7</span><div class="body"><span class="t">Hugo</span></div><span class="state warn">Supera el presupuesto</span><span class="money">22,5 M</span></li>
+              <li class="group">Medios</li>
+              <li class="item compact"><span class="peto s mf">15</span><div class="body"><span class="t">Lois</span></div><span class="money">9,3 M</span></li>
+              <li class="item compact"><span class="peto s mf">14</span><div class="body"><span class="t">Roi</span></div><span class="money">7,9 M</span></li>
+            </ul>
+          </div>
+          <div class="actions"><button class="btn secondary">Quitar de la alineación</button></div>
+        </div>
+      </div>
+      <figcaption>Hoja de candidatos al tocar a Pablo (anillo lavanda): primero su posición y luego el resto, sin los que ya están alineados. Solo se marca lo que no cabe; <em>Hugo</em> se puede elegir igual, porque valida el servidor (decisión 7).</figcaption>
+    </figure>
+
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 12</h1><span class="cd warn"><svg class="i s"><use href="#i-clock"/></svg>Se bloquea en 2 h 40 min</span></div>
+          <p class="lead">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+          <div class="figures">
+            <div class="figure"><div class="value over">101,5 <small>/ 100 M</small></div><div class="label">Presupuesto</div></div>
+            <div class="figure"><div class="value">1 <small>de 2</small></div><div class="label">Cambios</div></div>
+            <div class="seg"><span>Campo</span><span class="on">Lista</span></div>
+          </div>
+          <div class="notice warning"><svg class="i"><use href="#i-alert"/></svg><p>Te pasas 1,5 M del presupuesto. Puedes guardarla, pero si se bloquea así no puntúa esta jornada.</p></div>
+          <ul class="list">
+            <li class="item compact"><span class="peto s gk">1</span><div class="body"><span class="t">Diego</span><span class="m">Portero</span></div><span class="money">16,4 M</span></li>
+            <li class="item compact"><span class="peto s df">4</span><div class="body"><span class="t">Brais</span><span class="m">Defensa</span></div><span class="money">12,3 M</span></li>
+            <li class="item compact"><span class="peto s df">5</span><div class="body"><span class="t">Xurxo</span><span class="m">Defensa</span></div><span class="money">10,8 M</span></li>
+            <li class="item compact"><span class="peto s mf">10</span><div class="body"><span class="t">Óscar</span><span class="m">Medio</span></div><span class="money">14,6 M</span></li>
+            <li class="item compact"><span class="peto s mf">8</span><div class="body"><span class="t">Martín</span><span class="m">Medio</span></div><span class="money">13,1 M</span></li>
+          </ul>
+        </div>
+        <div class="dock"><button class="btn">Descartar cambios</button><button class="btn primary">Guardar alineación</button></div>
+        <nav class="tabbar" data-active="1"></nav>
+      </div>
+      <figcaption>Vista en lista, con Hugo en lugar de Pablo sin guardar: el presupuesto se comprueba en local con <code>GET /settings</code> y se pinta en la cifra y en un aviso, sin impedir guardar. Con cambios sin guardar aparece <em>Descartar cambios</em> (<code>quiet</code>).</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme tall" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Veteranos do Sar"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 4</h1><span class="cd"><svg class="i s"><use href="#i-clock"/></svg>Se bloquea en 3 d 2 h</span></div>
+          <p class="lead">En casa de UD Sigüeiro, sábado 8 de noviembre, 17:30</p>
+          <div class="figures">
+            <div class="figure"><div class="value">131,0 <small>/ 150 M</small></div><div class="label">Presupuesto</div></div>
+            <div class="figure"><div class="value">0 <small>de 3</small></div><div class="label">Cambios</div></div>
+            <div class="seg"><span class="on">Campo</span><span>Lista</span></div>
+          </div>
+          <div class="pitch dense">
+            <div class="field-lines"><i class="half"></i><i class="circle"></i><i class="box"></i><i class="goalbox"></i></div>
+            <div class="rows">
+              <div class="prow"><div class="pl"><span class="peto fw">9</span><span class="pn">Chema</span><span class="pv">14,0 M</span></div><div class="pl"><span class="peto fw">11</span><span class="pn">Bieito</span><span class="pv">12,5 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto mf">10</span><span class="pn">Ramón</span><span class="pv">13,2 M</span></div><div class="pl"><span class="peto mf">8</span><span class="pn">Suso</span><span class="pv">11,0 M</span></div><div class="pl"><span class="peto mf">6</span><span class="pn">Fernando</span><span class="pv">9,8 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto df">2</span><span class="pn">Toño</span><span class="pv">10,1 M</span></div><div class="pl"><span class="peto df">3</span><span class="pn">Lolo</span><span class="pv">9,4 M</span></div><div class="pl"><span class="peto df">4</span><span class="pn">Maximino</span><span class="pv">12,2 M</span></div><div class="pl"><span class="peto df">5</span><span class="pn">Paco</span><span class="pv">8,6 M</span></div><div class="pl"><span class="peto df">14</span><span class="pn">Alberte</span><span class="pv">8,0 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto gk">1</span><span class="pn">Manolo</span><span class="pv">22,2 M</span></div></div>
+            </div>
+            <div class="foot">
+              <div class="pl free"><svg class="ghost" aria-hidden="true"><use href="#i-bib"/></svg><span class="pn">Plaza libre</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="dock"><button class="btn primary">Guardar alineación</button></div>
+        <nav class="tabbar" data-active="1"></nav>
+      </div>
+      <figcaption>Marco alargado para ver el campo entero. Una liga con 11 jugadores, cinco defensas y una plaza libre (riesgo de §12): como mucho cinco petos por fila, el nombre se recorta y su etiqueta lo lleva entero. Sin formación obligatoria, las plazas libres van al pie del campo, fuera de las líneas; si faltan mínimos, en la fila de su posición.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ====================================================== VALORAR -->
+  <h2>Valorar un partido</h2>
+  <p>Ruta <code>ratings/:matchId</code>, con el <code>format</code> congelado de la ventana. Cada jugador lleva su peto, su nombre, su posición en texto y lo que hizo en el acta, y debajo el control. Mientras está abierta, solo se ven los votos propios.</p>
+  <div class="row">
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 11</h1><span class="cd"><svg class="i s"><use href="#i-clock"/></svg>Cierra en 14 h</span></div>
+          <p class="lead">Ganamos 3–1 a Racing Vilariño</p>
+          <p class="help">De 0 a 4 picas. Valorar es opcional: deja sin voto a quien no viste.</p>
+          <div class="list">
+            <div class="rate">
+              <span class="peto s gk">1</span>
+              <div class="who"><b>Diego</b><span class="m"><span>Portero</span><span>1 penalti parado</span></span></div>
+              <div class="ctl"><div class="spades" role="radiogroup" aria-label="Picas para Diego"><span>0</span><span>1</span><span>2</span><span class="on">3</span><span>4</span></div><button class="linkbtn end">Quitar</button></div>
+            </div>
+            <div class="rate">
+              <span class="peto s df">4</span>
+              <div class="who"><b>Brais</b><span class="m"><span>Defensa</span></span></div>
+              <div class="ctl"><div class="spades"><span class="on">0</span><span>1</span><span>2</span><span>3</span><span>4</span></div><button class="linkbtn end">Quitar</button></div>
+            </div>
+            <div class="rate">
+              <span class="peto s df">5</span>
+              <div class="who"><b>Xurxo</b><span class="m"><span>Defensa</span><span>Tarjeta amarilla</span></span></div>
+              <div class="ctl"><div class="spades"><span class="focus">0</span><span>1</span><span>2</span><span>3</span><span>4</span></div><span class="none">Sin voto</span></div>
+            </div>
+            <div class="rate">
+              <span class="peto s mf">10</span>
+              <div class="who"><b>Óscar</b><span class="m"><span>Medio</span><span>1 gol</span></span></div>
+              <div class="ctl"><div class="spades"><span>0</span><span>1</span><span>2</span><span>3</span><span class="on">4</span></div><button class="linkbtn end">Quitar</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="dock"><button class="btn primary">Guardar valoraciones</button><p class="hint">Has valorado a 3 de 9</p></div>
+        <nav class="tabbar" data-active="2"></nav>
+      </div>
+      <figcaption>Picas: cinco radios nativos de 44 px en fila, el elegido en lavanda (selección). Brais tiene un 0, que es un voto; Xurxo está <em>Sin voto</em> (con el foco de teclado en el grupo). <em>Quitar</em> lleva como nombre accesible <em>Quitar voto a Brais</em>. El contador de abajo cuenta el borrador.</figcaption>
+    </figure>
+
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Veteranos do Sar"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 3</h1><span class="cd warn"><svg class="i s"><use href="#i-clock"/></svg>Cierra en 48 min</span></div>
+          <p class="lead">Perdimos 1–2 con CD Arrabal</p>
+          <p class="help">Nota de 0 a 10. Valorar es opcional: deja sin voto a quien no viste.</p>
+          <div class="list">
+            <div class="rate">
+              <span class="peto s gk">1</span>
+              <div class="who"><b>Manolo</b><span class="m"><span>Portero</span></span></div>
+              <div class="ctl"><div class="stepper" role="group"><button aria-label="Bajar"><svg class="i"><use href="#i-minus"/></svg></button><output>6</output><button aria-label="Subir"><svg class="i"><use href="#i-plus"/></svg></button></div><button class="linkbtn end">Quitar</button></div>
+            </div>
+            <div class="rate">
+              <span class="peto s df">4</span>
+              <div class="who"><b>Maximino</b><span class="m"><span>Defensa</span><span>1 gol en propia puerta</span></span></div>
+              <div class="ctl"><div class="stepper focus"><button><svg class="i"><use href="#i-minus"/></svg></button><output>0</output><button><svg class="i"><use href="#i-plus"/></svg></button></div><button class="linkbtn end">Quitar</button></div>
+            </div>
+            <div class="rate">
+              <span class="peto s mf">10</span>
+              <div class="who"><b>Ramón</b><span class="m"><span>Medio</span><span>1 asistencia</span></span></div>
+              <div class="ctl"><div class="stepper"><button><svg class="i"><use href="#i-minus"/></svg></button><output class="blank">Sin voto</output><button><svg class="i"><use href="#i-plus"/></svg></button></div></div>
+            </div>
+            <div class="rate">
+              <span class="peto s fw">9</span>
+              <div class="who"><b>Chema</b><span class="m"><span>Delantero</span><span>1 gol de penalti</span></span></div>
+              <div class="ctl"><div class="stepper"><button><svg class="i"><use href="#i-minus"/></svg></button><output>8</output><button><svg class="i"><use href="#i-plus"/></svg></button></div><button class="linkbtn end">Quitar</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="dock"><button class="btn primary">Guardar valoraciones</button><p class="hint">Has valorado a 3 de 10</p></div>
+        <nav class="tabbar" data-active="2"></nav>
+      </div>
+      <figcaption>Nota: <code>bf-stepper</code> con − y + de 44 px y la cifra grande en medio (<code>role="spinbutton"</code>, con flechas, Inicio y Fin). Empieza en <em>Sin voto</em> y el primer toque pone 5 (decisión 6). Con menos de 3 h, el cierre en ámbar.</figcaption>
+    </figure>
+
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 10</h1><span class="badge neutral">Cerrada</span></div>
+          <p class="lead">Empatamos 2–2 con Atlético Lavadores</p>
+          <div class="list">
+            <div class="rate closed">
+              <span class="peto s gk">1</span>
+              <div class="who"><b>Diego</b><span class="m"><span>Media 3,00 con 6 votos</span><span>Tu voto: 3</span></span></div>
+              <span class="pts sm pos">+10</span>
+            </div>
+            <div class="rate closed">
+              <span class="peto s df">4</span>
+              <div class="who"><b>Brais</b><span class="m"><span>Media 2,17 con 6 votos</span><span>Tu voto: 2</span></span></div>
+              <span class="pts sm pos">+7</span>
+            </div>
+            <div class="rate closed">
+              <span class="peto s df">5</span>
+              <div class="who"><b>Xurxo</b><span class="m"><span>Media 0,40 con 5 votos</span><span>Sin tu voto</span></span></div>
+              <span class="pts sm">0</span>
+            </div>
+            <div class="rate closed">
+              <span class="peto s mf">8</span>
+              <div class="who"><b>Martín</b><span class="m"><span>Media 0,20 con 5 votos</span><span>Tu voto: 0</span></span></div>
+              <span class="pts sm neg">−1</span>
+            </div>
+            <div class="rate closed">
+              <span class="peto s fw">9</span>
+              <div class="who"><b>Pablo</b><span class="m"><span>Media 3,50 con 6 votos</span><span>Tu voto: 4</span></span></div>
+              <span class="pts sm pos">+12</span>
+            </div>
+            <div class="rate closed">
+              <span class="peto s fw">17</span>
+              <div class="who"><b>Rubén</b><span class="m"><span>Sin votos</span></span></div>
+              <span class="pts sm">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="dock"><a class="btn secondary">Ver los puntos de la jornada</a></div>
+        <nav class="tabbar" data-active="2"></nav>
+      </div>
+      <figcaption>Cerrada: tu voto, la media, los votos que contaron y los puntos por valoración con <code>bf-points</code> (signo y color; neutro en 0). Desde aquí se va a los puntos de la jornada.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme short" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 11</h1><span class="cd"><svg class="i s"><use href="#i-clock"/></svg>Cierra en 14 h</span></div>
+          <p class="lead">Ganamos 3–1 a Racing Vilariño</p>
+          <div class="notice info"><svg class="i"><use href="#i-ban"/></svg><p>El administrador ha cancelado tus valoraciones de este partido.</p></div>
+          <div class="list">
+            <div class="rate closed"><span class="peto s gk">1</span><div class="who"><b>Diego</b><span class="m"><span>Portero</span><span>1 penalti parado</span></span></div><span></span></div>
+            <div class="rate closed"><span class="peto s df">4</span><div class="who"><b>Brais</b><span class="m"><span>Defensa</span></span></div><span></span></div>
+          </div>
+        </div>
+        <nav class="tabbar" data-active="2"></nav>
+      </div>
+      <figcaption>Excluido (RF-41): en lugar de los controles, el aviso, sin motivo y sin acción. La lista del acta se sigue viendo.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme short" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="heading"><h1 class="title">Jornada 11</h1><span class="badge neutral">Cerrada</span></div>
+          <p class="lead">Ganamos 3–1 a Racing Vilariño</p>
+          <div class="notice info"><svg class="i"><use href="#i-loader"/></svg><p>Calculando los resultados. Esta página se actualiza sola.</p></div>
+          <div class="list">
+            <div class="rate closed"><span class="peto s gk">1</span><div class="who"><b>Diego</b><span class="m"><span>Tu voto: 3</span></span></div><span class="sk" style="width:32px;height:20px"></span></div>
+            <div class="rate closed"><span class="peto s df">4</span><div class="who"><b>Brais</b><span class="m"><span>Tu voto: 0</span></span></div><span class="sk" style="width:32px;height:20px"></span></div>
+          </div>
+        </div>
+        <nav class="tabbar" data-active="2"></nav>
+      </div>
+      <figcaption>Ventana cerrada sin resultados aún (el job no ha pasado): se ven tus votos y el resto queda en <em>skeleton</em> hasta la recarga.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ====================================================== CLASIFICACIÓN -->
+  <h2>Clasificación y puntos de una jornada</h2>
+  <p>Rutas <code>standings</code> y <code>standings/:matchId</code>. <em>General</em> y <em>Por jornada</em> son pestañas de ruta (<code>bfTabLink</code>); en la jornada, <em>Managers</em> y <em>Jugadores</em> son pestañas de la página (<code>bfTab</code>).</p>
+  <div class="row">
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <h1 class="title">Clasificación</h1>
+          <p class="lead">Tras la jornada 11</p>
+          <nav class="tabs"><a class="active">General</a><a>Por jornada</a></nav>
+          <ul class="list flush" style="border-top:0">
+            <li class="item"><span class="rank">1</span><span class="avatar">LR</span><div class="body"><span class="t">Lucía Romero</span><span class="m">11 jornadas, +41 en la última</span></div><span class="pts">342</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item current"><span class="rank">2</span><span class="avatar">XB</span><div class="body"><span class="t">Xosé Babío</span><span class="m">11 jornadas, +38 en la última</span></div><span class="pts">318</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item"><span class="rank">3</span><span class="avatar">MV</span><div class="body"><span class="t">Manu Vidal</span><span class="m">11 jornadas, +12 en la última</span></div><span class="pts">301</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item"><span class="rank tie">3</span><span class="avatar">CP</span><div class="body"><span class="t">Carla Pazos</span><span class="m">11 jornadas, +29 en la última</span></div><span class="pts">301</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item"><span class="rank">5</span><span class="avatar">BR</span><div class="body"><span class="t">Breixo Rial</span><span class="m">11 jornadas, −3 en la última</span></div><span class="pts">288</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item"><span class="rank">6</span><span class="avatar">NS</span><div class="body"><span class="t">Nerea Souto</span><span class="m">7 jornadas, +33 en la última</span></div><span class="pts">196</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+          </ul>
+        </div>
+        <nav class="tabbar" data-active="3"></nav>
+      </div>
+      <figcaption>General: la posición en condensed grande, avatar, nombre y puntos; las jornadas y la última, apagadas. Tu fila con <code>current</code>. Un empate repite la posición, apagada la segunda vez. Cada fila lleva al historial de ese manager. Sin acción principal: aquí no hay nada que hacer, solo mirar.</figcaption>
+    </figure>
+
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <h1 class="title">Clasificación</h1>
+          <nav class="tabs"><a>General</a><a class="active">Por jornada</a></nav>
+          <div class="field"><label>Jornada</label><div class="select">Jornada 11, contra Racing Vilariño<svg class="i"><use href="#i-chevron-down"/></svg></div></div>
+          <nav class="tabs left" style="margin-top:var(--bf-space-2)"><a class="active">Managers</a><a>Jugadores</a></nav>
+          <ul class="list flush" style="border-top:0">
+            <li class="item"><span class="rank">1</span><span class="avatar">LR</span><div class="body"><span class="t">Lucía Romero</span></div><span class="pts pos">+41</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+            <li class="item current open"><span class="rank">2</span><span class="avatar">XB</span><div class="body"><span class="t">Xosé Babío</span></div><span class="pts pos">+38</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+          </ul>
+          <div class="panel indent">
+            <ul class="sub">
+              <li><span class="peto s fw">9</span><div class="n"><b>Pablo</b><span>Acciones +4, valoración +10</span></div><span class="pts sm pos">+14</span></li>
+              <li><span class="peto s mf">10</span><div class="n"><b>Óscar</b><span>Acciones +4, valoración +6</span></div><span class="pts sm pos">+10</span></li>
+              <li><span class="peto s gk">1</span><div class="n"><b>Diego</b><span>Acciones +3, valoración +6</span></div><span class="pts sm pos">+9</span></li>
+              <li><span class="peto s df">5</span><div class="n"><b>Xurxo</b><span>Acciones −1, valoración +2</span></div><span class="pts sm pos">+1</span></li>
+              <li><span class="peto s mf">8</span><div class="n"><b>Martín</b><span>No jugó</span></div><span class="pts sm">0</span></li>
+            </ul>
+          </div>
+          <ul class="list flush" style="border-top:0">
+            <li class="item"><span class="rank">6</span><span class="avatar">MV</span><div class="body"><span class="t">Manu Vidal</span><span class="m"><span class="badge warning">Fuera de presupuesto</span></span></div><span class="pts">0</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+          </ul>
+        </div>
+        <nav class="tabbar" data-active="3"></nav>
+      </div>
+      <figcaption>Puntos de una jornada, <em>Managers</em>: el selector solo tiene las jornadas cerradas. Cada fila se abre (<code>bf-disclosure</code>) con su alineación bloqueada y los puntos de cada jugador. <em>Fuera de presupuesto</em> en ámbar y 0 puntos (RF-29).</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <h1 class="title">Clasificación</h1>
+          <nav class="tabs"><a>General</a><a class="active">Por jornada</a></nav>
+          <div class="field"><label>Jornada</label><div class="select">Jornada 11, contra Racing Vilariño<svg class="i"><use href="#i-chevron-down"/></svg></div></div>
+          <nav class="tabs left" style="margin-top:var(--bf-space-2)"><a>Managers</a><a class="active">Jugadores</a></nav>
+          <ul class="list flush" style="border-top:0">
+            <li class="item compact"><span class="peto s fw">9</span><div class="body"><span class="t">Pablo</span><span class="m">Acciones +4, valoración +10</span></div><span class="pts sm pos">+14</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item compact"><span class="peto s mf">10</span><div class="body"><span class="t">Óscar</span><span class="m">Acciones +4, valoración +6</span></div><span class="pts sm pos">+10</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item compact"><span class="peto s fw">7</span><div class="body"><span class="t">Hugo</span><span class="m">Acciones +3, valoración +6</span></div><span class="pts sm pos">+9</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item compact"><span class="peto s gk">1</span><div class="body"><span class="t">Diego</span><span class="m">Acciones +3, valoración +6</span></div><span class="pts sm pos">+9</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item compact"><span class="peto s df">4</span><div class="body"><span class="t">Brais</span><span class="m">Acciones 0, valoración +2</span></div><span class="pts sm pos">+2</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item compact"><span class="peto s df">5</span><div class="body"><span class="t">Xurxo</span><span class="m">Acciones −1, valoración +2</span></div><span class="pts sm pos">+1</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            <li class="item compact"><span class="peto s df">3</span><div class="body"><span class="t">Antón</span><span class="m">Acciones −3, valoración −2</span></div><span class="pts sm neg">−5</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+          </ul>
+        </div>
+        <nav class="tabbar" data-active="3"></nav>
+      </div>
+      <figcaption><em>Jugadores</em>: los del acta por puntos, con acciones y valoración apagadas y el total con signo. Cada fila abre la ficha del jugador.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="phone theme short" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <h1 class="title">Clasificación</h1>
+          <nav class="tabs"><a>General</a><a class="active">Por jornada</a></nav>
+          <div class="field"><label>Jornada</label><div class="select">Jornada 11, contra Racing Vilariño<svg class="i"><use href="#i-chevron-down"/></svg></div></div>
+          <div class="empty">
+            <svg class="ghost" aria-hidden="true"><use href="#i-bib"/></svg>
+            <p>Los puntos se publican al cerrar las valoraciones.</p>
+            <a class="btn secondary auto small">Valorar la jornada 11</a>
+          </div>
+        </div>
+        <nav class="tabbar" data-active="3"></nav>
+      </div>
+      <figcaption>Con <code>MATCH_NOT_CLOSED</code> o <code>MATCH_NOT_SCORED</code>: un estado propio, no un error, con el enlace a valorar si la ventana sigue abierta. La general sin jornadas puntuadas usa el mismo vacío: <em>La clasificación empieza cuando se puntúe la primera jornada.</em></figcaption>
+    </figure>
+  </div>
+
+  <!-- ====================================================== FICHA -->
+  <h2>Ficha del jugador</h2>
+  <p>Ruta <code>squad/:playerId</code>. Se abre desde la plantilla, la alineación, valorar, los puntos de una jornada y los historiales. El peto grande es la cabecera; el desglose de cada jornada, solo cuando se pide (decisión 8).</p>
+  <div class="row">
+    <figure data-dark-twin>
+      <div class="phone theme" data-theme="light">
+        <div class="status"></div>
+        <header class="topbar" data-league="Os Domingueiros"></header>
+        <div class="content">
+          <div class="card-head">
+            <span class="peto l fw">9</span>
+            <div class="who"><h1 class="title-l">Pablo</h1><span class="chip fw">Delantero</span></div>
+          </div>
+          <div class="figures">
+            <div class="figure"><div class="value">17,2 <small>M</small></div><div class="label">Valor actual</div></div>
+            <div class="figure"><div class="value">15,0 <small>M</small></div><div class="label">Valor inicial</div></div>
+          </div>
+          <h2 class="subtitle">Jornadas</h2>
+          <ul class="list flush">
+            <li class="item compact open"><div class="body"><span class="t">Jornada 11</span><span class="m">Domingo 26 de octubre</span></div><span class="pts sm pos">+14</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+          </ul>
+          <div class="panel">
+            <dl class="breakdown">
+              <dt>Gol</dt><dd class="pos">+3</dd>
+              <dt>Asistencia</dt><dd class="pos">+1</dd>
+              <dt>Valoración</dt><dd class="pos">+10</dd>
+              <dt class="total">Total</dt><dd class="total pos">+14</dd>
+            </dl>
+          </div>
+          <ul class="list flush" style="border-top:0">
+            <li class="item compact"><div class="body"><span class="t">Jornada 10</span><span class="m">Domingo 19 de octubre</span></div><span class="pts sm pos">+12</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+            <li class="item compact"><div class="body"><span class="t">Jornada 9</span><span class="m">Domingo 12 de octubre</span></div><span class="pts sm neg">−2</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+            <li class="item compact"><div class="body"><span class="t">Jornada 8</span><span class="m">Domingo 5 de octubre</span></div><span class="pts sm pos">+18</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+          </ul>
+        </div>
+        <nav class="tabbar" data-active="4"></nav>
+      </div>
+      <figcaption>Cabecera con el peto grande, el nombre (paso 6), la posición en chip con texto y los dos valores. Debajo, las jornadas de la más reciente a la más antigua; al abrir una, <code>bf-points-breakdown</code> con las acciones que puntuaron y la valoración. Un jugador dado de baja lleva <em>Dado de baja</em> como <code>bf-badge</code> junto al chip. Sin jornadas: <em>Aún no ha puntuado.</em></figcaption>
+    </figure>
+  </div>
+
+  <!-- ====================================================== ESCRITORIO -->
+  <h2>Escritorio (lg ≥ 1024)</h2>
+  <p>Navegación lateral y dos columnas: la principal con el protagonista y la de apoyo con las cifras, los avisos y la acción.</p>
+
+  <figure>
+    <div class="desk theme" data-theme="light">
+      <aside class="side" data-active="1"></aside>
+      <main>
+        <div class="heading" style="justify-content:flex-start;gap:var(--bf-space-4)"><h1 class="title-l">Jornada 12</h1><span class="cd warn"><svg class="i s"><use href="#i-clock"/></svg>Se bloquea en 2 h 40 min</span></div>
+        <p class="lead">Contra CD Arrabal, domingo 2 de noviembre, 11:00</p>
+        <div class="cols">
+          <div class="pitch">
+            <div class="field-lines"><i class="half"></i><i class="circle"></i><i class="box"></i><i class="goalbox"></i></div>
+            <div class="rows">
+              <div class="prow"><div class="pl sel"><span class="peto fw">9</span><span class="pn">Pablo</span><span class="pv">17,2 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto mf">10</span><span class="pn">Óscar</span><span class="pv">14,6 M</span></div><div class="pl"><span class="peto mf">8</span><span class="pn">Martín</span><span class="pv">13,1 M</span></div><div class="pl"><span class="peto mf">6</span><span class="pn">Iago</span><span class="pv">11,8 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto df">4</span><span class="pn">Brais</span><span class="pv">12,3 M</span></div><div class="pl"><span class="peto df">5</span><span class="pn">Xurxo</span><span class="pv">10,8 M</span></div></div>
+              <div class="prow"><div class="pl"><span class="peto gk">1</span><span class="pn">Diego</span><span class="pv">16,4 M</span></div></div>
+            </div>
+          </div>
+          <section>
+            <div class="figures" style="margin-top:0">
+              <div class="figure"><div class="value">96,2 <small>/ 100 M</small></div><div class="label">Presupuesto</div></div>
+              <div class="figure"><div class="value">1 <small>de 2</small></div><div class="label">Cambios</div></div>
+            </div>
+            <div class="seg"><span class="on">Campo</span><span>Lista</span></div>
+            <div class="panel-inline">
+              <h3>Cambiar a Pablo</h3>
+              <p>Sin él te quedan 21,0 M</p>
+              <ul class="list grouped" style="border-top:0;margin-top:var(--bf-space-2)">
+                <li class="group">Delanteros</li>
+                <li class="item compact current"><span class="peto s fw">9</span><div class="body"><span class="t">Pablo</span></div><span class="state ok"><svg class="i s"><use href="#i-check"/></svg>En la alineación</span><span class="money">17,2 M</span></li>
+                <li class="item compact"><span class="peto s fw">17</span><div class="body"><span class="t">Rubén</span></div><span class="money">13,0 M</span></li>
+                <li class="item compact"><span class="peto s fw">11</span><div class="body"><span class="t">Uxío</span></div><span class="money">12,6 M</span></li>
+                <li class="item compact"><span class="peto s fw">7</span><div class="body"><span class="t">Hugo</span></div><span class="state warn">Supera el presupuesto</span><span class="money">22,5 M</span></li>
+              </ul>
+              <div style="display:flex;gap:var(--bf-space-2);margin-top:var(--bf-space-4)"><button class="btn secondary auto">Quitar de la alineación</button><button class="btn auto">Cerrar</button></div>
+            </div>
+            <button class="btn primary" style="margin-top:var(--bf-space-5)">Guardar alineación</button>
+          </section>
+        </div>
+      </main>
+    </div>
+    <figcaption style="max-width:none">Alineación en <code>lg</code>: el campo a la izquierda y, a la derecha, las cifras, la vista y la acción. En lugar de una hoja inferior, los candidatos se abren en la columna de apoyo, junto al campo, sin velo.</figcaption>
+  </figure>
+
+  <figure style="margin-top:40px">
+    <div class="desk theme" data-theme="dark">
+      <aside class="side" data-active="3"></aside>
+      <main>
+        <h1 class="title-l">Clasificación</h1>
+        <nav class="tabs left" style="margin-top:var(--bf-space-4)"><a>General</a><a class="active">Por jornada</a></nav>
+        <div class="field" style="max-width:360px"><label>Jornada</label><div class="select">Jornada 11, contra Racing Vilariño<svg class="i"><use href="#i-chevron-down"/></svg></div></div>
+        <div class="cols even">
+          <section>
+            <h2 class="subtitle" style="margin-top:0">Managers</h2>
+            <ul class="list flush">
+              <li class="item"><span class="rank">1</span><span class="avatar">LR</span><div class="body"><span class="t">Lucía Romero</span></div><span class="pts pos">+41</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+              <li class="item current open"><span class="rank">2</span><span class="avatar">XB</span><div class="body"><span class="t">Xosé Babío</span></div><span class="pts pos">+38</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+            </ul>
+            <div class="panel indent" style="padding-right:0">
+              <ul class="sub">
+                <li><span class="peto s fw">9</span><div class="n"><b>Pablo</b><span>Acciones +4, valoración +10</span></div><span class="pts sm pos">+14</span></li>
+                <li><span class="peto s mf">10</span><div class="n"><b>Óscar</b><span>Acciones +4, valoración +6</span></div><span class="pts sm pos">+10</span></li>
+                <li><span class="peto s gk">1</span><div class="n"><b>Diego</b><span>Acciones +3, valoración +6</span></div><span class="pts sm pos">+9</span></li>
+              </ul>
+            </div>
+            <ul class="list flush" style="border-top:0">
+              <li class="item"><span class="rank">3</span><span class="avatar">CP</span><div class="body"><span class="t">Carla Pazos</span></div><span class="pts pos">+29</span><svg class="i chev"><use href="#i-chevron-down"/></svg></li>
+            </ul>
+          </section>
+          <section>
+            <h2 class="subtitle" style="margin-top:0">Jugadores</h2>
+            <ul class="list flush">
+              <li class="item compact"><span class="peto s fw">9</span><div class="body"><span class="t">Pablo</span><span class="m">Acciones +4, valoración +10</span></div><span class="pts sm pos">+14</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+              <li class="item compact"><span class="peto s mf">10</span><div class="body"><span class="t">Óscar</span><span class="m">Acciones +4, valoración +6</span></div><span class="pts sm pos">+10</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+              <li class="item compact"><span class="peto s fw">7</span><div class="body"><span class="t">Hugo</span><span class="m">Acciones +3, valoración +6</span></div><span class="pts sm pos">+9</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+              <li class="item compact"><span class="peto s gk">1</span><div class="body"><span class="t">Diego</span><span class="m">Acciones +3, valoración +6</span></div><span class="pts sm pos">+9</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+              <li class="item compact"><span class="peto s df">3</span><div class="body"><span class="t">Antón</span><span class="m">Acciones −3, valoración −2</span></div><span class="pts sm neg">−5</span><svg class="i chev"><use href="#i-chevron-right"/></svg></li>
+            </ul>
+          </section>
+        </div>
+      </main>
+    </div>
+    <figcaption style="max-width:none">Puntos de una jornada en <code>lg</code> y en oscuro: hay sitio para las dos listas, así que <em>Managers</em> y <em>Jugadores</em> dejan de ser pestañas y van en columnas con su subtítulo.</figcaption>
+  </figure>
+
+  <!-- ====================================================== PIEZAS -->
+  <h2>Piezas nuevas</h2>
+  <p>Los componentes de §6.3 y §6.4 que estrenan estas pantallas, en los dos temas.</p>
+  <div class="row">
+    <div class="specimen theme" data-theme="light" data-specimen>
+      <div><h4>bf-countdown: neutro y bajo el umbral de 3 h</h4><div class="line"><span class="cd"><svg class="i s"><use href="#i-clock"/></svg>Se bloquea en 1 d 4 h</span><span class="cd"><svg class="i s"><use href="#i-clock"/></svg>Cierra en 14 h</span><span class="cd warn"><svg class="i s"><use href="#i-clock"/></svg>Cierra en 12 min</span><span class="cd warn"><svg class="i s"><use href="#i-clock"/></svg>Cierra en menos de 1 min</span></div></div>
+      <div><h4>bf-points y bfMoney</h4><div class="line"><span class="pts pos">+14</span><span class="pts neg">−3</span><span class="pts">0</span><span class="pts hero pos">+38</span><span class="item" style="all:unset"><span class="money" style="font:600 20px/1 var(--bf-font-display)">87,4 <small style="font-size:16px;color:var(--bf-color-text-muted);font-weight:500">/ 100 M</small></span></span></div></div>
+      <div><h4>bf-position-chip y bf-badge</h4><div class="line"><span class="chip gk">Portero</span><span class="chip df">Defensa</span><span class="chip mf">Medio</span><span class="chip fw">Delantero</span><span class="badge warning">Fuera de presupuesto</span><span class="badge neutral">Dado de baja</span><span class="badge neutral">Antes de su última alta</span></div></div>
+      <div><h4>bf-notice</h4>
+        <div class="notice info"><svg class="i"><use href="#i-info"/></svg><p>La jornada 12 ya se ha bloqueado. Lo que guardes cuenta para la 13.</p></div>
+        <div class="notice warning"><svg class="i"><use href="#i-alert"/></svg><p>Iago se ha dado de baja. Cámbialo: no gasta cambio.</p></div>
+        <div class="notice danger"><svg class="i"><use href="#i-circle-alert"/></svg><p>La ventana de valoración ya se ha cerrado.</p></div>
+      </div>
+      <div><h4>bf-rating-input: picas y nota, con voto y sin voto</h4><div class="line"><div class="spades"><span>0</span><span>1</span><span class="on">2</span><span>3</span><span>4</span></div><div class="stepper"><button><svg class="i"><use href="#i-minus"/></svg></button><output class="blank">Sin voto</output><button><svg class="i"><use href="#i-plus"/></svg></button></div></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Rellena las barras repetidas y duplica en oscuro lo marcado, para comparar los dos temas.
+  const icon = (id, cls = '') => `<svg class="i ${cls}"><use href="#i-${id}"/></svg>`;
+  const destinations = [['house', 'Jornada'], ['shirt', 'Alineación'], ['star', 'Valorar'], ['trophy', 'Clasificación'], ['users', 'Liga']];
+
+  document.querySelectorAll('[data-league]').forEach((bar) => {
+    bar.innerHTML = `<button class="switcher">${bar.dataset.league}${icon('chevron-down')}</button><span class="spacer"></span><span class="avatar-hit"><span class="avatar">XB</span></span>`;
+  });
+  document.querySelectorAll('.tabbar[data-active]').forEach((bar) => {
+    bar.innerHTML = destinations.map(([id, text], i) =>
+      `<a class="${i === +bar.dataset.active ? 'active' : ''}">${icon(id, 'l')}<span>${text}</span></a>`).join('');
+  });
+  document.querySelectorAll('.side[data-active]').forEach((side) => {
+    side.innerHTML = `<span class="wordmark">Buddy<b>Fantasy</b></span><button class="switcher">Os Domingueiros${icon('chevron-down')}</button>`
+      + destinations.map(([id, text], i) => `<a class="${i === +side.dataset.active ? 'active' : ''}">${icon(id)}${text}</a>`).join('')
+      + `<div class="me"><span class="avatar">XB</span>Xosé Babío</div>`;
+  });
+  document.querySelectorAll('[data-dark-twin]').forEach((fig) => {
+    const twin = fig.cloneNode(true);
+    twin.removeAttribute('data-dark-twin');
+    twin.querySelector('.theme').dataset.theme = 'dark';
+    twin.querySelector('figcaption').textContent = 'La misma pantalla en tema oscuro.';
+    fig.after(twin);
+  });
+  document.querySelectorAll('[data-specimen]').forEach((s) => {
+    const twin = s.cloneNode(true);
+    twin.dataset.theme = 'dark';
+    s.after(twin);
+  });
+</script>
+<style>@keyframes spin { to { transform: rotate(1turn); } }</style>
+</body>
+</html>

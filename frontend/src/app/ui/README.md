@@ -1,6 +1,6 @@
 # Dirección visual
 
-Identidad de la interfaz (FE-28), cerrada con el usuario en la tarea 8 del plan 11 con la skill `.agents/skills/frontend-design`. Las reglas de estilo están en `docs/requirements.md` (FE-24 a FE-31, RNF-12) y aquí no se repiten: este documento dice cómo se usan. El boceto de referencia es [`docs/design/visual-direction.html`](../../../../docs/design/visual-direction.html) (ábrelo en el navegador): login, mis ligas, la alineación con el shell, el cambio de liga y el escritorio, en los dos temas.
+Identidad de la interfaz (FE-28), cerrada con el usuario en la tarea 8 del plan 11 con la skill `.agents/skills/frontend-design`. Las reglas de estilo están en `docs/requirements.md` (FE-24 a FE-31, RNF-12) y aquí no se repiten: este documento dice cómo se usan. El boceto de referencia es [`docs/design/visual-direction.html`](../../../../docs/design/visual-direction.html) (ábrelo en el navegador): login, mis ligas, la alineación con el shell, el cambio de liga y el escritorio, en los dos temas. Las pantallas de manager tienen el suyo, [`docs/design/manager-screens.html`](../../../../docs/design/manager-screens.html), descrito en _Composición_.
 
 ## Idea
 
@@ -135,6 +135,7 @@ Los estilos de lo que el CDK pinta fuera de los componentes (velo, hoja y su tí
 
 - Fuera de una liga (`/leagues`, `/profile`), la barra lleva el logotipo de texto «BuddyFantasy», con _Fantasy_ en `brand-text`, y no hay navegación inferior.
 - La navegación solo muestra los destinos que existen (FE-30).
+- Con cinco destinos, cada uno crece desde el ancho de su texto (`flex: 1 1 auto`), no a partes iguales: a partes iguales, _Clasificación_ no cabe en 360 px a 13 px.
 - **`lg` (≥ 1024):** navegación lateral de 248 px en `surface` con el logotipo, el cambio de liga, los destinos (el activo con fondo `brand-subtle`) y el perfil abajo. El contenido va en dos columnas: la principal (el campo) y la de apoyo (cifras, banquillo y la acción).
 
 ### Mis ligas
@@ -155,9 +156,133 @@ Manager
 
 Vacío: el contorno de un peto y _Aún no juegas en ninguna liga. Crea la de tu equipo o pide el enlace de invitación a quien la lleve._
 
-### Alineación (boceto para los planes siguientes)
+### Pantallas de manager
 
-Cabecera con la jornada, el rival y la hora; el plazo de bloqueo a la derecha del título; presupuesto y cambios como cifras. Debajo, el campo de césped a franjas en vertical (portería propia abajo), con cada jugador como peto, nombre y valor. Tocar un peto lo selecciona (anillo lavanda) para cambiarlo; la vista en lista es la alternativa (FE-19). Acción principal: _Guardar alineación_.
+Cerradas en la tarea 3 del plan 12; el boceto es [`docs/design/manager-screens.html`](../../../../docs/design/manager-screens.html). Reglas comunes:
+
+- **Cabecera de jornada:** título (paso 5) con el plazo (`bf-countdown`) a su derecha y, debajo, el partido en texto apagado (_Contra CD Arrabal, domingo 2 de noviembre, 11:00_; _Ganamos 3–1 a Racing Vilariño_). El plazo va con borde neutro y pasa a ámbar en las 3 últimas horas.
+- **Un protagonista por pantalla:** el campo, la cifra de la última jornada, la posición en la clasificación, el peto grande de la ficha. Lo demás, en filas.
+- **Puntos** con `bf-points`: signo y menos tipográfico, `brand-text` si suman, `danger-text` si restan y neutro en 0. Los totales de la clasificación general no llevan signo.
+- **Desgloses bajo petición:** una fila con puntos que se pueden explicar es un `bf-disclosure` con chevron hacia abajo; al abrirse enseña el detalle debajo, con el mismo sangrado que la fila.
+- **Sin acción principal** en las pantallas que solo se miran (clasificación, ficha): nada fijo sobre la navegación.
+
+#### Inicio de la jornada
+
+```
+Jornada 12            [◷ Se bloquea en 5 h]
+Contra CD Arrabal, domingo 2 de noviembre, 11:00
+──────────────────────────────
+Tu alineación          96,2 / 100 M    ›   fila: cambios en la meta, presupuesto como cifra
+1 de 2 cambios
+──────────────────────────────
+Valora la jornada 11         3 de 9    ›   una fila por ventana abierta, con su cierre
+[◷ Cierra en 14 h]
+──────────────────────────────
++38          2.º de 6               ›      cifra protagonista (paso 7) y posición (paso 5);
+En la jornada 11   En la general           el bloque enlaza a la clasificación
+
+[     Valorar la jornada 11      ]         acción contextual (decisión 14)
+```
+
+- Sin alineación guardada: _Aún no tienes alineación_ y la acción _Hacer alineación_. Sin jornadas puntuadas, no hay cifra.
+- Entre `lockAt` y el job de bloqueo, una fila _Alineaciones de la jornada 12_ con _Bloqueándose…_; después enlaza a `lineups/:matchId`.
+- Sin partidos: el vacío del peto con _Aún no hay partidos. Cuando se programe el siguiente, lo verás aquí._ y sin acción.
+
+#### Alineación
+
+```
+Jornada 12          [◷ Se bloquea en 2 h 40 min]   en ámbar: menos de 3 h
+Contra CD Arrabal, domingo 2 de noviembre, 11:00
+96,2 / 100 M   1 de 2   [Campo|Lista]   cifras y, a su derecha, el segmentado
+Presupuesto    Cambios
+┌────────────────────────────┐
+│            (9)             │          campo: una fila por posición, portería propia abajo;
+│      (10)  (8)  (6)        │          peto de 44 px, nombre y valor
+│        (4)     (5)         │
+│            (1)             │
+├────────────────────────────┤
+│        ( ) Plaza libre     │          plazas libres al pie, fuera de las líneas
+└────────────────────────────┘
+[       Descartar cambios      ]         quiet, solo con cambios sin guardar
+[      Guardar alineación      ]
+```
+
+- El segmentado _Campo_ / _Lista_ va en la fila de las cifras, no debajo: así el campo de 7 cabe entero en 360 px sobre la acción y la navegación.
+- Como mucho cinco petos por fila (más se parten en dos), el nombre se recorta con su etiqueta completa en el botón. Las plazas libres van al pie del campo; si faltan mínimos de formación, en la fila de su posición.
+- Lo que la comprobación local encuentra se pinta en la cifra (presupuesto en `danger-text`) y en un `bf-notice` de aviso: _Te pasas 1,5 M del presupuesto. Puedes guardarla, pero si se bloquea así no puntúa esta jornada._ Los `warnings` del servidor, igual. Nunca impide guardar.
+- **Hoja de candidatos** al tocar un peto o una plaza: título _Cambiar a Pablo_ y _Sin él te quedan 21,0 M_; grupos por posición (la suya primero) con subtítulo apagado, sin los ya alineados; el actual con ✓ _En la alineación_; solo se marca lo que no cabe (_Supera el presupuesto_, en `warning-text`), y se puede elegir igual. Al pie, fijo, _Quitar de la alineación_ (`secondary`).
+- **Lista:** una fila compacta por jugador con peto, nombre, posición en texto y valor; tocarla abre la misma hoja.
+- **`lg`:** el campo a la izquierda; a la derecha, cifras, segmentado, avisos y la acción. Los candidatos no van en hoja: se abren en esa columna, sin velo, con _Quitar de la alineación_ y _Cerrar_.
+
+#### Valorar un partido
+
+```
+Jornada 11                 [◷ Cierra en 14 h]
+Ganamos 3–1 a Racing Vilariño
+De 0 a 4 picas. Valorar es opcional: deja sin voto a quien no viste.
+──────────────────────────────
+(1) Diego                                   peto, nombre; posición y acta apagadas
+    Portero  1 penalti parado
+[0][1][2][3][4]                  Quitar     picas: radios de 44 px, el elegido en lavanda
+──────────────────────────────
+(5) Xurxo
+    Defensa  Tarjeta amarilla
+[0][1][2][3][4]                Sin voto
+──────────────────────────────
+[     Guardar valoraciones     ]
+     Has valorado a 3 de 9                  cuenta el borrador
+```
+
+- El control ocupa su propia línea a todo lo ancho, con _Quitar_ (nombre accesible _Quitar voto a Xurxo_) o _Sin voto_ al final. En nota, la misma línea con `bf-stepper`: `[−] 6 [+]`, con _Sin voto_ dentro mientras está vacío.
+- **Cerrada:** cada fila con _Media 3,00 con 6 votos_ y _Tu voto: 3_ (o _Sin tu voto_, _Sin votos_) en la meta y los puntos por valoración a la derecha. La acción pasa a ser _Ver los puntos de la jornada_ (`secondary`). Sin resultados aún, un `bf-notice` informativo (_Calculando los resultados. Esta página se actualiza sola._) y los puntos en _skeleton_.
+- **Excluido:** un `bf-notice` informativo con _El administrador ha cancelado tus valoraciones de este partido._ en lugar de los controles, sin acción.
+
+#### Clasificación y puntos de una jornada
+
+```
+Clasificación
+Tras la jornada 11
+[   General   |  Por jornada  ]             pestañas de ruta, a todo lo ancho
+──────────────────────────────
+1  (LR) Lucía Romero          342   ›       posición en paso 5; un empate la repite, apagada
+        11 jornadas, +41 en la última
+2  (XB) Xosé Babío            318   ›       tu fila con current
+```
+
+```
+[   General   |  Por jornada  ]
+Jornada
+[ Jornada 11, contra Racing Vilariño  ▾ ]  bf-select, solo jornadas cerradas
+Managers  Jugadores                         pestañas de la página, alineadas a la izquierda
+──────────────────────────────
+2  (XB) Xosé Babío            +38   ˄       bf-disclosure abierta
+        (9) Pablo                 +14       su alineación bloqueada, sangrada
+            Acciones +4, valoración +10
+6  (MV) Manu Vidal              0   ˅
+        [Fuera de presupuesto]
+```
+
+- Las dos filas de pestañas se distinguen por su ancho: las de ruta reparten el ancho; las de la página van a la izquierda.
+- _Jugadores_: los del acta por puntos, con _Acciones +4, valoración +10_ apagado y el total; cada fila abre la ficha.
+- Sin datos (`MATCH_NOT_CLOSED`, `MATCH_NOT_SCORED`): el vacío del peto con _Los puntos se publican al cerrar las valoraciones._ y _Valorar la jornada 11_ (`secondary`) si la ventana sigue abierta.
+- **`lg`:** _Managers_ y _Jugadores_ dejan de ser pestañas y van en dos columnas con su subtítulo.
+
+#### Ficha del jugador
+
+```
+[ 9 ]  Pablo                                peto grande (72 px) y nombre (paso 6)
+       [Delantero]                          chip de posición; [Dado de baja] si lo está
+17,2 M        15,0 M
+Valor actual  Valor inicial
+Jornadas
+──────────────────────────────
+Jornada 11                   +14   ˄
+Domingo 26 de octubre
+  Gol                         +3            bf-points-breakdown, con las cifras
+  Asistencia                  +1            alineadas con las de la fila
+  Valoración                 +10
+  Total                      +14
+```
 
 ## Textos
 
