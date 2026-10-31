@@ -1,0 +1,63 @@
+@use 'ui/styles/page';
+@use 'ui/styles/typography' as type;
+
+:host {
+  @include page.page;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-2) var(--bf-space-3);
+}
+
+h1 {
+  @include page.title;
+}
+
+.summary {
+  @include type.display(6);
+
+  margin-top: var(--bf-space-1);
+}
+
+.hint,
+.count,
+.result {
+  color: var(--bf-color-text-muted);
+}
+
+.hint {
+  margin: var(--bf-space-2) 0 var(--bf-space-3);
+}
+
+bf-notice {
+  display: block;
+  margin: var(--bf-space-3) 0;
+}
+
+ul {
+  margin-top: var(--bf-space-3);
+}
+
+.row {
+  display: grid;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3) var(--bf-space-4);
+}
+
+.actions {
+  @include page.actions;
+}
+
+.count {
+  text-align: center;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

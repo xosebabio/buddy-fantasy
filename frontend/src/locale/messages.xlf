@@ -1651,111 +1651,6 @@
           <context context-type="linenumber">27,30</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="match.sheet.goal" datatype="html">
-        <source>gol</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">21</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.goals" datatype="html">
-        <source>goles</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">22</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.penaltyGoal" datatype="html">
-        <source>gol de penalti</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">26</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.penaltyGoals" datatype="html">
-        <source>goles de penalti</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">27</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.assist" datatype="html">
-        <source>asistencia</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">31</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.assists" datatype="html">
-        <source>asistencias</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">32</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.ownGoal" datatype="html">
-        <source>gol en propia puerta</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">36</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.ownGoals" datatype="html">
-        <source>goles en propia puerta</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">37</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.penaltySaved" datatype="html">
-        <source>penalti parado</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">41</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.penaltiesSaved" datatype="html">
-        <source>penaltis parados</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">42</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.penaltyMissed" datatype="html">
-        <source>penalti fallado</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">46</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.penaltiesMissed" datatype="html">
-        <source>penaltis fallados</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">47</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.yellow" datatype="html">
-        <source>tarjeta amarilla</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">49</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.doubleYellow" datatype="html">
-        <source>doble amarilla</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">50</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="match.sheet.red" datatype="html">
-        <source>roja directa</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
-          <context context-type="linenumber">51</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="match.venue.home" datatype="html">
         <source>En casa</source>
         <context-group purpose="location">
@@ -1768,6 +1663,216 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/match/venue.ts</context>
           <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.titleNone" datatype="html">
+        <source>Valorar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.notClosed" datatype="html">
+        <source> Las valoraciones se abren cuando se cierra el partido. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.title" datatype="html">
+        <source>Jornada <x id="INTERPOLATION" equiv-text="{{ ratings.matchday }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">11,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.closesIn" datatype="html">
+        <source> Cierra en </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">14,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.excluded" datatype="html">
+        <source> El administrador ha cancelado tus valoraciones de este partido. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">24,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.hintSpades" datatype="html">
+        <source> De 0 a 4 picas. Valorar es opcional: deja sin voto a quien no viste. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">29,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.hintDecimal" datatype="html">
+        <source> De 0 a 10. Valorar es opcional: deja sin voto a quien no viste. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">33,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.calculating" datatype="html">
+        <source> Calculando los resultados. Esta página se actualiza sola. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">38,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.pending" datatype="html">
+        <source>Calculando…</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">63,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.noVotes" datatype="html">
+        <source>Sin votos</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">65,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.average" datatype="html">
+        <source> Media <x id="INTERPOLATION" equiv-text="{{ row.rating.average.toFixed(2).replace(&apos;.&apos;, &apos;,&apos;) }}"/> con <x id="INTERPOLATION_1" equiv-text="{{ row.rating.votes }}"/> votos </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">68,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.noMine" datatype="html">
+        <source>Sin tu voto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">74,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.mine" datatype="html">
+        <source>Tu voto: <x id="INTERPOLATION" equiv-text="{{ row.rating.myRating }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">77,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.empty" datatype="html">
+        <source>El acta no tiene jugadores.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">85,87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.save" datatype="html">
+        <source> Guardar valoraciones </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">102,104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.count" datatype="html">
+        <source> Has valorado a <x id="INTERPOLATION" equiv-text="{{ voted() }}"/> de <x id="INTERPOLATION_1" equiv-text="{{ rows.length }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">105,107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.points" datatype="html">
+        <source> Ver los puntos de la jornada </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.html</context>
+          <context context-type="linenumber">115,118</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.won" datatype="html">
+        <source>Ganamos <x id="score" equiv-text="score"/> a <x id="opponent" equiv-text="opponent"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.drew" datatype="html">
+        <source>Empatamos <x id="score" equiv-text="score"/> con <x id="opponent" equiv-text="opponent"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.lost" datatype="html">
+        <source>Perdimos <x id="score" equiv-text="score"/> contra <x id="opponent" equiv-text="opponent"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.saved" datatype="html">
+        <source>Valoraciones guardadas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rate-match-page.ts</context>
+          <context context-type="linenumber">196</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.pageTitle" datatype="html">
+        <source>Valoraciones</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rating.routes.ts</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.rate.pageTitle" datatype="html">
+        <source>Valorar un partido</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/rating.routes.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.title" datatype="html">
+        <source>Valoraciones</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/ratings-page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.row" datatype="html">
+        <source>Jornada <x id="INTERPOLATION" equiv-text="{{ window.matchday }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/ratings-page.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.closesIn" datatype="html">
+        <source> Cierra en </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/ratings-page.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.closed" datatype="html">
+        <source>Cerrada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/ratings-page.html</context>
+          <context context-type="linenumber">21,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.excluded" datatype="html">
+        <source> Excluido </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/ratings-page.html</context>
+          <context context-type="linenumber">26,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.count" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ window.myRatings }}"/> de <x id="INTERPOLATION_1" equiv-text="{{ window.players }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/ratings-page.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rating.ratings.empty" datatype="html">
+        <source> Aún no hay partidos para valorar. Cuando se cierre el primero, lo verás aquí. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/rating/ratings-page.html</context>
+          <context context-type="linenumber">39,42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="squad.player.retired" datatype="html">
@@ -1865,6 +1970,111 @@
           <context context-type="linenumber">5</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="match.sheet.goal" datatype="html">
+        <source>gol</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.goals" datatype="html">
+        <source>goles</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltyGoal" datatype="html">
+        <source>gol de penalti</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltyGoals" datatype="html">
+        <source>goles de penalti</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.assist" datatype="html">
+        <source>asistencia</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.assists" datatype="html">
+        <source>asistencias</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.ownGoal" datatype="html">
+        <source>gol en propia puerta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.ownGoals" datatype="html">
+        <source>goles en propia puerta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltySaved" datatype="html">
+        <source>penalti parado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltiesSaved" datatype="html">
+        <source>penaltis parados</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltyMissed" datatype="html">
+        <source>penalti fallado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltiesMissed" datatype="html">
+        <source>penaltis fallados</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.yellow" datatype="html">
+        <source>tarjeta amarilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.doubleYellow" datatype="html">
+        <source>doble amarilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.red" datatype="html">
+        <source>roja directa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/performance/performance.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="shared.position.goalkeeper" datatype="html">
         <source>Portero</source>
         <context-group purpose="location">
@@ -1919,6 +2129,41 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/position/position.ts</context>
           <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.ratingInput.noVote" datatype="html">
+        <source>Sin voto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/rating/rating-input.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.ratingInput.clear" datatype="html">
+        <source> Quitar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/rating/rating-input.ts</context>
+          <context context-type="linenumber">73,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.ratingInput.spadesLabel" datatype="html">
+        <source>Picas para <x id="player" equiv-text="player"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/rating/rating-input.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.ratingInput.decimalLabel" datatype="html">
+        <source>Nota de <x id="player" equiv-text="player"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/rating/rating-input.ts</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.ratingInput.clearLabel" datatype="html">
+        <source>Quitar voto a <x id="player" equiv-text="this.playerName()"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/rating/rating-input.ts</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="shared.roster.unknownName" datatype="html">
@@ -2073,6 +2318,20 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/ui/load-error/load-error.ts</context>
           <context context-type="linenumber">19,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.stepper.decrease" datatype="html">
+        <source>Bajar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/stepper/stepper.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.stepper.increase" datatype="html">
+        <source>Subir</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/stepper/stepper.ts</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ui.toaster.label" datatype="html">

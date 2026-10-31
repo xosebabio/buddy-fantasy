@@ -1,4 +1,4 @@
-import { IDLE, KEEPER, STRIKER } from './matches.testing';
+import { IDLE, KEEPER, STRIKER } from '../roster/matches.testing';
 import { performanceSummary } from './performance';
 
 describe('performanceSummary', () => {

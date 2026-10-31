@@ -1,0 +1,48 @@
+<h1 i18n="@@rating.ratings.title">Valoraciones</h1>
+
+@if (windows.error()) {
+  <bf-load-error (retry)="windows.reload()" />
+} @else if (windows.value()) {
+  <ul bfList bleed>
+    @for (window of sorted(); track window.matchId) {
+      <li>
+        <a bfListItem [routerLink]="['/leagues', leagueId(), 'ratings', window.matchId]">
+          <ng-container i18n="@@rating.ratings.row">Jornada {{ window.matchday }}</ng-container>
+          <span bfListItemMeta>
+            @if (window.status === 'OPEN') {
+              <bf-countdown
+                [until]="window.closesAt"
+                (elapsed)="windows.reload()"
+                i18n="@@rating.ratings.closesIn"
+              >
+                Cierra en
+              </bf-countdown>
+            } @else {
+              <ng-container i18n="@@rating.ratings.closed">Cerrada</ng-container>
+            }
+          </span>
+          @if (window.excluded) {
+            <bf-badge bfListItemTrailing tone="warning" i18n="@@rating.ratings.excluded">
+              Excluido
+            </bf-badge>
+          } @else {
+            <span bfListItemTrailing class="count" i18n="@@rating.ratings.count">
+              {{ window.myRatings }} de {{ window.players }}
+            </span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+  @if (sorted().length === 0) {
+    <bf-empty-state i18n="@@rating.ratings.empty">
+      Aún no hay partidos para valorar. Cuando se cierre el primero, lo verás aquí.
+    </bf-empty-state>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

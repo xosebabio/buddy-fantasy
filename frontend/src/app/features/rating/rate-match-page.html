@@ -1,0 +1,128 @@
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (notClosed()) {
+  <h1 i18n="@@rating.rate.titleNone">Valorar</h1>
+  <bf-empty-state i18n="@@rating.rate.notClosed">
+    Las valoraciones se abren cuando se cierra el partido.
+  </bf-empty-state>
+} @else if (current(); as ratings) {
+  @if (rows(); as rows) {
+    <header>
+      <h1 i18n="@@rating.rate.title">Jornada {{ ratings.matchday }}</h1>
+      @if (ratings.status === 'OPEN') {
+        <bf-countdown [until]="ratings.closesAt" (elapsed)="reload()" i18n="@@rating.rate.closesIn">
+          Cierra en
+        </bf-countdown>
+      }
+    </header>
+    @if (summary(); as text) {
+      <p class="summary">{{ text }}</p>
+    }
+
+    @if (ratings.excluded) {
+      <bf-notice i18n="@@rating.rate.excluded">
+        El administrador ha cancelado tus valoraciones de este partido.
+      </bf-notice>
+    } @else if (ratings.status === 'OPEN') {
+      @if (ratings.format === 'SPADES') {
+        <p class="hint" i18n="@@rating.rate.hintSpades">
+          De 0 a 4 picas. Valorar es opcional: deja sin voto a quien no viste.
+        </p>
+      } @else {
+        <p class="hint" i18n="@@rating.rate.hintDecimal">
+          De 0 a 10. Valorar es opcional: deja sin voto a quien no viste.
+        </p>
+      }
+    } @else if (calculating()) {
+      <bf-notice i18n="@@rating.rate.calculating">
+        Calculando los resultados. Esta página se actualiza sola.
+      </bf-notice>
+    }
+
+    <ul bfList bleed>
+      @for (row of rows; track row.rating.playerId) {
+        <li class="row">
+          <bf-player-row [player]="row.player">
+            @if (row.did) {
+              <span bfPlayerRowMeta>{{ row.did }}</span>
+            }
+            @if (ratings.status === 'CLOSED' && row.rating.ratingPoints !== null) {
+              <bf-points bfPlayerRowTrailing [value]="row.rating.ratingPoints" />
+            }
+          </bf-player-row>
+          @if (canRate()) {
+            <bf-rating-input
+              [format]="ratings.format"
+              [playerName]="row.player.name"
+              [value]="votes().get(row.rating.playerId) ?? null"
+              (valueChange)="vote(row.rating.playerId, $event)"
+            />
+          } @else if (ratings.status === 'CLOSED') {
+            <p class="result">
+              @if (row.rating.votes === null) {
+                <ng-container i18n="@@rating.rate.pending">Calculando…</ng-container>
+              } @else if (row.rating.average === null) {
+                <ng-container i18n="@@rating.rate.noVotes">Sin votos</ng-container>
+              } @else {
+                <ng-container i18n="@@rating.rate.average">
+                  Media {{ row.rating.average.toFixed(2).replace('.', ',') }} con
+                  {{ row.rating.votes }} votos
+                </ng-container>
+              }
+              ·
+              @if (row.rating.myRating === null) {
+                <ng-container i18n="@@rating.rate.noMine">Sin tu voto</ng-container>
+              } @else {
+                <ng-container i18n="@@rating.rate.mine"
+                  >Tu voto: {{ row.rating.myRating }}</ng-container
+                >
+              }
+            </p>
+          }
+        </li>
+      } @empty {
+        <li>
+          <bf-empty-state i18n="@@rating.rate.empty">El acta no tiene jugadores.</bf-empty-state>
+        </li>
+      }
+    </ul>
+
+    <div class="actions">
+      @if (canRate()) {
+        <button
+          bfButton
+          type="button"
+          variant="primary"
+          block
+          [disabled]="!unsaved() || !online.online()"
+          [loading]="saving()"
+          (click)="save()"
+          i18n="@@rating.rate.save"
+        >
+          Guardar valoraciones
+        </button>
+        <p class="count" i18n="@@rating.rate.count">
+          Has valorado a {{ voted() }} de {{ rows.length }}
+        </p>
+      } @else if (ratings.status === 'CLOSED') {
+        <a
+          bfButton
+          variant="secondary"
+          block
+          [routerLink]="['/leagues', leagueId(), 'standings', ratings.matchId]"
+          i18n="@@rating.rate.points"
+        >
+          Ver los puntos de la jornada
+        </a>
+      }
+    </div>
+  } @else {
+    <div class="loading" aria-busy="true"><bf-skeleton shape="block" /></div>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+    <bf-skeleton shape="block" />
+  </div>
+}

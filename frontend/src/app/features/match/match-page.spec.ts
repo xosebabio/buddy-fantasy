@@ -6,7 +6,7 @@ import { render, screen, within } from '@testing-library/angular';
 
 import type { MatchResponse } from '../../core/api/match/match-api';
 import { PLAYERS } from '../../shared/roster/players.testing';
-import { CLOSED_MATCH, SCHEDULED_MATCH } from './matches.testing';
+import { CLOSED_MATCH, SCHEDULED_MATCH } from '../../shared/roster/matches.testing';
 import { MatchPage } from './match-page';
 
 describe('MatchPage', () => {

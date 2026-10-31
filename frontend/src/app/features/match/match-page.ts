@@ -10,7 +10,7 @@ import { EmptyState } from '../../ui/empty-state/empty-state';
 import { List, ListItem } from '../../ui/list/list';
 import { LoadError } from '../../ui/load-error/load-error';
 import { Skeleton } from '../../ui/skeleton/skeleton';
-import { performanceSummary } from './performance';
+import { performanceSummary } from '../../shared/performance/performance';
 import { VENUE_TEXTS } from './venue';
 
 /**

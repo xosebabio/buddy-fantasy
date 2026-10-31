@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { render, screen } from '@testing-library/angular';
 
-import { CLOSED_SUMMARY, SCHEDULED_SUMMARY } from './matches.testing';
+import { CLOSED_SUMMARY, SCHEDULED_SUMMARY } from '../../shared/roster/matches.testing';
 import { MatchesPage } from './matches-page';
 
 describe('MatchesPage', () => {
