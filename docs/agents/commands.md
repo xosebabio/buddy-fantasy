@@ -37,7 +37,9 @@ npm run format:check   # lo mismo, sin escribir (CI)
 npm test               # Vitest con jsdom, una pasada; npm test -- --watch para quedarse mirando
 npm run palette        # regenera src/app/ui/styles/_palette.scss (versionado) desde scripts/palette.mjs
 npm run api:types      # regenera src/app/core/api/schema.d.ts (versionado) desde ../api/openapi.json
-npm run i18n:extract   # regenera src/locale/messages.xlf (versionado) desde el build de producción
+npm run i18n:extract   # regenera src/locale/messages.xlf (versionado) desde el build de producción;
+                       # falla si un id se repite o no sigue @@<capa o feature>.<pantalla>.<texto>
+npm run e2e            # Playwright: E2E de humo con axe (ver *E2E*)
 ```
 
 `/_ui` (catálogo de componentes) solo existe con `npm start`.
@@ -55,6 +57,24 @@ docker compose -f deploy/docker-compose.dev.yml --profile caddy restart caddy   
 - Manda `/api`, `/oauth2`, `/login/oauth2` y `/actuator/health` al backend; el resto es la SPA, con *fallback* a `index.html` (sin caché), salvo los ficheros con hash (`immutable` un año y, si no existen, `404`).
 - La política de scripts es la `<meta>` que escribe `autoCsp`; la cabecera de Caddy solo la limita al mismo origen, porque las dos se aplican a la vez (ver el comentario del `Caddyfile`).
 - Para el login con Google desde aquí, autoriza también su redirect URI (*Login con Google*).
+
+### E2E
+
+Playwright en móvil (Chromium y WebKit, tema claro y oscuro) contra el backend real con el perfil `e2e` (ver *Login de pruebas*). Por defecto, contra el build servido por Caddy en local, como en CI:
+
+```bash
+docker compose -f deploy/docker-compose.dev.yml up -d postgres
+cd backend && mvn -B -q package -DskipTests -Djacoco.skip=true \
+  && SPRING_PROFILES_ACTIVE=e2e java -jar target/buddy-fantasy-backend-*.jar   # en otra terminal
+cd frontend && npm run build && cd ..
+docker compose -f deploy/docker-compose.dev.yml --profile caddy up -d caddy
+cd frontend
+npx playwright install chromium webkit   # la primera vez
+npm run e2e                              # npm run e2e -- --project=chromium-light para un solo proyecto
+E2E_BASE_URL=http://localhost:4200 npm run e2e   # contra npm start en vez de Caddy
+```
+
+`E2E_BASE_URL` es el origen contra el que corren (por defecto `http://localhost:8081`). Cada test crea sus propios usuarios y ligas, así que no hace falta vaciar la BD entre ejecuciones. Si falla, la traza queda en `frontend/test-results/` (`npx playwright show-trace <ruta>/trace.zip`).
 
 ## API
 

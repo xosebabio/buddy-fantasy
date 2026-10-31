@@ -204,7 +204,7 @@ Cada una con carga, vacío, error con reintento y contenido (FE-14), textos con 
 | 11 | Arranque, `SessionStore`, login y logout, guards, rutas, shell, sin conexión, páginas de error y `core/time` (§8) | Shell navegable (FE-03, FE-10, FE-13, FE-29 a FE-31) | ✅ |
 | 12 | Pantallas de §9 con sus tests | Entrar, crear liga e invitar (RF-01, RF-02, RF-04 a RF-06, RF-08) | ✅ |
 | 13 | `deploy/Caddyfile`, perfil `caddy` en Compose y `cors.json` (§10) | Servido como en producción (RNF-16) | ✅ |
-| 14 | Playwright, E2E de humo con axe y jobs `frontend` y `e2e` de CI (§11) | Calidad automatizada (FE-33, FE-34) | |
+| 14 | Playwright, E2E de humo con axe y jobs `frontend` y `e2e` de CI (§11) | Calidad automatizada (FE-33, FE-34) | ✅ |
 | 15 | `commands.md` (comandos y variables del front y de Caddy), `testing.md`, `frontend.md`, `status.md`, *Estado* de `AGENTS.md` y marcar el ítem de la Fase 0 en `requirements.md` | Ítem de la Fase 0 cerrado | |
 
 Cada tarea es un commit en Conventional Commits citando sus códigos: `feat(identity): …`, `feat(frontend): … (FE-xx)`, `ci: …`, `docs: …`.

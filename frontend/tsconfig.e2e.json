@@ -1,0 +1,9 @@
+/* The Playwright E2E tests (FE-34) and their config, which run in Node. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["e2e/**/*.ts", "playwright.config.ts"]
+}
