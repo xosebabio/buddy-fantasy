@@ -28,3 +28,18 @@ export async function confirm(page: Page, button: string): Promise<void> {
   await dialog.getByRole('button', { name: button, exact: true }).click();
   await expect(dialog).toBeHidden();
 }
+
+/**
+ * Waits for something that a job of the backend does (locking the lineups, scoring a matchday),
+ * which runs every 2 s with the `e2e` profile: checks the page as it is and, while it fails,
+ * reloads it. It does not reload before the first check, so as not to cut a navigation short.
+ */
+export async function reloadUntil(page: Page, check: () => Promise<void>): Promise<void> {
+  let attempt = 0;
+  await expect(async () => {
+    if (attempt++ > 0) {
+      await page.reload();
+    }
+    await check();
+  }).toPass({ timeout: 30_000 });
+}

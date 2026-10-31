@@ -23,7 +23,7 @@ test('a user without a session opens an invitation and is back on it after the l
   await expectAccessible(guest);
 
   await guest.getByRole('button', { name: 'Unirme a la liga' }).click();
-  await expect(guest.getByRole('heading', { name: leagueName })).toBeVisible();
+  await expect(guest.getByRole('button', { name: `${leagueName}, cambiar de liga` })).toBeVisible();
   await expect(toast(guest, `Te has unido a ${leagueName}`)).toBeVisible();
   await expectAccessible(guest);
 });

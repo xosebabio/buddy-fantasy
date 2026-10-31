@@ -71,6 +71,7 @@ docker compose -f deploy/docker-compose.dev.yml --profile caddy up -d caddy
 cd frontend
 npx playwright install chromium webkit   # la primera vez
 npm run e2e                              # npm run e2e -- --project=chromium-light para un solo proyecto
+                                         # (y --project=chromium-light-matchday para el de la jornada, que mueve el reloj del servidor)
 E2E_BASE_URL=http://localhost:4200 npm run e2e   # contra npm start en vez de Caddy
 ```
 

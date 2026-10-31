@@ -7,7 +7,9 @@ import { FREE_SPOT } from './spot-label';
 
 /**
  * A spot of `bf-pitch`: the bib, or the outline of a free place, with the name and the value. The
- * pitch names the button, since the name may be cut on screen.
+ * pitch names the button, since the name may be cut on screen. The spaces between its texts are in
+ * the DOM (`&ngsp;`) because the grid does not draw them: axe reads the visible text with them and
+ * checks that the name contains it (WCAG 2.5.3).
  */
 @Component({
   selector: 'button[bfPitchSpot]',
@@ -16,8 +18,8 @@ import { FREE_SPOT } from './spot-label';
     @let current = spot();
     @if (current.kind === 'player') {
       <bf-bib [position]="current.player.position" [number]="current.player.shirtNumber" />
-      <span class="name">{{ current.player.name }}</span>
-      <span class="value">{{ current.player.value | bfMoney }}</span>
+      &ngsp;<span class="name">{{ current.player.name }}</span
+      >&ngsp;<span class="value">{{ current.player.value | bfMoney }}</span>
     } @else {
       <bf-empty-bib />
       <span class="name">{{ freeSpot }}</span>

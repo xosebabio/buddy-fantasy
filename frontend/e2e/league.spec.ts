@@ -24,12 +24,13 @@ test('the admin creates a league, invites a member, sees them and removes them',
   await expectAccessible(admin);
 
   await admin.getByRole('link', { name: 'Ir a la liga' }).click();
-  await expect(admin.getByRole('heading', { name: leagueName })).toBeVisible();
+  await expect(admin.getByRole('button', { name: `${leagueName}, cambiar de liga` })).toBeVisible();
   const leagueUrl = admin.url();
   await expectAccessible(admin);
 
   // The link of the creation is not shown again: the admin generates a new one to share it.
-  await admin.getByRole('link', { name: 'Invitar a tu equipo' }).click();
+  await admin.getByRole('link', { name: 'Liga', exact: true }).click();
+  await admin.getByRole('link', { name: /^Miembros e invitación/ }).click();
   await expect(admin.getByRole('heading', { name: 'Miembros e invitación' })).toBeVisible();
   await admin.getByRole('button', { name: 'Generar enlace nuevo' }).click();
   await expect(admin.getByRole('alertdialog')).toBeVisible();
@@ -41,7 +42,7 @@ test('the admin creates a league, invites a member, sees them and removes them',
   await logIn(brais, member);
   await brais.goto(link);
   await brais.getByRole('button', { name: 'Unirme a la liga' }).click();
-  await expect(brais.getByRole('heading', { name: leagueName })).toBeVisible();
+  await expect(brais.getByRole('button', { name: `${leagueName}, cambiar de liga` })).toBeVisible();
   await brais.getByRole('link', { name: 'Liga', exact: true }).click();
   await expect(brais.getByRole('heading', { name: 'Liga', exact: true })).toBeVisible();
   await expectAccessible(brais);

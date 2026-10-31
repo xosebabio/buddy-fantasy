@@ -105,7 +105,7 @@ describe('LineupPage', () => {
     await user.click(within(sheet).getByRole('button', { name: /Alberto/ }));
     await fixture.whenStable();
 
-    expect(screen.getByRole('button', { name: /^Alberto, Delantero/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Alberto .*, Delantero$/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Guardar alineación' }));
@@ -135,15 +135,15 @@ describe('LineupPage', () => {
     const user = userEvent.setup();
     const { fixture } = await renderPage();
 
-    await user.click(screen.getByRole('button', { name: /^Pablo, Delantero/ }));
+    await user.click(screen.getByRole('button', { name: /Pablo .*, Delantero$/ }));
     const sheet = await screen.findByRole('dialog', { name: 'Cambiar a Pablo' });
     expect(within(sheet).getByText(/En la alineación/)).toBeInTheDocument();
     await user.click(within(sheet).getByRole('button', { name: 'Quitar de la alineación' }));
     await fixture.whenStable();
 
-    expect(screen.queryByRole('button', { name: /^Pablo/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Pablo/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
-    expect(screen.getByRole('button', { name: /^Pablo, Delantero/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Pablo .*, Delantero$/ })).toBeInTheDocument();
   });
 
   it('warns of a budget that is passed but still lets save', async () => {

@@ -36,10 +36,10 @@ describe('Pitch', () => {
 
     const pitch = screen.getByRole('group', { name: 'Tu alineación' });
     expect(
-      within(pitch).getByRole('button', { name: 'Pablo, Delantero, 17,2 M' }),
-    ).toHaveTextContent('9Pablo17,2 M');
+      within(pitch).getByRole('button', { name: '9 Pablo 17,2 M, Delantero' }),
+    ).toHaveTextContent('9 Pablo 17,2 M');
     expect(
-      within(pitch).getByRole('button', { name: 'Diego, Portero, 16,4 M' }),
+      within(pitch).getByRole('button', { name: '1 Diego 16,4 M, Portero' }),
     ).toBeInTheDocument();
   });
 
@@ -47,13 +47,13 @@ describe('Pitch', () => {
     await renderPitch();
 
     const names = screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    expect(names).toEqual(['Pablo, Delantero, 17,2 M', 'Diego, Portero, 16,4 M']);
+    expect(names).toEqual(['9 Pablo 17,2 M, Delantero', '1 Diego 16,4 M, Portero']);
   });
 
   it('emits the spot touched, a player or a free place', async () => {
     const { spotSelected } = await renderPitch({ freeSpots: [null, 'DEFENDER'] });
 
-    await userEvent.click(screen.getByRole('button', { name: /^Pablo/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Pablo/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Plaza libre, Defensa' }));
     await userEvent.click(screen.getByRole('button', { name: 'Plaza libre' }));
 
@@ -77,8 +77,8 @@ describe('Pitch', () => {
   it('rings the selected spot', async () => {
     await renderPitch({ selected: 'pablo' });
 
-    expect(screen.getByRole('button', { name: /^Pablo/ })).toHaveClass('selected');
-    expect(screen.getByRole('button', { name: /^Diego/ })).not.toHaveClass('selected');
+    expect(screen.getByRole('button', { name: /Pablo/ })).toHaveClass('selected');
+    expect(screen.getByRole('button', { name: /Diego/ })).not.toHaveClass('selected');
   });
 
   it('narrows the spots when a row has five', async () => {
