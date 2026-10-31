@@ -42,6 +42,20 @@ npm run i18n:extract   # regenera src/locale/messages.xlf (versionado) desde el 
 
 `/_ui` (catálogo de componentes) solo existe con `npm start`.
 
+### Caddy en local
+
+Sirve el build de producción como en producción (`deploy/Caddyfile`: estáticos, proxy al backend, cabeceras y CSP), con el backend arrancado en el host:
+
+```bash
+cd frontend && npm run build && cd ..
+docker compose -f deploy/docker-compose.dev.yml --profile caddy up -d   # además, Caddy en http://localhost:8081
+docker compose -f deploy/docker-compose.dev.yml --profile caddy restart caddy   # tras otro build o un cambio del Caddyfile
+```
+
+- Manda `/api`, `/oauth2`, `/login/oauth2` y `/actuator/health` al backend; el resto es la SPA, con *fallback* a `index.html` (sin caché), salvo los ficheros con hash (`immutable` un año y, si no existen, `404`).
+- La política de scripts es la `<meta>` que escribe `autoCsp`; la cabecera de Caddy solo la limita al mismo origen, porque las dos se aplican a la vez (ver el comentario del `Caddyfile`).
+- Para el login con Google desde aquí, autoriza también su redirect URI (*Login con Google*).
+
 ## API
 
 La documentación OpenAPI de la API está en `/v3/api-docs` (con sesión iniciada), versionada en `api/openapi.json`, y, con `SWAGGER_UI_ENABLED=true`, en Swagger UI (`/swagger-ui.html`).
@@ -66,6 +80,17 @@ Valores por defecto en `backend/src/main/resources/application.yml`.
 | `S3_ENDPOINT` | Solo en local; vacía en AWS |
 | `PHOTOS_BASE_URL` | Origen desde el que se sirven las fotos: CloudFront en producción, `http://localhost:8333/buddy-fantasy-photos` en local |
 
+### Caddy
+
+Del `deploy/Caddyfile` (en local las fija el servicio `caddy` de `deploy/docker-compose.dev.yml`):
+
+| Variable | Para qué |
+| --- | --- |
+| `SITE_ADDRESS` | Dominio en producción (HTTPS automático y HSTS); por defecto `:80`, HTTP sin dominio |
+| `BACKEND_UPSTREAM` | `host:puerto` del backend; por defecto `backend:8080` (en local, `host.docker.internal:8080`) |
+| `PHOTOS_ORIGIN` | Origen de las fotos en `img-src` de la CSP: el de `PHOTOS_BASE_URL` (CloudFront en producción, `http://localhost:8333` en local) |
+| `UPLOADS_ORIGIN` | Origen del bucket en `connect-src` de la CSP, para la subida directa de fotos (`https://<bucket>.s3.<región>.amazonaws.com` en producción, `http://localhost:8333` en local) |
+
 Las credenciales de S3 salen de la cadena por defecto del AWS SDK (rol IAM en producción, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` en local; las de SeaweedFS están en `deploy/seaweedfs/s3.json` y solo valen en local).
 
 ## Login de pruebas (E2E)
@@ -79,6 +104,7 @@ El backend construye el redirect URI con el origen de la petición (`server.forw
 | Entorno | Redirect URI |
 | --- | --- |
 | Front en local (`ng serve`, su proxy conserva `Host`) | `http://localhost:4200/login/oauth2/code/google` |
+| Caddy en local (perfil `caddy`) | `http://localhost:8081/login/oauth2/code/google` |
 | Backend solo (sin front: empieza en `http://localhost:8080/oauth2/authorization/google`) | `http://localhost:8080/login/oauth2/code/google` |
 | Producción | `https://<dominio>/login/oauth2/code/google` |
 
@@ -88,5 +114,5 @@ Tras el login el backend redirige siempre a `/` (la SPA recupera la ruta guardad
 
 El navegador sube la foto con un `PUT` directo al bucket y la lee con `GET`, así que el bucket admite el origen del front:
 
-- **En local:** `deploy/seaweedfs/cors.json` (`PUT` y `GET` desde `http://localhost:4200`, cabeceras `Content-Type` y `Cache-Control`).
+- **En local:** `deploy/seaweedfs/cors.json` (`PUT` y `GET` desde `http://localhost:4200` y, con Caddy, `http://localhost:8081`; cabeceras `Content-Type` y `Cache-Control`).
 - **En producción (S3):** una regla CORS en el bucket con `AllowedOrigins` `https://<dominio>`, `AllowedMethods` `PUT` y `GET`, `AllowedHeaders` `Content-Type` y `Cache-Control`. Se configura en el bucket (consola o `aws s3api put-bucket-cors`), no en la app.

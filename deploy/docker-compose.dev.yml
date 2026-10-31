@@ -32,7 +32,7 @@ services:
       timeout: 3s
       retries: 20
 
-  # One-off job: creates the photo bucket and its CORS rules for the Angular dev server.
+  # One-off job: creates the photo bucket and its CORS rules for ng serve (4200) and the local Caddy (8081).
   seaweedfs-init:
     image: amazon/aws-cli:2.27.0
     depends_on:
@@ -52,6 +52,23 @@ services:
         || aws --endpoint-url http://seaweedfs:8333 s3api create-bucket --bucket "$$BUCKET";
         aws --endpoint-url http://seaweedfs:8333 s3api put-bucket-cors --bucket "$$BUCKET"
         --cors-configuration file:///init/cors.json
+
+  # The production build (npm run build in frontend/) served as in production, with the backend running on
+  # the host. Only with the profile: docker compose -f deploy/docker-compose.dev.yml --profile caddy up -d
+  caddy:
+    image: caddy:2.11-alpine
+    profiles: [caddy]
+    environment:
+      BACKEND_UPSTREAM: host.docker.internal:8080
+      PHOTOS_ORIGIN: http://localhost:8333
+      UPLOADS_ORIGIN: http://localhost:8333
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8081:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../frontend/dist/buddy-fantasy/browser:/srv:ro
 
 volumes:
   postgres-data:

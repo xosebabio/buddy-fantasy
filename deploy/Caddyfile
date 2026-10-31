@@ -1,0 +1,54 @@
+# Serves the Angular build and proxies the backend from the same origin (RNF-16).
+# Environment:
+#   SITE_ADDRESS      the domain in production (automatic HTTPS); :80 by default (plain HTTP, local)
+#   BACKEND_UPSTREAM  host:port of the backend; backend:8080 by default
+#   PHOTOS_ORIGIN     origin the player photos are served from (CloudFront in production)
+#   UPLOADS_ORIGIN    origin of the bucket the browser uploads photos to (presigned PUT)
+# The build is read from /srv.
+
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	# Deferred, so they replace the backend's own headers instead of being added to them.
+	header {
+		defer
+		-Server
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		# Scripts are restricted by the <meta> CSP that autoCsp writes into index.html (hashes and
+		# 'strict-dynamic'). Both policies apply at once, so this one only keeps scripts same-origin: without
+		# 'unsafe-inline' it would block the inline loader that the <meta> allows by hash.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' {$PHOTOS_ORIGIN} https://*.googleusercontent.com; connect-src 'self' {$UPLOADS_ORIGIN}; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+	}
+
+	@https protocol https
+	header @https {
+		defer
+		Strict-Transport-Security "max-age=31536000"
+	}
+
+	@backend path /api/* /oauth2/* /login/oauth2/* /actuator/health
+	handle @backend {
+		reverse_proxy {$BACKEND_UPSTREAM:backend:8080}
+	}
+
+	root * /srv
+
+	# Files with a content hash in their name (outputHashing: all) never change. No fallback to index.html,
+	# so a chunk from a previous deploy is a 404 and not an HTML page cached for a year.
+	@hashed path_regexp ^/(media/.+|[a-z]+-[A-Za-z0-9_-]{8}\.(js|css))$
+	handle @hashed {
+		header Cache-Control "public, max-age=31536000, immutable" {
+			match status 2xx
+		}
+		file_server
+	}
+
+	# index.html and everything else, revalidated on every load; Angular routes fall back to index.html.
+	handle {
+		header Cache-Control no-cache
+		try_files {path} /index.html
+		file_server
+	}
+}
