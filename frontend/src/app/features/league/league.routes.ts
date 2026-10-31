@@ -38,6 +38,11 @@ export const leagueRoutes: Routes = [
     title: $localize`:@@league.index.pageTitle:Liga`,
   },
   {
+    path: 'rules',
+    loadComponent: () => import('./rules-page').then((m) => m.RulesPage),
+    title: $localize`:@@league.rules.pageTitle:Reglas`,
+  },
+  {
     path: 'members',
     loadComponent: () => import('./members-page').then((m) => m.MembersPage),
     title: $localize`:@@league.members.pageTitle:Miembros`,

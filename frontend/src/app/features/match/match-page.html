@@ -1,0 +1,82 @@
+@if (match.error() || players.error()) {
+  <bf-load-error (retry)="match.reload(); players.reload()" />
+} @else if (match.value(); as match) {
+  <h1 i18n="@@match.match.title">Jornada {{ match.matchday }}</h1>
+  <p class="opponent" i18n="@@match.match.opponent">
+    Contra {{ match.opponent }}, {{ venueTexts[match.venue] }}
+  </p>
+  <p class="kickoff">{{ match.kickoffAt | bfDate: 'dateTime' }}</p>
+
+  @if (match.result; as result) {
+    <p class="score">{{ result.goalsFor }}–{{ result.goalsAgainst }}</p>
+  }
+
+  @if (match.status === 'CLOSED') {
+    <ul bfList bleed class="links">
+      <li>
+        <a
+          bfListItem
+          size="compact"
+          [routerLink]="['/leagues', leagueId(), 'ratings', match.id]"
+          i18n="@@match.match.rate"
+        >
+          Valorar
+        </a>
+      </li>
+      <li>
+        <a
+          bfListItem
+          size="compact"
+          [routerLink]="['/leagues', leagueId(), 'standings', match.id]"
+          i18n="@@match.match.points"
+        >
+          Puntos de la jornada
+        </a>
+      </li>
+      <li>
+        <a
+          bfListItem
+          size="compact"
+          [routerLink]="['/leagues', leagueId(), 'lineups', match.id]"
+          i18n="@@match.match.lineups"
+        >
+          Alineaciones
+        </a>
+      </li>
+    </ul>
+
+    <section aria-labelledby="sheet-title">
+      <h2 id="sheet-title" i18n="@@match.match.sheet">Acta</h2>
+      @if (players.value()) {
+        <ul bfList bleed>
+          @for (entry of sheet(); track entry.performance.playerId) {
+            <li bfListItem size="compact">
+              <bf-player-row [player]="entry.player">
+                <span bfPlayerRowMeta>{{ entry.summary }}</span>
+              </bf-player-row>
+            </li>
+          } @empty {
+            <li>
+              <bf-empty-state i18n="@@match.match.sheetEmpty"
+                >El acta no tiene jugadores.</bf-empty-state
+              >
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="loading" aria-busy="true">
+          <bf-skeleton shape="block" />
+        </div>
+      }
+    </section>
+  } @else {
+    <bf-empty-state i18n="@@match.match.sheetPending">
+      El acta se publica al cerrar el partido.
+    </bf-empty-state>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+  </div>
+}

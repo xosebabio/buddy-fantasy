@@ -1,0 +1,36 @@
+<h1 i18n="@@match.matches.title">Calendario</h1>
+
+@if (matches.error()) {
+  <bf-load-error (retry)="matches.reload()" />
+} @else if (matches.value()) {
+  <ul bfList bleed>
+    @for (match of byMatchday(); track match.id) {
+      <li>
+        <a bfListItem [routerLink]="['/leagues', leagueId(), 'matches', match.id]">
+          <ng-container i18n="@@match.matches.row">
+            Jornada {{ match.matchday }}, contra {{ match.opponent }}
+          </ng-container>
+          <span bfListItemMeta>
+            {{ venueTexts[match.venue] }}, {{ match.kickoffAt | bfDate: 'dateTime' }}
+          </span>
+          @if (match.result; as result) {
+            <span bfListItemTrailing class="result">
+              {{ result.goalsFor }}–{{ result.goalsAgainst }}
+            </span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+  @if (byMatchday().length === 0) {
+    <bf-empty-state i18n="@@match.matches.empty">
+      Aún no hay partidos. Cuando se programe el siguiente, lo verás aquí.
+    </bf-empty-state>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

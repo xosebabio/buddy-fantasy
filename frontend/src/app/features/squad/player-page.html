@@ -1,0 +1,62 @@
+@if (player.error()) {
+  <bf-load-error (retry)="player.reload()" />
+} @else if (player.value(); as player) {
+  <header>
+    <bf-bib size="large" [position]="player.position" [number]="player.shirtNumber" />
+    <div class="who">
+      <h1>{{ player.name }}</h1>
+      <p class="tags">
+        <bf-position-chip [position]="player.position" />
+        @if (player.retiredAt !== null) {
+          <bf-badge i18n="@@squad.player.retired">Dado de baja</bf-badge>
+        }
+      </p>
+    </div>
+  </header>
+
+  <div class="figures">
+    <bf-figure label="Valor actual" i18n-label="@@squad.player.currentValue">
+      {{ player.currentValue | bfMoney: 'number' }}
+      <span bfFigureUnit i18n="@@squad.player.millions">M</span>
+    </bf-figure>
+    <bf-figure label="Valor inicial" i18n-label="@@squad.player.initialValue">
+      {{ player.initialValue | bfMoney: 'number' }}
+      <span bfFigureUnit i18n="@@squad.player.millions">M</span>
+    </bf-figure>
+  </div>
+
+  <h2 i18n="@@squad.player.matchdays">Jornadas</h2>
+  @if (points.error()) {
+    <bf-load-error (retry)="points.reload()" />
+  } @else if (points.value()) {
+    <ul bfList bleed>
+      @for (matchday of matchdays(); track matchday.matchId) {
+        <li bfDisclosure size="compact">
+          <ng-container i18n="@@squad.player.matchday"
+            >Jornada {{ matchday.matchday }}</ng-container
+          >
+          <span bfListItemMeta>{{ matchday.kickoffAt | bfDate: 'date' }}</span>
+          <bf-points bfListItemTrailing [value]="matchday.points" />
+          <div bfDisclosurePanel>
+            <bf-points-breakdown [breakdown]="matchday" />
+          </div>
+        </li>
+      } @empty {
+        <li>
+          <bf-empty-state i18n="@@squad.player.noPoints">Aún no ha puntuado.</bf-empty-state>
+        </li>
+      }
+    </ul>
+  } @else {
+    <div class="loading" aria-busy="true">
+      @for (row of [1, 2, 3]; track row) {
+        <bf-skeleton shape="block" />
+      }
+    </div>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+  </div>
+}

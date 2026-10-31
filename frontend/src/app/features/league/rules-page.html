@@ -1,0 +1,44 @@
+<h1 i18n="@@league.rules.title">Reglas</h1>
+
+@if (settings.error()) {
+  <bf-load-error (retry)="settings.reload()" />
+} @else if (settings.value()) {
+  <dl class="rules">
+    @for (rule of rules(); track rule.label) {
+      <div class="rule">
+        <dt>{{ rule.label }}</dt>
+        <dd>{{ rule.value }}</dd>
+      </div>
+    }
+  </dl>
+
+  <h2 id="scoring-title" i18n="@@league.rules.scoring">Puntos por acción</h2>
+  <div class="scroll" tabindex="0" role="region" aria-labelledby="scoring-title">
+    <table>
+      <thead>
+        <tr>
+          <th [attr.scope]="'col'" i18n="@@league.rules.action">Acción</th>
+          @for (position of positions; track position) {
+            <th [attr.scope]="'col'">{{ positionTexts[position] }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of scoring(); track row.action) {
+          <tr>
+            <th [attr.scope]="'row'">{{ row.text }}</th>
+            @for (points of row.points; track $index) {
+              <td><bf-points [value]="points" /></td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3, 4]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

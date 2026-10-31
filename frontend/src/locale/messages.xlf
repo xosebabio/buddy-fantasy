@@ -1035,18 +1035,25 @@
           <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="league.rules.pageTitle" datatype="html">
+        <source>Reglas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="league.members.pageTitle" datatype="html">
         <source>Miembros</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
-          <context context-type="linenumber">43</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="league.admin.members.pageTitle" datatype="html">
         <source>Miembros e invitación</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="league.leagues.title" datatype="html">
@@ -1161,6 +1168,423 @@
           <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="league.rules.title" datatype="html">
+        <source>Reglas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules-page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.scoring" datatype="html">
+        <source>Puntos por acción</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules-page.html</context>
+          <context context-type="linenumber">15,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.action" datatype="html">
+        <source>Acción</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules-page.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.size" datatype="html">
+        <source>Jugadores por alineación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.lock" datatype="html">
+        <source>Bloqueo de la alineación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.lockValue" datatype="html">
+        <source><x id="hours" equiv-text="settings.lineupLockHours"/> h antes del partido</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.changes" datatype="html">
+        <source>Cambios por jornada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.budget" datatype="html">
+        <source>Presupuesto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.budgetOff" datatype="html">
+        <source>Sin límite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.formation" datatype="html">
+        <source>Mínimos por posición</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.formationOn" datatype="html">
+        <source><x id="formation" equiv-text="formation"/> (porteros, defensas, medios y delanteros)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.formationOff" datatype="html">
+        <source>Libre</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.format" datatype="html">
+        <source>Valoraciones</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.formatSpades" datatype="html">
+        <source>Picas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.formatDecimal" datatype="html">
+        <source>Nota decimal</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.window" datatype="html">
+        <source>Ventana de valoración</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.rules.windowValue" datatype="html">
+        <source><x id="hours" equiv-text="settings.ratingWindowHours"/> h</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/rules.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.title" datatype="html">
+        <source>Jornada <x id="INTERPOLATION" equiv-text="{{ match.matchday }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.opponent" datatype="html">
+        <source> Contra <x id="INTERPOLATION" equiv-text="{{ match.opponent }}"/>, <x id="INTERPOLATION_1" equiv-text="{{ venueTexts[match.venue] }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.rate" datatype="html">
+        <source> Valorar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">23,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.points" datatype="html">
+        <source> Puntos de la jornada </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">33,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.lineups" datatype="html">
+        <source> Alineaciones </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">43,45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.sheet" datatype="html">
+        <source>Acta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">49,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.sheetEmpty" datatype="html">
+        <source>El acta no tiene jugadores.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">61,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.sheetPending" datatype="html">
+        <source> El acta se publica al cerrar el partido. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match-page.html</context>
+          <context context-type="linenumber">74,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.matches.pageTitle" datatype="html">
+        <source>Calendario</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match.routes.ts</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.match.pageTitle" datatype="html">
+        <source>Partido</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/match.routes.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.matches.title" datatype="html">
+        <source>Calendario</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/matches-page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.matches.row" datatype="html">
+        <source> Jornada <x id="INTERPOLATION" equiv-text="{{ match.matchday }}"/>, contra <x id="INTERPOLATION_1" equiv-text="{{ match.opponent }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/matches-page.html</context>
+          <context context-type="linenumber">11,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.matches.empty" datatype="html">
+        <source> Aún no hay partidos. Cuando se programe el siguiente, lo verás aquí. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/matches-page.html</context>
+          <context context-type="linenumber">27,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.goal" datatype="html">
+        <source>gol</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.goals" datatype="html">
+        <source>goles</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltyGoal" datatype="html">
+        <source>gol de penalti</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltyGoals" datatype="html">
+        <source>goles de penalti</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.assist" datatype="html">
+        <source>asistencia</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.assists" datatype="html">
+        <source>asistencias</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.ownGoal" datatype="html">
+        <source>gol en propia puerta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.ownGoals" datatype="html">
+        <source>goles en propia puerta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltySaved" datatype="html">
+        <source>penalti parado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltiesSaved" datatype="html">
+        <source>penaltis parados</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltyMissed" datatype="html">
+        <source>penalti fallado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.penaltiesMissed" datatype="html">
+        <source>penaltis fallados</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.yellow" datatype="html">
+        <source>tarjeta amarilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.doubleYellow" datatype="html">
+        <source>doble amarilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.sheet.red" datatype="html">
+        <source>roja directa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/performance.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.venue.home" datatype="html">
+        <source>En casa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/venue.ts</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="match.venue.away" datatype="html">
+        <source>Fuera</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/match/venue.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.retired" datatype="html">
+        <source>Dado de baja</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">11,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.currentValue" datatype="html">
+        <source>Valor actual</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.millions" datatype="html">
+        <source>M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">21,22</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">25,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.initialValue" datatype="html">
+        <source>Valor inicial</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.matchdays" datatype="html">
+        <source>Jornadas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">28,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.matchday" datatype="html">
+        <source>Jornada <x id="INTERPOLATION" equiv-text="{{ matchday.matchday }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">36,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.noPoints" datatype="html">
+        <source>Aún no ha puntuado.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/player-page.html</context>
+          <context context-type="linenumber">46,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.squad.title" datatype="html">
+        <source>Plantilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/squad-page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.squad.empty" datatype="html">
+        <source> Aún no hay jugadores. Cuando el administrador los dé de alta, los verás aquí. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/squad-page.html</context>
+          <context context-type="linenumber">29,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.squad.pageTitle" datatype="html">
+        <source>Plantilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/squad.routes.ts</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="squad.player.pageTitle" datatype="html">
+        <source>Jugador</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/squad/squad.routes.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.money.millions" datatype="html">
+        <source><x id="amount" equiv-text="amount"/> M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/format/money.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="shared.position.goalkeeper" datatype="html">
         <source>Portero</source>
         <context-group purpose="location">
@@ -1229,6 +1653,83 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/roster/roster.ts</context>
           <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.pointsBreakdown.rating" datatype="html">
+        <source>Valoración</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/points-breakdown.ts</context>
+          <context context-type="linenumber">27,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.pointsBreakdown.total" datatype="html">
+        <source>Total</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/points-breakdown.ts</context>
+          <context context-type="linenumber">29,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.goal" datatype="html">
+        <source>Gol</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.penaltyGoal" datatype="html">
+        <source>Gol de penalti</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.penaltySaved" datatype="html">
+        <source>Penalti parado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.penaltyMissed" datatype="html">
+        <source>Penalti fallado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.assist" datatype="html">
+        <source>Asistencia</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.ownGoal" datatype="html">
+        <source>Gol en propia puerta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.yellowCard" datatype="html">
+        <source>Tarjeta amarilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.doubleYellow" datatype="html">
+        <source>Doble amarilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.scoringAction.redCard" datatype="html">
+        <source>Roja directa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/scoring/scoring-action.ts</context>
+          <context context-type="linenumber">15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ui.confirm.cancel" datatype="html">

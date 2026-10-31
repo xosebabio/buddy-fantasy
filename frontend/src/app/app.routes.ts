@@ -6,6 +6,8 @@ import { ERROR_PAGES } from './core/pages/error-page-texts';
 import { devRoutes } from './dev.routes';
 import { identityRoutes, loginRoutes } from './features/identity/identity.routes';
 import { leagueAdminRoutes, leagueRoutes, leaguesRoutes } from './features/league/league.routes';
+import { matchRoutes } from './features/match/match.routes';
+import { squadRoutes } from './features/squad/squad.routes';
 
 // Lazy as well, to keep the initial bundle under its budget (RNF-13).
 const shell = () => import('./core/layout/shell').then((m) => m.Shell);
@@ -32,6 +34,8 @@ export const routes: Routes = [
     canActivate: [authGuard, memberGuard],
     children: [
       ...leagueRoutes,
+      ...squadRoutes,
+      ...matchRoutes,
       { path: 'admin', canActivate: [adminGuard], children: leagueAdminRoutes },
     ],
   },

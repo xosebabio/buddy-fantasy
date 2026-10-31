@@ -1,0 +1,41 @@
+@use 'ui/styles/page';
+@use 'ui/styles/typography' as type;
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+.opponent {
+  margin-top: var(--bf-space-1);
+}
+
+.kickoff {
+  color: var(--bf-color-text-muted);
+}
+
+.score {
+  @include type.display(7);
+
+  margin-top: var(--bf-space-4);
+}
+
+.links,
+bf-empty-state {
+  margin-top: var(--bf-space-5);
+}
+
+h2 {
+  @include type.display(4);
+
+  margin-top: var(--bf-space-6);
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}
