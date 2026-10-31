@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.list {
+  display: flex;
+  gap: var(--bf-space-2);
+  border-bottom: 1px solid var(--bf-color-border);
+}
+
+// Route tabs share the width, so there is nothing between them.
+nav.list {
+  gap: 0;
+}
+
+:host(.bleed) .list {
+  margin-inline: calc(var(--bf-space-4) * -1);
+  padding-inline: var(--bf-space-4);
+}

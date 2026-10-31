@@ -1,0 +1,51 @@
+:host {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-3);
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-color-border);
+  border-inline-start-width: 3px;
+  border-radius: var(--bf-radius-tag);
+  background-color: var(--bf-color-surface);
+  line-height: 1.4;
+}
+
+// The bar and the icon only repeat what the text says: they are not the only clue.
+:host(.info) {
+  border-inline-start-color: var(--bf-color-accent);
+
+  .icon {
+    color: var(--bf-color-accent-text);
+  }
+}
+
+:host(.warning) {
+  border-inline-start-color: var(--bf-color-warning);
+
+  .icon {
+    color: var(--bf-color-warning-text);
+  }
+}
+
+// No text on the base red (ui/README.md): the text goes in danger-text.
+:host(.danger) {
+  border-inline-start-color: var(--bf-color-danger);
+
+  .icon,
+  .message {
+    color: var(--bf-color-danger-text);
+  }
+}
+
+// As tall as a line of text, so that the icon sits centred on the first one.
+.icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: 1lh;
+}
+
+.message {
+  flex: 1;
+  min-width: 0;
+}

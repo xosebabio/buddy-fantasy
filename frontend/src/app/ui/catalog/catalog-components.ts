@@ -1,11 +1,14 @@
+import { CdkAccordion } from '@angular/cdk/accordion';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IsActiveMatchOptions, RouterLink } from '@angular/router';
 import {
+  LucideBan,
   LucideCheck,
   LucideClock,
   LucideDynamicIcon,
   LucideHouse,
   LucideIcon,
+  LucideLoaderCircle,
   LucidePlus,
   LucideShare2,
   LucideShirt,
@@ -22,13 +25,19 @@ import { Badge } from '../badge/badge';
 import { Button } from '../button/button';
 import { IconButton } from '../button/icon-button';
 import { Card } from '../card/card';
+import { Countdown } from '../countdown/countdown';
+import { Disclosure } from '../disclosure/disclosure';
 import { EmptyState } from '../empty-state/empty-state';
-import { Field, FieldInput } from '../field/field';
+import { Field, FieldInput, FieldSelect } from '../field/field';
+import { Figure } from '../figure/figure';
 import { List, ListItem } from '../list/list';
 import { LoadError } from '../load-error/load-error';
 import { NavBar, NavItem, SideNav } from '../nav/nav';
+import { Notice } from '../notice/notice';
 import { Segmented, type SegmentedOption } from '../segmented/segmented';
 import { Skeleton } from '../skeleton/skeleton';
+import { Stepper } from '../stepper/stepper';
+import { Tab, TabLink, TabNav, TabPanel, Tabs } from '../tabs/tabs';
 import { TopBar } from '../top-bar/top-bar';
 import { Wordmark } from '../top-bar/wordmark';
 
@@ -46,16 +55,23 @@ interface NavDemo {
     Badge,
     Button,
     Card,
+    CdkAccordion,
+    Countdown,
+    Disclosure,
     EmptyState,
     Field,
     FieldInput,
+    FieldSelect,
+    Figure,
     IconButton,
     List,
     ListItem,
     LoadError,
+    LucideBan,
     LucideCheck,
     LucideClock,
     LucideDynamicIcon,
+    LucideLoaderCircle,
     LucidePlus,
     LucideShare2,
     LucideTrash,
@@ -63,10 +79,17 @@ interface NavDemo {
     LucideX,
     NavBar,
     NavItem,
+    Notice,
     RouterLink,
     Segmented,
     SideNav,
     Skeleton,
+    Stepper,
+    Tab,
+    TabLink,
+    TabNav,
+    TabPanel,
+    Tabs,
     TopBar,
     Wordmark,
   ],
@@ -87,6 +110,25 @@ export class CatalogComponents {
     { value: 'dark', label: 'Oscuro' },
   ];
   protected readonly theme = signal('system');
+
+  protected readonly tab = signal('managers');
+
+  /** The tabs of a route, linked to /_ui with a query parameter each, like the navigation. */
+  protected readonly tabLinks = [
+    { id: 'general', label: 'General' },
+    { id: 'matchday', label: 'Por jornada' },
+  ];
+
+  protected readonly mark = signal<number | null>(7);
+  protected readonly blankMark = signal<number | null>(null);
+
+  /** Deadlines from when the catalog opens: far, under 3 h (amber) and in the last minute. */
+  private readonly opened = Date.now();
+  protected readonly deadlines = {
+    far: this.at(28 * 60 + 5),
+    near: this.at(2 * 60 + 40),
+    last: this.at(0.5),
+  };
 
   /** A green pixel, for an avatar with a picture without going to the network. */
   protected readonly picture =
@@ -111,5 +153,13 @@ export class CatalogComponents {
   /** The first destination is the page without parameters, so that one is active on arrival. */
   protected navParams(item: NavDemo): Record<string, string> {
     return item === this.navItems[0] ? {} : { nav: item.id };
+  }
+
+  protected tabParams(id: string): Record<string, string> {
+    return id === this.tabLinks[0]?.id ? {} : { tab: id };
+  }
+
+  private at(minutes: number): string {
+    return new Date(this.opened + minutes * 60_000).toISOString();
   }
 }

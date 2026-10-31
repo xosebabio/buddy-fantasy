@@ -159,6 +159,8 @@ module.exports = defineConfig([
             'referrerpolicy',
             'aria-haspopup',
             'aria-labelledby',
+            'bfTab',
+            'bfTabPanel',
           ],
         },
       ],

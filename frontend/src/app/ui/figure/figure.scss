@@ -1,0 +1,45 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: inline-grid;
+  gap: var(--bf-space-1);
+}
+
+.value {
+  @include type.figures;
+
+  display: flex;
+  align-items: baseline;
+  gap: var(--bf-space-1);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+:host(.medium) .value {
+  font-size: var(--bf-font-size-4);
+  font-weight: 600;
+}
+
+:host(.large) .value {
+  font-size: var(--bf-font-size-5);
+  font-weight: 700;
+}
+
+:host(.danger) .value {
+  color: var(--bf-color-danger-text);
+}
+
+.unit {
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-3);
+  font-weight: 500;
+}
+
+.unit:empty {
+  display: none;
+}
+
+.label {
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}

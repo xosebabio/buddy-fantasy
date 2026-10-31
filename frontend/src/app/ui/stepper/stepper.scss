@@ -1,0 +1,63 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-control);
+  background-color: var(--bf-color-surface);
+}
+
+.step {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bf-radius-control);
+  background-color: transparent;
+  color: var(--bf-color-text);
+  cursor: pointer;
+  transition: background-color var(--bf-motion-fast) var(--bf-ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .step:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--bf-color-text) 6%, transparent);
+  }
+}
+
+.step:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--bf-color-text) 10%, transparent);
+}
+
+.step:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.value {
+  @include type.figures;
+
+  display: grid;
+  place-items: center;
+  min-width: 72px;
+  height: 44px;
+  border-inline: 1px solid var(--bf-color-border);
+  font-size: var(--bf-font-size-4);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.value.blank {
+  color: var(--bf-color-text-muted);
+  font-family: var(--bf-font-text);
+  font-size: var(--bf-font-size-1);
+  font-weight: 500;
+}
+
+:host(.disabled) .value {
+  opacity: 0.45;
+}

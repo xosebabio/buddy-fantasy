@@ -30,6 +30,20 @@ bf-field {
   }
 }
 
+// The chevron of a select sits on the control, at the right.
+.bf-field-control {
+  position: relative;
+}
+
+.bf-field-chevron {
+  position: absolute;
+  top: 50%;
+  right: var(--bf-space-3);
+  color: var(--bf-color-text-muted);
+  pointer-events: none;
+  translate: 0 -50%;
+}
+
 // At least 16 px, from the reset (FE-27), and 48 px high like the buttons.
 .bf-input {
   width: 100%;
@@ -54,4 +68,10 @@ bf-field {
 textarea.bf-input {
   min-height: 96px;
   resize: vertical;
+}
+
+select.bf-input {
+  padding-right: var(--bf-space-7);
+  appearance: none;
+  cursor: pointer;
 }

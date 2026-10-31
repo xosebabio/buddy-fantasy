@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/angular';
 
-import { Field, FieldInput } from './field';
+import { Field, FieldInput, FieldSelect } from './field';
 
 describe('Field', () => {
   it('labels its control', async () => {
@@ -67,5 +67,31 @@ describe('Field', () => {
     expect(screen.getByRole('textbox', { name: 'Uno' }).id).not.toBe(
       screen.getByRole('textbox', { name: 'Dos' }).id,
     );
+  });
+
+  it('labels and describes a select, and draws its chevron', async () => {
+    await render(
+      `<bf-field label="Jornada" hint="Solo las cerradas.">
+        <select bfSelect>
+          <option value="11">Jornada 11</option>
+          <option value="10">Jornada 10</option>
+        </select>
+      </bf-field>`,
+      { imports: [Field, FieldSelect] },
+    );
+
+    const select = screen.getByRole('combobox', { name: 'Jornada' });
+    expect(select).toHaveClass('bf-input', 'bf-select');
+    expect(select).toHaveAccessibleDescription('Solo las cerradas.');
+    expect(select).toHaveValue('11');
+    expect(document.querySelector('.bf-field-chevron')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('draws no chevron next to an input', async () => {
+    await render('<bf-field label="Nombre"><input bfInput /></bf-field>', {
+      imports: [Field, FieldInput],
+    });
+
+    expect(document.querySelector('.bf-field-chevron')).toBeNull();
   });
 });

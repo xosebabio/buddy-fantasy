@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+// Open, the row and its detail are one block: the divider goes under the detail.
+.row[aria-expanded='true'] {
+  border-bottom-color: transparent;
+}
+
+.chevron {
+  flex: none;
+  color: var(--bf-color-text-muted);
+  transition: rotate var(--bf-motion-fast) var(--bf-ease-out);
+}
+
+.row[aria-expanded='true'] .chevron {
+  rotate: 180deg;
+}
+
+.panel {
+  padding: 0 var(--bf-space-2) var(--bf-space-3) var(--bf-space-4);
+  border-bottom: 1px solid var(--bf-color-border);
+}

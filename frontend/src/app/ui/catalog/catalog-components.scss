@@ -71,3 +71,42 @@ h3 {
   gap: var(--bf-space-3);
   padding: var(--bf-space-2);
 }
+
+.panel {
+  padding-top: var(--bf-space-3);
+  color: var(--bf-color-text-muted);
+}
+
+.figures {
+  gap: var(--bf-space-5);
+}
+
+.rank,
+.points {
+  @include type.figures;
+
+  font-size: var(--bf-font-size-3);
+  font-weight: 600;
+}
+
+.rank {
+  width: 24px;
+  text-align: center;
+}
+
+.points {
+  color: var(--bf-color-brand-text);
+}
+
+.detail {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+  }
+}

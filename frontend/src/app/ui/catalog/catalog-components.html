@@ -38,13 +38,66 @@
   <bf-field label="Notas" hint="Varias líneas.">
     <textarea bfInput></textarea>
   </bf-field>
+  <bf-field label="Jornada" hint="Solo las cerradas.">
+    <select bfSelect>
+      <option value="11">Jornada 11, contra Racing Vilariño</option>
+      <option value="10">Jornada 10, contra CD Arrabal</option>
+    </select>
+  </bf-field>
+  <bf-field label="Jornada" error="Elige una jornada.">
+    <select bfSelect>
+      <option value="">Sin elegir</option>
+    </select>
+  </bf-field>
+  <bf-field label="Jornada">
+    <select bfSelect disabled>
+      <option value="11">Jornada 11, contra Racing Vilariño</option>
+    </select>
+  </bf-field>
 </div>
+
+<h3>Stepper</h3>
+<div class="row">
+  <bf-stepper label="Nota" [min]="0" [max]="10" [(value)]="mark" />
+  <bf-stepper
+    label="Nota sin voto"
+    [min]="0"
+    [max]="10"
+    [start]="5"
+    empty="Sin voto"
+    [(value)]="blankMark"
+  />
+  <bf-stepper label="Nota máxima" [min]="0" [max]="10" [value]="10" />
+  <bf-stepper label="Nota desactivada" [min]="0" [max]="10" [value]="6" disabled />
+</div>
+<p class="muted">Con valor, vacío (el primer toque pone 5), en el máximo y desactivado.</p>
 
 <h3>Control segmentado</h3>
 <div class="stack">
   <bf-segmented label="Tema" [options]="themes" [(value)]="theme" />
   <bf-segmented label="Tema" [options]="themes" value="light" disabled />
 </div>
+
+<h3>Pestañas</h3>
+<bf-tab-nav label="Clasificación">
+  @for (link of tabLinks; track link.id) {
+    <a
+      bfTabLink
+      routerLink="/_ui"
+      [queryParams]="tabParams(link.id)"
+      [routerLinkActiveOptions]="navActive"
+    >
+      {{ link.label }}
+    </a>
+  }
+</bf-tab-nav>
+<bf-tabs label="Puntos de la jornada" [(selected)]="tab">
+  <button bfTab="managers">Managers</button>
+  <button bfTab="players">Jugadores</button>
+  <p bfTabPanel="managers" class="panel">La alineación bloqueada de cada manager.</p>
+  <p bfTabPanel="players" class="panel">Los jugadores del acta con sus puntos.</p>
+</bf-tabs>
+<p class="muted">De ruta, que reparten el ancho, y de la página, a la izquierda.</p>
 
 <h3>Tarjeta</h3>
 <bf-card>
@@ -87,6 +140,30 @@
   }
 </ul>
 
+<h3>Fila desplegable</h3>
+<ul bfList cdkAccordion>
+  <li bfDisclosure expanded>
+    <span bfListItemLeading class="rank">2</span>
+    Xosé Babío
+    <span bfListItemTrailing class="points">+38</span>
+    <ul bfDisclosurePanel class="detail">
+      <li>Pablo <span class="points">+14</span></li>
+      <li>Óscar <span class="points">+10</span></li>
+    </ul>
+  </li>
+  <li bfDisclosure>
+    <span bfListItemLeading class="rank">6</span>
+    Manu Vidal
+    <span bfListItemMeta><bf-badge tone="warning">Fuera de presupuesto</bf-badge></span>
+    <span bfListItemTrailing class="points">0</span>
+    <p bfDisclosurePanel class="muted">Su alineación no puntúa esta jornada.</p>
+  </li>
+  <li bfDisclosure size="compact" disabled>
+    Sin detalle
+    <p bfDisclosurePanel>Nada.</p>
+  </li>
+</ul>
+
 <h3>Etiquetas</h3>
 <div class="row">
   <bf-badge>Manager</bf-badge>
@@ -96,6 +173,39 @@
     <svg lucideClock [size]="16"></svg>
     Se bloquea en 1 d 4 h
   </bf-badge>
+</div>
+
+<h3>Cuenta atrás</h3>
+<div class="row">
+  <bf-countdown [until]="deadlines.far">Se bloquea en</bf-countdown>
+  <bf-countdown [until]="deadlines.near">Se bloquea en</bf-countdown>
+  <bf-countdown [until]="deadlines.last">Cierra en</bf-countdown>
+</div>
+<p class="muted">Lejos, en las 3 últimas horas (ámbar) y en el último minuto.</p>
+
+<h3>Avisos</h3>
+<div class="stack">
+  <bf-notice>Valorar es opcional: deja sin voto a quien no viste.</bf-notice>
+  <bf-notice tone="warning">
+    Te pasas 1,5 M del presupuesto. Puedes guardarla, pero si se bloquea así no puntúa esta jornada.
+  </bf-notice>
+  <bf-notice tone="danger">No se pudo guardar la alineación.</bf-notice>
+  <bf-notice>
+    <svg lucideBan [size]="20"></svg>
+    El administrador ha cancelado tus valoraciones de este partido.
+  </bf-notice>
+  <bf-notice>
+    <svg lucideLoaderCircle [size]="20"></svg>
+    Calculando los resultados. Esta página se actualiza sola.
+  </bf-notice>
+</div>
+
+<h3>Cifras</h3>
+<div class="row figures">
+  <bf-figure label="Presupuesto">96,2 <span bfFigureUnit>/ 100 M</span></bf-figure>
+  <bf-figure label="Cambios">1 <span bfFigureUnit>de 2</span></bf-figure>
+  <bf-figure label="Presupuesto" tone="danger">101,5 <span bfFigureUnit>/ 100 M</span></bf-figure>
+  <bf-figure label="En la general" size="large">2.º <span bfFigureUnit>de 6</span></bf-figure>
 </div>
 
 <h3>Avatares</h3>

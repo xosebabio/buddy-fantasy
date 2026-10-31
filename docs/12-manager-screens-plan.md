@@ -183,13 +183,13 @@ Los que faltan de FE-18, más los que piden estas pantallas. Cada uno con su tes
 
 | Componente | Uso |
 | --- | --- |
-| `bf-tabs` + `bfTab` | Pestañas dentro de una página (*Managers* / *Jugadores*) con `role="tablist"` y teclado del CDK (`ListKeyManager`); también como enlaces de ruta (`bfTabLink`) para *General* / *Por jornada*. |
-| `bf-select` (`select[bfSelect]`) | Select nativo con el estilo de `bfInput`, dentro de `bf-field`. |
+| `bf-tabs` + `bfTab` + `bfTabPanel` | Pestañas dentro de una página (*Managers* / *Jugadores*) con `role="tablist"` y teclado del CDK (`FocusKeyManager`); las de ruta (*General* / *Por jornada*) son `bf-tab-nav` + `bfTabLink`, una navegación con enlaces, no un `tablist`. |
+| `select[bfSelect]` | Select nativo con el estilo de `bfInput`, dentro de `bf-field`, que le pinta el chevron. |
 | `bf-stepper` | Número con − y +, `min`, `max` y `step` como `input()` (los da la página según el formato) y estado vacío opcional; `role="spinbutton"`. |
 | `bf-countdown` | Tiempo hasta un `Instant` (*1 d 4 h*, *3 h 20 min*, *12 min*, *menos de 1 min*) con su `<time datetime>`; en ámbar bajo el umbral (decisión 11); emite `elapsed` al llegar a cero. Se actualiza cada minuto, y cada segundo en el último. No sabe de zonas horarias: la fecha absoluta la pone la página con `bfDate`. |
 | `bf-notice` | Aviso en línea (`info`, `warning` y `danger`, con icono y texto, sin texto sobre el rojo base): avisos de la alineación, excluido, *Calculando los resultados*. |
 | `bf-figure` | Cifra condensed con su unidad o contexto más pequeño y la etiqueta debajo (`87,4` `/ 100 M` *Presupuesto*). |
-| `bf-disclosure` | Fila que se abre para enseñar un detalle (`CdkAccordionItem`, `aria-expanded`), sobre `bfListItem`. |
+| `bfDisclosure` | Fila (`<li bfDisclosure>`, porque va dentro de un `bfList`) que se abre para enseñar un detalle (`CdkAccordionItem`, `aria-expanded`), sobre `bfListItem`. |
 
 ### 6.4 Componentes de `shared/` (FE-19)
 
@@ -279,7 +279,7 @@ En el cambio de la tarea que los provoca:
 | 2 | `includeRetired` para miembros, `ScoringAction` en el spec, reloj de pruebas con el perfil `e2e` y sus tests; spec y tipos regenerados (§3) | Backend listo (FE-05, FE-34) | ✅ |
 | 3 | Boceto de las pantallas nuevas con la skill, revisado con el usuario; *Composición* en `ui/README.md` (§6.1, §6.2) | Composición cerrada (FE-28) | ✅ |
 | 4 | `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi` y `ScoringApi`, y los cruces de `shared/roster` (§5) | Contrato de las pantallas (FE-05 a FE-09) | ✅ |
-| 5 | Componentes de `ui/` de §6.3 y `/_ui` | Catálogo de FE-18 completo (FE-17, FE-18, FE-20) | |
+| 5 | Componentes de `ui/` de §6.3 y `/_ui` | Catálogo de FE-18 completo (FE-17, FE-18, FE-20) | ✅ |
 | 6 | Componentes y pipes de `shared/` de §6.4 | Catálogo de FE-19 (FE-19, FE-23) | |
 | 7 | Navegación de cinco destinos con prefijos, índice *Liga*, `onVisible` y `canDeactivate` (§4.2, §8) | Shell completo (FE-30) | |
 | 8 | Plantilla, ficha, calendario, partido y reglas | RF-07, RF-11 a RF-15 vistos por el manager | |
