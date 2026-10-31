@@ -1,27 +1,151 @@
-@if (league.error()) {
-  <bf-load-error (retry)="league.reload()" />
-} @else if (league.value(); as league) {
-  <h1>{{ league.name }}</h1>
-  <p class="since" i18n="@@league.home.since">Creada el {{ league.createdAt | bfDate: 'day' }}</p>
-  <bf-empty-state>
-    <p i18n="@@league.home.empty">
-      Aquí verás la jornada: el próximo partido, tu alineación y los plazos para valorar.
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (loaded()) {
+  @if (target(); as match) {
+    <header>
+      <h1 i18n="@@league.home.title">Jornada {{ match.matchday }}</h1>
+      <bf-countdown [until]="match.lockAt" (elapsed)="reload()" i18n="@@league.home.lockIn">
+        Se bloquea en
+      </bf-countdown>
+    </header>
+    <p class="kickoff">
+      @if (targetSummary(); as summary) {
+        <ng-container i18n="@@league.home.opponent">Contra {{ summary.opponent }}, </ng-container>
+      }
+      {{ match.kickoffAt | bfDate: 'dateTime' }}
     </p>
-    @if (league.role === 'ADMIN') {
-      <a
-        bfButton
-        bfEmptyStateAction
-        variant="primary"
-        [routerLink]="['/leagues', league.id, 'admin', 'members']"
-      >
-        <svg lucideUserPlus [size]="20"></svg>
-        <span i18n="@@league.home.invite">Invitar a tu equipo</span>
+  } @else {
+    <h1 i18n="@@league.home.titleNone">Jornada</h1>
+  }
+
+  @if (empty()) {
+    <bf-empty-state i18n="@@league.home.empty">
+      Aún no hay partidos. Cuando se programe el siguiente, lo verás aquí.
+    </bf-empty-state>
+  } @else {
+    <ul bfList bleed>
+      @if (lockedId(); as matchId) {
+        <li>
+          <a bfListItem [routerLink]="['/leagues', leagueId(), 'lineups', matchId]">
+            <ng-container i18n="@@league.home.locked">
+              Alineaciones de la jornada {{ lockedMatchday() }}
+            </ng-container>
+            @if (locking()) {
+              <span bfListItemMeta class="locking">
+                <svg lucideLoaderCircle [size]="16"></svg>
+                <ng-container i18n="@@league.home.locking">Bloqueándose…</ng-container>
+              </span>
+            }
+          </a>
+        </li>
+      }
+      @if (target() && lineup.value(); as saved) {
+        <li>
+          <a bfListItem [routerLink]="['/leagues', leagueId(), 'lineup']">
+            @if (saved.savedAt === null) {
+              <ng-container i18n="@@league.home.noLineup">Aún no tienes alineación</ng-container>
+            } @else {
+              <ng-container i18n="@@league.home.lineup">Tu alineación</ng-container>
+            }
+            <span bfListItemMeta>
+              @if (saved.savedAt !== null && saved.changesRemaining !== null) {
+                <ng-container i18n="@@league.home.changes"
+                  >{{ saved.changesUsed }} de {{ saved.maxChanges }} cambios</ng-container
+                >
+              }
+            </span>
+            @if (saved.savedAt !== null) {
+              <span bfListItemTrailing class="money">
+                {{ saved.totalValue | bfMoney: 'number' }}
+                @if (saved.budget !== null) {
+                  <small>/ {{ saved.budget | bfMoney }}</small>
+                }
+              </span>
+            }
+          </a>
+        </li>
+      }
+      @if (pending(); as window) {
+        <li>
+          <a bfListItem [routerLink]="['/leagues', leagueId(), 'ratings', window.matchId]">
+            <ng-container i18n="@@league.home.rate">
+              Valora la jornada {{ window.matchday }}
+            </ng-container>
+            <span bfListItemMeta>
+              <bf-countdown
+                [until]="window.closesAt"
+                (elapsed)="reload()"
+                i18n="@@league.home.closesIn"
+              >
+                Cierra en
+              </bf-countdown>
+            </span>
+            <span bfListItemTrailing class="money" i18n="@@league.home.rated">
+              {{ window.myRatings }} <small>de {{ window.players }}</small>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+
+    @if (target() && lineup.value(); as saved) {
+      @for (warning of saved.warnings; track warning) {
+        <bf-notice tone="warning" class="notice">{{ warningTexts[warning] }}</bf-notice>
+      }
+    }
+
+    @if (mine(); as me) {
+      <a class="hero" [routerLink]="['/leagues', leagueId(), 'standings']">
+        <span class="figure">
+          <bf-points size="hero" [value]="me.standing.lastMatchdayPoints" />
+          <span class="label">
+            @if (lastMatchday(); as matchday) {
+              <ng-container i18n="@@league.home.lastMatchday"
+                >En la jornada {{ matchday }}</ng-container
+              >
+            } @else {
+              <ng-container i18n="@@league.home.lastMatchdayUnknown"
+                >En tu última jornada</ng-container
+              >
+            }
+          </span>
+        </span>
+        <span class="figure">
+          <span class="rank" i18n="@@league.home.rank">
+            {{ me.standing.position }}.º <small>de {{ me.managers }}</small>
+          </span>
+          <span class="label" i18n="@@league.home.overall">En la general</span>
+        </span>
       </a>
     }
-  </bf-empty-state>
+
+    <div class="actions">
+      @if (pending(); as window) {
+        <a
+          bfButton
+          variant="primary"
+          block
+          [routerLink]="['/leagues', leagueId(), 'ratings', window.matchId]"
+          i18n="@@league.home.rateAction"
+        >
+          Valorar la jornada {{ window.matchday }}
+        </a>
+      } @else if (target()) {
+        <a bfButton variant="primary" block [routerLink]="['/leagues', leagueId(), 'lineup']">
+          @if (lineup.value()?.savedAt === null) {
+            <ng-container i18n="@@league.home.makeLineup">Hacer alineación</ng-container>
+          } @else {
+            <ng-container i18n="@@league.home.editLineup">Editar alineación</ng-container>
+          }
+        </a>
+      }
+    </div>
+  }
 } @else {
   <div class="loading" aria-busy="true">
     <bf-skeleton shape="title" />
-    <bf-skeleton width="40%" />
+    <bf-skeleton width="60%" />
+    <bf-skeleton shape="block" />
+    <bf-skeleton shape="block" />
   </div>
 }

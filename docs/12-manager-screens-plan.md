@@ -286,7 +286,7 @@ En el cambio de la tarea que los provoca:
 | 9 | Alineación y alineaciones bloqueadas | RF-24 a RF-29 | ✅ |
 | 10 | Valoraciones y valorar un partido | RF-17 a RF-23 | ✅ |
 | 11 | Clasificación general, puntos de una jornada e historial de un manager | RF-30 a RF-33 | ✅ |
-| 12 | Inicio de la jornada | RF-17, RF-25, RF-32 | |
+| 12 | Inicio de la jornada | RF-17, RF-25, RF-32 | ✅ |
 | 13 | E2E del manager con el reloj de pruebas y axe (§9) | Jornada del manager automatizada (FE-34) | |
 | 14 | Documentación de §10, `status.md`, *Estado* de `AGENTS.md` y marcar el ítem de la Fase 2 en `requirements.md` | Ítem de la Fase 2 cerrado | |
 

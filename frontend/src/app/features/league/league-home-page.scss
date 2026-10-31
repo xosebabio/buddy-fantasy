@@ -1,17 +1,92 @@
 @use 'ui/styles/page';
+@use 'ui/styles/typography' as type;
 
 :host {
-  display: block;
-  max-width: page.$max-width;
+  @include page.page;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-2) var(--bf-space-3);
 }
 
 h1 {
   @include page.title;
 }
 
-.since {
-  margin-top: var(--bf-space-1);
+.kickoff {
   color: var(--bf-color-text-muted);
+}
+
+ul,
+bf-empty-state {
+  margin-top: var(--bf-space-4);
+}
+
+.money {
+  @include type.figures;
+
+  font-size: var(--bf-font-size-3);
+  font-weight: 600;
+  white-space: nowrap;
+
+  small {
+    color: var(--bf-color-text-muted);
+    font-size: var(--bf-font-size-1);
+    font-weight: 500;
+  }
+}
+
+.locking {
+  display: inline-flex;
+  gap: var(--bf-space-1);
+  align-items: center;
+}
+
+.notice {
+  display: block;
+  margin-top: var(--bf-space-2);
+}
+
+.hero {
+  display: flex;
+  gap: var(--bf-space-6);
+  align-items: flex-end;
+  margin-top: var(--bf-space-5);
+  color: inherit;
+  text-decoration: none;
+}
+
+.figure {
+  display: grid;
+  gap: var(--bf-space-1);
+}
+
+.rank {
+  @include type.figures;
+
+  font-size: var(--bf-font-size-5);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
+  small {
+    color: var(--bf-color-text-muted);
+    font-size: var(--bf-font-size-3);
+    font-weight: 500;
+  }
+}
+
+.label {
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}
+
+.actions {
+  @include page.actions;
 }
 
 .loading {
