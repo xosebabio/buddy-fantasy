@@ -8,10 +8,16 @@ import com.buddyfantasy.shared.domain.NotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
@@ -31,6 +37,18 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                 .toList());
         return problem;
+    }
+
+    /** An invalid {@code @Valid} body: the same {@code violations} as above, one per field, for the form to show. */
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpHeaders headers,
+                                                                  HttpStatusCode status, WebRequest request) {
+        ProblemDetail problem = e.getBody();
+        problem.setProperty("violations", e.getBindingResult().getAllErrors().stream()
+                .map(error -> (error instanceof FieldError field ? field.getField() : error.getObjectName())
+                        + ": " + error.getDefaultMessage())
+                .toList());
+        return handleExceptionInternal(e, problem, headers, status, request);
     }
 
     @ExceptionHandler(DomainValidationException.class)

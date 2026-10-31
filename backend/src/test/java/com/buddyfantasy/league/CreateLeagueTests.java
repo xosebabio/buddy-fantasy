@@ -126,14 +126,16 @@ class CreateLeagueTests {
     }
 
     @Test
-    @DisplayName("A blank or too long name is answered with 400")
+    @DisplayName("A blank or too long name is answered with 400, naming the field or with its code")
     void blankOrTooLongNameIs400() throws Exception {
         UUID ana = fixtures.user("ana");
 
         for (String body : List.of("{\"name\":\"  \"}", "{}")) {
             mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
                             .contentType(APPLICATION_JSON).content(body))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.violations[0]").value("name: must not be blank"))
+                    .andExpect(jsonPath("$.code").doesNotExist());
         }
         mvc.perform(post("/api/leagues").with(as(ana)).with(csrf())
                         .contentType(APPLICATION_JSON).content("{\"name\":\"" + "x".repeat(101) + "\"}"))
