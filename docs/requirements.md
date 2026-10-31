@@ -259,11 +259,15 @@ Las rutas del API cuelgan de `/api/leagues/{id}` salvo que empiecen por `/api` o
 | Mis ligas, crear liga | Todos | RF-05, RF-08 | `GET /api/me/leagues`, `POST /api/leagues` |
 | Invitación | Todos | RF-06 | `GET /api/invitations/{token}`, `POST …/join` |
 | Inicio de la liga (próximo partido, plazos y avisos) | Miembro | RF-25, RF-17 | `matches`, `lineup`, `ratings` |
-| Alineación | Miembro | RF-24–29 | `GET/PUT /lineup`, `GET /lineups/{matchId}` |
+| Alineación | Miembro | RF-24–29 | `GET/PUT /lineup`, `GET /players?includeRetired=true`, `GET /settings` |
+| Alineaciones bloqueadas | Miembro | RF-27 | `GET /lineups/{matchId}` |
 | Valoraciones (listado y partido) | Miembro | RF-17–21 | `GET /ratings`, `GET/PUT /ratings/{matchId}` |
 | Clasificación (acumulada y por jornada) | Miembro | RF-32 | `GET /standings`, `GET /standings/{matchId}` |
 | Historial de un manager | Miembro | RF-33 | `GET /managers/{userId}/history` |
-| Plantilla y ficha del jugador | Miembro | RF-11 | `GET /players`, `GET /players/{id}`, `GET /players/{id}/points` |
+| Plantilla y ficha del jugador | Miembro | RF-11 | `GET /players?includeRetired=true`, `GET /players/{id}`, `GET /players/{id}/points` |
+| Calendario y partido (con el acta) | Miembro | RF-12–14 | `GET /matches`, `GET /matches/{matchId}` |
+| Reglas de la liga | Miembro | RF-07, RF-15 | `GET /settings` |
+| Liga (índice) | Miembro | RF-08 | `GET /api/leagues/{id}` |
 | Liga: miembros, salir | Miembro | RF-08 | `GET /members`, `DELETE /members/me` |
 | Perfil y cerrar sesión | Todos | RF-02, RF-04 | `GET /api/me`, `POST /api/logout` |
 | Admin · parámetros y tabla de puntos | Admin | RF-07, RF-15 | `GET/PUT /settings` |
@@ -323,7 +327,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 - [x] Apertura y cierre de la ventana de valoración con job programado y ShedLock (RF-17)
 - [x] Pantalla de valoración en picas o nota decimal, editable mientras siga abierta, y cancelación de las valoraciones de un manager por el admin (RF-18 a RF-21, RF-41). `rating` sirve los votos, las vistas y la cancelación por API (plan 09, tareas 4 y 4b); la pantalla, en *Pantallas de manager*
 - [x] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23). Incluye adaptar los parámetros de `league`: sustituir `ratingPointsPerUnit` por una conversión por formato (picas −2/2/6/10/14, nota 1:1) y añadir el mínimo de votos. `scoring` suma los puntos por valoración al cerrar la ventana y recalcula con `RatingsCorrected` (plan 09)
-- [ ] Pantallas de manager: ligas e invitación, inicio, alineación, valoraciones, clasificaciones, historiales y plantilla (RF-01 a RF-11, RF-17 a RF-33)
+- [x] Pantallas de manager: ligas e invitación, inicio, alineación, valoraciones, clasificaciones, historiales y plantilla (RF-01 a RF-11, RF-17 a RF-33)
 - [ ] Pantallas de admin: parámetros y tabla de puntos, miembros e invitación, jugadores y foto, partidos y acta, cancelación de valoraciones (RF-06, RF-07, RF-09, RF-10, RF-12 a RF-16, RF-41)
 - [ ] E2E de la jornada completa en móvil (FE-34)
 - [ ] Prueba real: una jornada con los amigos y ajuste de los pesos
