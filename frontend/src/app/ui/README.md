@@ -305,6 +305,119 @@ Domingo 26 de octubre
   Total                      +14
 ```
 
+### Pantallas de admin
+
+Cerradas en la tarea 3 del plan 13; el boceto es [`docs/design/admin-screens.html`](../../../../docs/design/admin-screens.html). Reglas comunes:
+
+- **Admin sin otro aspecto:** mismas filas, mismas cifras y mismo peto. Lo de admin se reconoce por el título y por `bf-badge` `accent` (_Admin_), no por otro tema. Todas viven bajo _Liga_, que es el destino activo.
+- **Un ajuste por fila**, con su control a la derecha y sin tarjetas. Los avisos de coherencia o de estado son `bf-notice` sobre la acción principal.
+- **Lo que no se deshace se nota:** _Dar de baja_, _Borrar partido_ y _Cancelar valoraciones_ son `danger`; cerrar, borrar, dar de baja, cancelar y corregir quitando jugadores piden `Confirm`, con el mismo verbo que el botón y el foco en _Cancelar_. El toast posterior repite el verbo (_Partido cerrado_).
+- **Acción principal fija abajo** con el verbo de lo que hace; el `danger` va sobre ella. Sin acción fija donde cada fila tiene la suya (cancelar valoraciones) o el estado no deja nada que hacer (partido cerrado).
+- **Los topes del servidor** salen de `GET …/limits` y se leen en los `hint` (_Hasta 30 caracteres_, _Entre 0 y 48 horas_); un `400` pinta su `code` en el campo, en `danger-text`.
+
+#### Accesos
+
+- El índice _Liga_ gana la sección _Administrar_ (con `bf-badge` _Admin_, solo para el admin): _Parámetros_, _Jugadores_, _Partidos_ y _Miembros e invitación_, cada una con su descripción corta.
+- El inicio del admin lleva una fila más debajo de lo del manager: _Acta de la jornada 11 · Terminó hace 2 días_ con _Pendiente_ en ámbar (enlaza al acta), o _Programar partido_ si no queda ninguno programado. Sin nada pendiente, no hay fila. La acción principal sigue siendo la del manager.
+- Enlaces de texto solo para el admin: _Cambiar parámetros_ en _Reglas_, _Editar jugador_ en la ficha, _Administrar partido_ en el partido y _Cancelar valoraciones de un manager_ en _Valorar_.
+
+#### Parámetros y tabla de puntos
+
+```
+Parámetros
+ⓘ Los cambios valen para lo que venga: las ventanas abiertas
+  y las jornadas ya puntuadas conservan los suyos.
+── Alineaciones ─────────────
+Jugadores por alineación      [−] 7 [+]
+Se bloquea antes del partido  [−] 2 [+] h     hint: Entre 0 y 48 horas
+Cambios por jornada           [−] 2 [+]
+Presupuesto                   [● ]            bfSwitch; encendido, fila Importe  100 M
+Formación por posiciones      [  ○]           encendida, cuatro mínimos
+── Valoraciones ─────────────
+Formato                 (Picas | Nota)
+Duración de la ventana        [−] 24 [+] h
+Votos mínimos                 [−] 1 [+]
+Nota sin votos                [  ○]           encendida, el stepper de nota
+Conversión     puntos = 4 × media + −2        la del formato elegido
+── Puntos por acción ────────
+Gol             6 · 5 · 4 · 3   ▾             cdkAccordion: una abierta a la vez
+   Portero   [−] 6 [+]   Defensa …
+Gol de penalti  3 · 3 · 3 · 3   ▸
+[      Guardar parámetros      ]
+```
+
+- Cada fila de la tabla enseña sus cuatro cifras con el color de su posición; abierta, un `bf-stepper` por posición con su nombre. Las negativas llevan el menos tipográfico y `danger-text`.
+- Un `400` pinta el `INVALID_*` bajo su campo y un aviso sobre la acción (_No se pudieron guardar los parámetros. Revisa los campos marcados._).
+- **`lg`:** los ajustes a la izquierda y la tabla de puntos a la derecha, con la acción al pie de la columna.
+
+#### Plantilla de admin y jugador
+
+- **Plantilla** (`admin/squad`): la de miembro, con `bf-player-row` agrupada por posición y el título con su badge; cada fila lleva a su edición. Al pie, _Dados de baja_ plegada y de solo lectura (`bfDisclosure`). Acción: _Dar de alta jugador_.
+- **Alta y edición:** nombre, dorsal (opcional, `inputmode="numeric"`), posición (`bf-segmented` con las cuatro) y valor inicial (`inputmode="decimal"`, en M). Acción _Dar de alta jugador_ o _Guardar jugador_; en la edición, _Dar de baja_ (`danger`) sobre ella. Un dado de baja se ve en solo lectura con su `bf-badge` _Dado de baja_.
+- **Baja:** _Dar de baja a Pablo_ con _Sigue en las actas, los puntos y los historiales. Sale de las alineaciones, y sustituirlo no gasta cambio. No se puede reactivar._ Vuelve a la plantilla con _Jugador dado de baja_.
+
+#### Calendario, programar y partido
+
+```
+Partidos                          [Admin]
+13 Atlético Lavadores   Programado       bf-match-row con el estado a la derecha
+   Fuera, dom 9 nov, 11:00
+12 CD Arrabal           Acta pendiente   ámbar: empezado sin cerrar
+11 Racing Vilariño      3–1 Cerrado
+[       Programar partido       ]
+```
+
+- **Programar y editar:** jornada (propone la siguiente), rival, campo (`bf-segmented` _En casa_ / _Fuera_), fecha y hora nativas con _Hora de Madrid. Las alineaciones se bloquean 2 h antes._ Al aplazar un partido con alineaciones bloqueadas, un aviso informativo explica que se desbloquean si el nuevo bloqueo aún no ha llegado.
+- **Partido:** título con su estado (`Programado`, `Acta pendiente` o `Cerrado`) y, debajo, el partido en texto apagado. Filas: _Datos del partido_, _Acta_ (_Borrador, 9 jugadores_ y el resultado como cifra), _Valoraciones_ (con cuenta atrás; con la ventana abierta enlaza a cancelar, cerrada, solo se lee) y _Auditoría_ (_2 cambios_). Los avisos de coherencia, en ámbar, bajo el acta.
+- **Acción por estado:** sin cerrar, _Borrar partido_ (`danger` quiet) sobre _Cerrar partido_; antes del inicio, encima, _Se puede cerrar desde el inicio del partido._ El botón no se deshabilita por la hora. Cerrado, sin acción fija, y la fila de datos dice que la jornada y la hora ya no se pueden cambiar.
+- **Confirmaciones:** _Cerrar el partido_ (_Se bloquean las alineaciones que no lo estén, se publica el acta y se abre la valoración durante 24 h._) y _Borrar partido_ (_Se borra el partido de la jornada 12. Las alineaciones guardadas pasan al siguiente._).
+
+#### Acta
+
+```
+Acta de la jornada 12
+Contra CD Arrabal, domingo 2 de noviembre
+Nosotros [−] 3 [+]  –  CD Arrabal [−] 1 [+]
+⚠ Los goles de los jugadores no suman los 3 del resultado.
+9 de 30 jugadores
+Delanteros
+[✓] 9 Pablo  2 goles, 1 asistencia    ˄     abierta: contadores y tarjetas
+      Goles [−] 2 [+]  Goles de penalti …  Penaltis fallados …
+      [ ] Tarjeta amarilla  [ ] Doble amarilla  [ ] Roja directa
+[✓] 7 Hugo   1 gol                    ˅
+[ ] 17 Rubén                                una sola línea, sin contadores
+[       Guardar acta       ]
+```
+
+- **Para el domingo:** un toque (`bfCheckbox` _Jugó_) por quien jugó, y solo se abre quien tiene algo que anotar; plegado se resume con las frases de `performanceSummary`. Con 20 jugadores y 11 marcados son 20 líneas y una sola fila abierta. Los contadores a 0 van en gris y lo anotado destaca.
+- **Tarjetas:** _Doble amarilla_ desmarca y deshabilita las otras dos; _Amarilla_ y _Roja directa_ a la vez sí se pueden marcar.
+- **Corrección:** con el partido cerrado, un aviso informativo arriba (_Partido cerrado: guardar corrige el acta y recalcula los puntos._) y la acción _Guardar corrección_. Si quita jugadores, la confirmación los nombra (_Hugo sale del acta y pierde sus valoraciones. Se recalculan los puntos de la jornada._); si solo añade o cambia cifras, guarda sin preguntar. Un dado de baja que ya estaba en el acta sigue en ella con su badge.
+- **Errores:** un resultado a medias marca el stepper que falta (_Falta este marcador._); los `400` sin jugador concreto van en un `bf-notice` sobre la acción. Un partido sin resultado empieza con los dos steppers vacíos. Tras guardar vuelve al partido con _Acta guardada_.
+- **`lg`:** la lista a la izquierda y, en una columna fija a la derecha, el resultado, los avisos y la acción.
+
+#### Auditoría
+
+Una fila `bfDisclosure` por cambio, del más reciente al más antiguo: la acción (_Corrigió el acta_, _Cerró el partido_, _Guardó el acta_, _Programó el partido_) y quién y cuándo en la meta (_Xosé Babío, hoy a las 10:42_; _Antiguo miembro_). Abierta, solo lo que cambió, con el valor anterior tachado (_Resultado: ~~3–2~~ 3–1_, _Pablo: asistencias ~~0~~ 1_, _Hugo: entra en el acta_). El alta y el borrado enseñan el estado entero.
+
+#### Cancelar valoraciones
+
+```
+Cancelar valoraciones
+Jornada 11, contra Racing Vilariño      [◷ Cierra en 14 h]
+Se borran todas sus valoraciones de este partido y no podrá volver a valorarlo.
+(XB) Tú              [Cancelar valoraciones]
+(CP) Carla Pazos     Valoraciones canceladas   [Cancelada]
+(IV) Iago Vázquez    [Cancelar valoraciones]
+```
+
+- Una fila por miembro actual, el admin incluido (_Tú_). No dice quién ha votado (FE-11).
+- La confirmación nombra al miembro y repite el verbo: _Se borran las valoraciones de Iago en la jornada 11 y no podrá volver a valorarla. No se puede deshacer._ Después la fila pasa a _Cancelada_ y el toast dice _Valoraciones canceladas_.
+- Con la ventana cerrada, solo lectura y solo los cancelados. Antes del cierre del partido, el vacío _La valoración se abre al cerrar el partido._
+
+#### Piezas nuevas
+
+`bfCheckbox` (sin marcar, marcada, foco y deshabilitada), `bfSwitch` (apagado, encendido y foco), `bf-stepper` sin límites (negativos y vacío) y `bf-match-row` con los tres estados de admin, en los dos temas.
+
 ## Textos
 
 - Se habla de **equipo**, nunca de _peña_.
