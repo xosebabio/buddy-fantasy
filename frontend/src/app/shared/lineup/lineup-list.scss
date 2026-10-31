@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+li {
+  display: block;
+}
+
+// The row being changed, ringed in lavender inside, as the bib on the pitch.
+li.selected button {
+  outline: 2px solid var(--bf-color-accent);
+  outline-offset: -2px;
+}
+
+bf-empty-bib {
+  color: var(--bf-color-text-muted);
+}

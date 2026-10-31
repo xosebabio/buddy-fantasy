@@ -1,0 +1,92 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+
+.spades {
+  display: flex;
+  gap: var(--bf-space-1);
+}
+
+.spade {
+  @include type.figures;
+
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-control);
+  background-color: var(--bf-color-surface);
+  font-size: var(--bf-font-size-3);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--bf-motion-fast) var(--bf-ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+// The radio button is hidden but stays focusable: its label shows the state and the focus.
+input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+}
+
+.spade:has(input:checked) {
+  border: 2px solid var(--bf-color-accent);
+  background-color: var(--bf-color-accent-subtle);
+  color: var(--bf-color-accent-text);
+  font-weight: 700;
+}
+
+.spade:has(input:focus-visible) {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .spade:hover:not(:has(input:checked, input:disabled)) {
+    background-color: color-mix(in srgb, var(--bf-color-text) 6%, var(--bf-color-surface));
+  }
+}
+
+.spade:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.clear {
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0 var(--bf-space-2);
+  border: 0;
+  border-radius: var(--bf-radius-control);
+  background-color: transparent;
+  color: var(--bf-color-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--bf-color-border-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.clear:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.none {
+  margin-left: auto;
+  padding-right: var(--bf-space-2);
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}

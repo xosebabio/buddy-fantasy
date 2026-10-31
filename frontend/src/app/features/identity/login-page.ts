@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 
 import { SessionStore } from '../../core/auth/session-store';
 import { Online } from '../../core/http/online';
-import { Bib, type Position } from '../../shared/bib/bib';
+import { Bib } from '../../shared/bib/bib';
+import type { Position } from '../../shared/position/position';
 import { Button } from '../../ui/button/button';
 import { Wordmark } from '../../ui/top-bar/wordmark';
 

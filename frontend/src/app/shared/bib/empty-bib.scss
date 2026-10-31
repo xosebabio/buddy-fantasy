@@ -1,0 +1,26 @@
+:host {
+  --bf-bib-size: 44px;
+
+  display: inline-block;
+  flex: none;
+  width: var(--bf-bib-size);
+  height: calc(var(--bf-bib-size) * 1.12);
+}
+
+:host(.small) {
+  --bf-bib-size: 30px;
+}
+
+:host(.large) {
+  --bf-bib-size: 72px;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentcolor;
+  stroke-dasharray: 4 3;
+  stroke-width: 1.5;
+}

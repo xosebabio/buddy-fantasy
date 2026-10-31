@@ -1,0 +1,24 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  @include type.figures;
+
+  font-size: var(--bf-font-size-3);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+:host(.hero) {
+  font-size: var(--bf-font-size-7);
+  font-weight: 700;
+  line-height: 0.95;
+}
+
+:host(.positive) {
+  color: var(--bf-color-brand-text);
+}
+
+:host(.negative) {
+  color: var(--bf-color-danger-text);
+}

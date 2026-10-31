@@ -1,0 +1,46 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--bf-space-3);
+  min-width: 0;
+}
+
+.body {
+  display: grid;
+  flex: 1;
+  gap: var(--bf-space-1);
+  min-width: 0;
+}
+
+.name {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-1) var(--bf-space-2);
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+  font-weight: 400;
+}
+
+.meta:empty {
+  display: none;
+}
+
+.value {
+  @include type.figures;
+
+  flex: none;
+  color: var(--bf-color-text);
+  font-size: var(--bf-font-size-3);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}

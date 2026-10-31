@@ -1,0 +1,58 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--bf-space-1);
+  box-sizing: border-box;
+  width: var(--bf-pitch-spot-width, 72px);
+  min-height: 44px;
+  margin: 0;
+  padding: var(--bf-space-1) 0;
+  border: 0;
+  border-radius: var(--bf-radius-control);
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+// The selection is a lavender ring around the bib, never another fill (ui/README.md).
+:host(.selected)::before {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 27px);
+  box-sizing: border-box;
+  width: 54px;
+  height: 57px;
+  border: 2px solid var(--bf-color-accent);
+  border-radius: var(--bf-radius-control);
+  content: '';
+}
+
+:host(.free) {
+  color: var(--bf-color-on-pitch-muted);
+}
+
+.name,
+.value {
+  @include type.figures;
+
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--bf-font-size-1);
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.value {
+  color: var(--bf-color-on-pitch-muted);
+  font-weight: 500;
+}

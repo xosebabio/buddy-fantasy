@@ -1049,6 +1049,62 @@
           <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="shared.position.goalkeeper" datatype="html">
+        <source>Portero</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.position.defender" datatype="html">
+        <source>Defensa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.position.midfielder" datatype="html">
+        <source>Medio</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.position.forward" datatype="html">
+        <source>Delantero</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.position.goalkeepers" datatype="html">
+        <source>Porteros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.position.defenders" datatype="html">
+        <source>Defensas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.position.midfielders" datatype="html">
+        <source>Medios</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shared.position.forwards" datatype="html">
+        <source>Delanteros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/position/position.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="shared.roster.unknownName" datatype="html">
         <source>Usuario sin nombre</source>
         <context-group purpose="location">

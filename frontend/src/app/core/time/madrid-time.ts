@@ -2,7 +2,8 @@ import { TZDate } from '@date-fns/tz';
 
 /** The time zone of the league: the interface shows and asks for dates in it (RNF-05). */
 const TIME_ZONE = 'Europe/Madrid';
-const LOCALE = 'es-ES';
+/** The locale of dates, numbers and amounts (RNF-15). */
+export const LOCALE = 'es-ES';
 
 /**
  * `dateTime` «domingo, 2 de noviembre, 11:00», `date` «domingo, 2 de noviembre», `day`

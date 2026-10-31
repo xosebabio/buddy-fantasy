@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin: 0;
+}
+
+dt,
+dd {
+  margin: 0;
+  padding: calc(var(--bf-space-1) * 1.5) 0;
+}
+
+dt {
+  color: var(--bf-color-text-muted);
+}
+
+dd {
+  padding-left: var(--bf-space-4);
+  text-align: end;
+}
+
+.total {
+  border-top: 1px solid var(--bf-color-border);
+}
+
+dt.total {
+  color: var(--bf-color-text);
+  font-weight: 600;
+}

@@ -122,6 +122,19 @@ Los de `ui/` (FE-18) se ven en `/_ui` con todos sus estados y en los dos temas. 
 
 Los estilos de lo que el CDK pinta fuera de los componentes (velo, hoja y su título) y los de `bf-field` (el control es contenido proyectado) son globales: `styles/_overlay.scss` y `field/field.scss` sin encapsulación.
 
+Las piezas con dominio (FE-19) están en `shared/` y no salen en `/_ui`, que solo conoce `ui/`:
+
+| Pieza                           | Uso                                                                                                                                                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bf-bib`, `bf-empty-bib`        | El peto, con el dorsal si lo tiene; el contorno discontinuo de una plaza libre.                                                                                                                                 |
+| `bf-position-chip`              | La posición en texto sobre su color. Los textos (`POSITION_TEXTS`, `POSITION_GROUP_TEXTS`) y el orden (`POSITIONS`), en `shared/position`.                                                                      |
+| `bf-player-row`                 | La tarjeta de jugador como fila, sin foto: peto pequeño, nombre, posición y, si se pasa, el valor; huecos `bfPlayerRowMeta` y `bfPlayerRowTrailing`. Es el contenido de un `bfListItem` o de un `bfDisclosure`. |
+| `bf-points`                     | Puntos con signo: `list` o `hero`; `unsigned` para los totales de la general.                                                                                                                                   |
+| `bf-points-breakdown`           | Acciones (en el orden de la tabla de puntos), valoración y total de un jugador en una jornada, para el panel de un `bfDisclosure`. Las claves de `actions` pasan por `isScoringAction`.                         |
+| `bf-rating-input`               | El voto en el `format` de la ventana: picas (radios de 0 a 4) o nota (`bf-stepper` de 0 a 10, el primer paso a 5), `[(value)]` con `null` sin voto y _Quitar_ (_Quitar voto a Diego_).                          |
+| `bf-pitch`, `bf-lineup-list`    | La alineación en el campo o en lista, con las mismas entradas (`players`, `freeSpots`, `selected` con el `spotKey`) y la salida `spotSelected`. El reparto de las filas (`pitchLayout`) es una función pura.    |
+| `bfMoney`, `bfPoints`, `bfDate` | `17,2 M` (`'number'`: `17,2`, para un `bf-figure` con la unidad aparte); `+14`, `−3`, `0`; fechas en Madrid.                                                                                                    |
+
 ## Composición
 
 ### Shell en móvil
