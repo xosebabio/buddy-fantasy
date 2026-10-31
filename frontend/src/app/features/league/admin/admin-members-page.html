@@ -1,0 +1,58 @@
+<h1 i18n="@@league.admin.members.title">Miembros e invitación</h1>
+
+<section class="section" aria-labelledby="invitation-title">
+  <h2 id="invitation-title" i18n="@@league.admin.members.invitationTitle">Enlace de invitación</h2>
+  @if (token(); as token) {
+    <bf-invitation-link [token]="token" [leagueName]="league()?.name ?? ''" />
+  } @else {
+    <p class="muted" i18n="@@league.admin.members.invitationHelp">
+      El enlace solo se ve al generarlo. Para compartirlo, genera uno nuevo: el anterior dejará de
+      funcionar.
+    </p>
+  }
+  <div class="buttons">
+    <button
+      bfButton
+      type="button"
+      [variant]="token() ? 'secondary' : 'primary'"
+      [loading]="busy() === 'regenerate'"
+      [disabled]="!online.online() || busy() !== null"
+      (click)="regenerate()"
+      i18n="@@league.admin.members.regenerate"
+    >
+      Generar enlace nuevo
+    </button>
+    <button
+      bfButton
+      type="button"
+      variant="danger"
+      [loading]="busy() === 'revoke'"
+      [disabled]="!online.online() || busy() !== null"
+      (click)="revoke()"
+      i18n="@@league.admin.members.revoke"
+    >
+      Desactivar enlace
+    </button>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="members-title">
+  <h2 id="members-title" i18n="@@league.admin.members.membersTitle">Miembros</h2>
+  @if (members.error()) {
+    <bf-load-error (retry)="members.reload()" />
+  } @else if (members.value(); as members) {
+    <bf-member-list
+      [members]="members"
+      [currentUserId]="session.user()?.id ?? null"
+      [removable]="true"
+      [disabled]="!online.online() || busy() !== null"
+      (remove)="remove($event)"
+    />
+  } @else {
+    <div class="loading" aria-busy="true">
+      @for (row of [1, 2, 3]; track row) {
+        <bf-skeleton shape="block" />
+      }
+    </div>
+  }
+</section>

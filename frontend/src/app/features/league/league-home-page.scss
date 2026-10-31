@@ -1,0 +1,20 @@
+@use 'page';
+
+:host {
+  display: block;
+  max-width: page.$max-width;
+}
+
+h1 {
+  @include page.title;
+}
+
+.since {
+  margin-top: var(--bf-space-1);
+  color: var(--bf-color-text-muted);
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+}

@@ -7,7 +7,7 @@ import { provideRouter, withComponentInputBinding, withRouterConfig } from '@ang
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import type { UserResponse } from '../api/identity/identity-api';
-import { adminGuard, authGuard, memberGuard } from './guards';
+import { adminGuard, authGuard, guestGuard, memberGuard } from './guards';
 import { homeRedirect } from './home-redirect';
 import { LastLeague } from './last-league';
 import { ReturnUrl } from './return-url';
@@ -30,7 +30,7 @@ function page(name: string) {
 
 const routes = [
   { path: '', pathMatch: 'full' as const, redirectTo: homeRedirect },
-  { path: 'login', ...page('login') },
+  { path: 'login', canActivate: [guestGuard], ...page('login') },
   { path: 'leagues', canActivate: [authGuard], ...page('leagues') },
   {
     path: 'leagues/:leagueId',
@@ -90,6 +90,16 @@ describe('guards', () => {
     it('sends to the login without a session, saving the route', async () => {
       expect(await visit('/leagues/l1?tab=2', null)).toEqual({ page: 'login', url: '/login' });
       expect(TestBed.inject(ReturnUrl).consume()).toBe('/leagues/l1?tab=2');
+    });
+  });
+
+  describe('guestGuard', () => {
+    it('shows the login without a session', async () => {
+      expect(await visit('/login', null)).toEqual({ page: 'login', url: '/login' });
+    });
+
+    it('takes a user with a session to the start', async () => {
+      expect(await visit('/login')).toEqual({ page: 'leagues', url: '/leagues' });
     });
   });
 

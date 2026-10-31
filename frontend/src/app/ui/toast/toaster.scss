@@ -4,7 +4,7 @@
 :host {
   position: fixed;
   inset-inline: 0;
-  bottom: 0;
+  bottom: var(--bf-toaster-bottom, 0); // Over the bottom navigation (ui/styles/_overlay.scss).
   z-index: 1100;
   padding: 0 var(--bf-space-4) calc(var(--bf-space-4) + env(safe-area-inset-bottom));
   pointer-events: none;

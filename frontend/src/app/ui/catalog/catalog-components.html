@@ -40,6 +40,12 @@
   </bf-field>
 </div>
 
+<h3>Control segmentado</h3>
+<div class="stack">
+  <bf-segmented label="Tema" [options]="themes" [(value)]="theme" />
+  <bf-segmented label="Tema" [options]="themes" value="light" disabled />
+</div>
+
 <h3>Tarjeta</h3>
 <bf-card>
   <p class="card-title">Os Domingueiros</p>
@@ -126,6 +132,9 @@
     Crear liga
   </a>
 </bf-empty-state>
+
+<h3>Error de carga</h3>
+<bf-load-error />
 
 <h3>Barra superior</h3>
 <div class="frame">

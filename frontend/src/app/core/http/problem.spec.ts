@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { toProblem } from './problem';
+import { toProblem, violates } from './problem';
 
 function errorWith(body: unknown, status = 409): HttpErrorResponse {
   return new HttpErrorResponse({ error: body, status });
@@ -50,5 +50,19 @@ describe('toProblem', () => {
 
   it('is undefined for an error that is not an HTTP one', () => {
     expect(toProblem(new Error('boom'))).toBeUndefined();
+  });
+});
+
+describe('violates', () => {
+  it('tells whether the violations name the field', () => {
+    const problem = toProblem(errorWith({ status: 400, violations: ['name: must not be blank'] }));
+
+    expect(violates(problem, 'name')).toBe(true);
+    expect(violates(problem, 'nam')).toBe(false);
+  });
+
+  it('is false without violations or without a problem', () => {
+    expect(violates(toProblem(errorWith({ status: 409, code: 'SIZE' })), 'name')).toBe(false);
+    expect(violates(undefined, 'name')).toBe(false);
   });
 });

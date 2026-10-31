@@ -1,0 +1,42 @@
+@if (created(); as league) {
+  <h1 #inviteTitle tabindex="-1" i18n="@@league.create.inviteTitle">Invita a tu equipo</h1>
+  <p class="lead" i18n="@@league.create.inviteLead">
+    Pasa este enlace a los demás para que se unan a {{ league.name }}. Solo se ve ahora: si lo
+    pierdes, genera otro desde la liga.
+  </p>
+  <bf-invitation-link class="link" [token]="league.invitationToken" [leagueName]="league.name" />
+  <div class="actions">
+    <a bfButton block [routerLink]="['/leagues', league.id]" i18n="@@league.create.goToLeague">
+      Ir a la liga
+    </a>
+  </div>
+} @else {
+  <h1 i18n="@@league.create.title">Crear liga</h1>
+  <p class="lead" i18n="@@league.create.lead">
+    La liga es de tu equipo: tú la administras y juegas en ella como uno más.
+  </p>
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <bf-field
+      label="Nombre de la liga"
+      i18n-label="@@league.create.name"
+      hint="Lo verán todos los que se unan."
+      i18n-hint="@@league.create.nameHint"
+      [error]="nameError()"
+    >
+      <input bfInput type="text" autocomplete="off" formControlName="name" />
+    </bf-field>
+    <div class="actions">
+      <button
+        bfButton
+        type="submit"
+        variant="primary"
+        block
+        [loading]="saving()"
+        [disabled]="!online.online()"
+        i18n="@@league.create.submit"
+      >
+        Crear liga
+      </button>
+    </div>
+  </form>
+}

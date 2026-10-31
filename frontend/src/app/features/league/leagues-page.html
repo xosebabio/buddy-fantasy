@@ -1,0 +1,41 @@
+<h1 i18n="@@league.leagues.title">Tus ligas</h1>
+
+@if (session.leagues().length === 0) {
+  <bf-empty-state>
+    <p i18n="@@league.leagues.empty">
+      Aún no juegas en ninguna liga. Crea la de tu equipo o pide el enlace de invitación a quien la
+      lleve.
+    </p>
+    <a bfButton bfEmptyStateAction variant="primary" routerLink="/leagues/new">
+      <svg lucidePlus [size]="20"></svg>
+      <span i18n="@@league.leagues.createFirst">Crear liga</span>
+    </a>
+  </bf-empty-state>
+} @else {
+  <ul bfList bleed class="leagues">
+    @for (league of session.leagues(); track league.leagueId) {
+      <li>
+        <a bfListItem [routerLink]="['/leagues', league.leagueId]">
+          {{ league.name }}
+          <span bfListItemMeta>
+            @if (league.role === 'ADMIN') {
+              <bf-badge tone="accent">{{ roles.ADMIN }}</bf-badge>
+            } @else {
+              {{ roles.MANAGER }}
+            }
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+
+  <div class="actions">
+    <a bfButton variant="primary" block routerLink="/leagues/new">
+      <svg lucidePlus [size]="20"></svg>
+      <span i18n="@@league.leagues.create">Crear liga</span>
+    </a>
+    <p class="hint" i18n="@@league.leagues.invited">
+      ¿Te han invitado? Abre el enlace que te pasaron.
+    </p>
+  </div>
+}

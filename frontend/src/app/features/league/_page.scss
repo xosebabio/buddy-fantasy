@@ -1,0 +1,27 @@
+// The layout that the pages of the feature share.
+@use 'ui/styles/typography' as type;
+
+// The width of a page of text and lists, which on large screens does not stretch to the edges.
+$max-width: 640px;
+
+// A page as tall as the content area, so that its main action can go at the bottom.
+@mixin page {
+  display: flex;
+  flex-direction: column;
+  max-width: $max-width;
+  min-height: 100%;
+}
+
+@mixin title {
+  @include type.display(6);
+
+  overflow-wrap: anywhere;
+}
+
+// The main action, at the bottom and within reach of the thumb (ui/README.md).
+@mixin actions {
+  display: grid;
+  gap: var(--bf-space-3);
+  margin-top: auto;
+  padding-top: var(--bf-space-6);
+}

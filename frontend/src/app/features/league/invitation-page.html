@@ -1,0 +1,44 @@
+<h1 i18n="@@league.invitation.title">Invitación</h1>
+
+@if (invalid()) {
+  <bf-empty-state>
+    <p i18n="@@league.invitation.invalid">
+      Este enlace de invitación ya no vale. Pide uno nuevo a quien lleva la liga.
+    </p>
+    <a bfButton bfEmptyStateAction [routerLink]="leaguesRoute" i18n="@@league.invitation.toLeagues">
+      Ver tus ligas
+    </a>
+  </bf-empty-state>
+} @else if (preview.error()) {
+  <bf-load-error (retry)="preview.reload()" />
+} @else if (preview.value(); as invitation) {
+  <bf-card class="preview">
+    <p class="invited" i18n="@@league.invitation.invited">Te han invitado a jugar en</p>
+    <p class="league">{{ invitation.leagueName }}</p>
+    @if (invitation.alreadyMember) {
+      <p class="member" i18n="@@league.invitation.alreadyMember">Ya juegas en esta liga.</p>
+    }
+  </bf-card>
+  <div class="actions">
+    <button
+      bfButton
+      type="button"
+      variant="primary"
+      block
+      [loading]="joining()"
+      [disabled]="!online.online()"
+      (click)="join()"
+    >
+      @if (invitation.alreadyMember) {
+        <span i18n="@@league.invitation.goToLeague">Ir a la liga</span>
+      } @else {
+        <span i18n="@@league.invitation.join">Unirme a la liga</span>
+      }
+    </button>
+  </div>
+} @else {
+  <bf-card class="preview" aria-busy="true">
+    <bf-skeleton width="50%" />
+    <bf-skeleton shape="title" />
+  </bf-card>
+}

@@ -34,3 +34,11 @@ export function toProblem(error: unknown): ProblemFields | undefined {
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
+
+/**
+ * Whether the request failed because a required field was missing (FE-15): a `400` whose
+ * `violations` name it, such as `name: must not be blank`.
+ */
+export function violates(problem: ProblemFields | undefined, field: string): boolean {
+  return problem?.violations?.some((violation) => violation.startsWith(`${field}:`)) ?? false;
+}

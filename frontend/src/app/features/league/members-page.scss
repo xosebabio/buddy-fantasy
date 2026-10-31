@@ -1,0 +1,32 @@
+@use 'page';
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+.manage {
+  align-self: start;
+  margin-top: var(--bf-space-4);
+}
+
+.list {
+  margin-top: var(--bf-space-5);
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+}
+
+.actions {
+  @include page.actions;
+}
+
+.note {
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}

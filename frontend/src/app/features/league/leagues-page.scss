@@ -1,0 +1,23 @@
+@use 'page';
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+.leagues {
+  margin-top: var(--bf-space-5);
+}
+
+.actions {
+  @include page.actions;
+}
+
+.hint {
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+  text-align: center;
+}

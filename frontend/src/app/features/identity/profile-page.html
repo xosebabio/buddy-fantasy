@@ -1,0 +1,36 @@
+@if (session.user(); as user) {
+  <section class="who">
+    <bf-avatar size="large" [name]="user.displayName" [src]="user.avatarUrl" />
+    <div>
+      <h1>{{ user.displayName }}</h1>
+      <p class="email">{{ user.email }}</p>
+    </div>
+  </section>
+  <p class="hint" i18n="@@identity.profile.google">
+    Tu nombre y tu foto son los de tu cuenta de Google, y es lo que ven los demás.
+  </p>
+}
+
+<bf-segmented
+  class="theme"
+  label="Tema"
+  i18n-label="@@identity.profile.theme.label"
+  [options]="themes"
+  [value]="theme.preference()"
+  (valueChange)="theme.set($event)"
+/>
+<p class="hint" i18n="@@identity.profile.theme.hint">Automático sigue al de tu dispositivo.</p>
+
+<div class="actions">
+  <button
+    bfButton
+    type="button"
+    block
+    [loading]="loggingOut()"
+    [disabled]="!online.online()"
+    (click)="logout()"
+  >
+    <svg lucideLogOut [size]="20"></svg>
+    <span i18n="@@identity.profile.logout">Cerrar sesión</span>
+  </button>
+</div>

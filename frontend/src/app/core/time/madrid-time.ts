@@ -5,10 +5,11 @@ const TIME_ZONE = 'Europe/Madrid';
 const LOCALE = 'es-ES';
 
 /**
- * `dateTime` «domingo, 2 de noviembre, 11:00», `date` «domingo, 2 de noviembre», `short`
+ * `dateTime` «domingo, 2 de noviembre, 11:00», `date` «domingo, 2 de noviembre», `day`
+ * «2 de noviembre de 2026» (a day further away, such as when someone joined), `short`
  * «2 nov, 11:00» and `time` «11:00».
  */
-export type DateFormat = 'dateTime' | 'date' | 'short' | 'time';
+export type DateFormat = 'dateTime' | 'date' | 'day' | 'short' | 'time';
 
 const FORMATS: Record<DateFormat, Intl.DateTimeFormat> = {
   dateTime: format({
@@ -19,6 +20,7 @@ const FORMATS: Record<DateFormat, Intl.DateTimeFormat> = {
     minute: '2-digit',
   }),
   date: format({ weekday: 'long', day: 'numeric', month: 'long' }),
+  day: format({ day: 'numeric', month: 'long', year: 'numeric' }),
   short: format({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
   time: format({ hour: '2-digit', minute: '2-digit' }),
 };

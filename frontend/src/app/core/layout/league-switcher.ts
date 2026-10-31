@@ -10,16 +10,12 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { LucideCheck, LucideChevronDown } from '@lucide/angular';
 
-import type { LeagueRole, MyLeagueResponse } from '../api/league/league-api';
+import type { MyLeagueResponse } from '../api/league/league-api';
 import { LEAGUES_ROUTE } from '../auth/home-redirect';
 import { SessionStore } from '../auth/session-store';
 import { List, ListItem } from '../../ui/list/list';
 import { Sheet, SheetClose, SheetTitle } from '../../ui/sheet/sheet';
-
-const ROLES: Record<LeagueRole, string> = {
-  ADMIN: $localize`:@@core.leagueSwitcher.role.admin:Admin`,
-  MANAGER: $localize`:@@core.leagueSwitcher.role.manager:Manager`,
-};
+import { ROLE_TEXTS } from './role-texts';
 
 /**
  * The current league's name, which opens a bottom sheet to go to another of the user's leagues
@@ -73,7 +69,7 @@ export class LeagueSwitcher {
   );
 
   protected readonly session = inject(SessionStore);
-  protected readonly roles = ROLES;
+  protected readonly roles = ROLE_TEXTS;
   protected readonly leaguesRoute = LEAGUES_ROUTE;
 
   private readonly sheet = inject(Sheet);

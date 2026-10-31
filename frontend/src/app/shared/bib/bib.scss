@@ -1,0 +1,45 @@
+@use 'ui/styles/typography' as type;
+
+// A sleeveless bib with a V neck, 1 : 1.12, with the number centered and somewhat low.
+:host {
+  @include type.figures;
+
+  --bf-bib-size: 44px;
+
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--bf-bib-size);
+  height: calc(var(--bf-bib-size) * 1.12);
+  padding-top: calc(var(--bf-bib-size) * 0.14);
+  clip-path: polygon(0 10%, 30% 0, 50% 16%, 70% 0, 100% 10%, 100% 100%, 0 100%);
+  color: var(--bf-color-on-color);
+  font-size: calc(var(--bf-bib-size) * 0.5);
+  font-weight: 700;
+  line-height: 1;
+}
+
+:host(.small) {
+  --bf-bib-size: 30px;
+}
+
+:host(.large) {
+  --bf-bib-size: 72px;
+}
+
+:host(.goalkeeper) {
+  background-color: var(--bf-color-position-goalkeeper);
+}
+
+:host(.defender) {
+  background-color: var(--bf-color-position-defender);
+}
+
+:host(.midfielder) {
+  background-color: var(--bf-color-position-midfielder);
+}
+
+:host(.forward) {
+  background-color: var(--bf-color-position-forward);
+}

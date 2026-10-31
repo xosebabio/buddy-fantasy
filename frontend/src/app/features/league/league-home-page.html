@@ -1,0 +1,27 @@
+@if (league.error()) {
+  <bf-load-error (retry)="league.reload()" />
+} @else if (league.value(); as league) {
+  <h1>{{ league.name }}</h1>
+  <p class="since" i18n="@@league.home.since">Creada el {{ league.createdAt | bfDate: 'day' }}</p>
+  <bf-empty-state>
+    <p i18n="@@league.home.empty">
+      Aquí verás la jornada: el próximo partido, tu alineación y los plazos para valorar.
+    </p>
+    @if (league.role === 'ADMIN') {
+      <a
+        bfButton
+        bfEmptyStateAction
+        variant="primary"
+        [routerLink]="['/leagues', league.id, 'admin', 'members']"
+      >
+        <svg lucideUserPlus [size]="20"></svg>
+        <span i18n="@@league.home.invite">Invitar a tu equipo</span>
+      </a>
+    }
+  </bf-empty-state>
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton width="40%" />
+  </div>
+}

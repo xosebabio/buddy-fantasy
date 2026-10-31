@@ -1,0 +1,40 @@
+@use 'ui/styles/typography' as type;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  max-width: 560px;
+  min-height: 100%;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-4);
+}
+
+h1 {
+  @include type.display(5);
+
+  overflow-wrap: anywhere;
+}
+
+.email {
+  color: var(--bf-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  margin-top: var(--bf-space-2);
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+}
+
+.theme {
+  margin-top: var(--bf-space-6);
+}
+
+.actions {
+  margin-top: auto;
+  padding-top: var(--bf-space-6);
+}

@@ -1,7 +1,9 @@
-import type { HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
 
 import type { UserResponse } from '../api/identity/identity-api';
 import type { MyLeagueResponse } from '../api/league/league-api';
+import { SessionStore } from './session-store';
 
 /** Test data and helpers for what depends on the session; only the tests import this file. */
 
@@ -30,4 +32,14 @@ export function answerSession(
   }
   http.expectOne('/api/me').flush(user);
   http.expectOne('/api/me/leagues').flush(leagues);
+}
+
+/** Loads the session of the test's `TestBed` with this user and leagues, as the app does on start. */
+export async function loadSession(
+  user: UserResponse | null = USER,
+  leagues: MyLeagueResponse[] = LEAGUES,
+): Promise<void> {
+  const loaded = TestBed.inject(SessionStore).load();
+  answerSession(TestBed.inject(HttpTestingController), user, leagues);
+  await loaded;
 }

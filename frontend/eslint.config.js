@@ -158,6 +158,7 @@ module.exports = defineConfig([
             'inputmode',
             'referrerpolicy',
             'aria-haspopup',
+            'aria-labelledby',
           ],
         },
       ],

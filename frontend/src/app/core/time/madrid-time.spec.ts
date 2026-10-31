@@ -4,6 +4,7 @@ describe('formatInstant', () => {
   it.each([
     ['dateTime', 'lunes, 2 de noviembre, 11:00'],
     ['date', 'lunes, 2 de noviembre'],
+    ['day', '2 de noviembre de 2026'],
     ['short', '2 nov, 11:00'],
     ['time', '11:00'],
   ] as const)('writes the %s format in Spanish and in Madrid time', (dateFormat, text) => {

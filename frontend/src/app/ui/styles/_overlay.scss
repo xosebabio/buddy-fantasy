@@ -60,3 +60,13 @@
     transform: translateY(100%);
   }
 }
+
+// The toasts go over the bottom navigation, not on it: its items are 56 px high under a 1 px border
+// (nav/nav-item.scss). The shell shows it in a league below lg (FE-29).
+body:has(bf-nav-bar) {
+  --bf-toaster-bottom: 57px;
+
+  @include bp.lg {
+    --bf-toaster-bottom: 0;
+  }
+}

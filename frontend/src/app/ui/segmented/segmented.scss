@@ -1,0 +1,77 @@
+:host {
+  display: block;
+}
+
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.label {
+  margin-bottom: var(--bf-space-1);
+  padding: 0;
+  font-size: var(--bf-font-size-1);
+  font-weight: 600;
+}
+
+.options {
+  display: flex;
+  gap: var(--bf-space-1);
+  padding: var(--bf-space-1);
+  border: 1px solid var(--bf-color-border-strong);
+  border-radius: var(--bf-radius-control);
+  background-color: var(--bf-color-surface);
+}
+
+.option {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--bf-space-2);
+  border: 1px solid transparent;
+  border-radius: calc(var(--bf-radius-control) - var(--bf-space-1));
+  color: var(--bf-color-text-muted);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--bf-motion-fast) var(--bf-ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+// The radio button is hidden but stays focusable: its label shows the state and the focus.
+input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+}
+
+.option:has(input:checked) {
+  border-color: var(--bf-color-accent);
+  background-color: var(--bf-color-accent-subtle);
+  color: var(--bf-color-accent-text);
+  font-weight: 600;
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--bf-color-focus);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .option:hover:not(:has(input:checked, input:disabled)) {
+    background-color: color-mix(in srgb, var(--bf-color-text) 6%, transparent);
+  }
+}
+
+fieldset:disabled .option {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

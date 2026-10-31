@@ -28,6 +28,14 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   return router.parseUrl(LOGIN_ROUTE);
 };
 
+/** The login is for those without a session: with one, `/` takes the user where they belong. */
+export const guestGuard: CanActivateFn = async () => {
+  const session = inject(SessionStore);
+  const router = inject(Router);
+  await session.load();
+  return session.user() === null || router.parseUrl('/');
+};
+
 /** A league that is not among the user's shows «No encontrado», keeping the URL. */
 export const memberGuard: CanActivateFn = async (route, state) => {
   const session = inject(SessionStore);

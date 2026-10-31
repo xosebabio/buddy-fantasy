@@ -1,0 +1,15 @@
+:host {
+  display: grid;
+  justify-items: start;
+  gap: var(--bf-space-3);
+  padding-top: var(--bf-space-6);
+}
+
+.icon {
+  color: var(--bf-color-danger-text);
+}
+
+.message {
+  max-width: 32ch;
+  color: var(--bf-color-text-muted);
+}

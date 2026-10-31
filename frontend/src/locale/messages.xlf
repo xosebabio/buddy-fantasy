@@ -2,6 +2,356 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="es" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="core.errors.adminCannotLeave" datatype="html">
+        <source>El administrador no puede salir de la liga ni ser expulsado.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.duplicatePlayer" datatype="html">
+        <source>Hay un jugador repetido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.formation" datatype="html">
+        <source>La alineación no llega al mínimo de jugadores de alguna posición.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.inactivePlayer" datatype="html">
+        <source>Hay un jugador dado de baja: cámbialo por otro.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidCards" datatype="html">
+        <source>Un jugador con doble amarilla no puede tener también la amarilla ni la roja directa.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidDefaultRating" datatype="html">
+        <source>La nota por defecto no es válida para el formato de valoración.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidGoals" datatype="html">
+        <source>El número de goles no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidInitialValue" datatype="html">
+        <source>El valor inicial no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidLeagueName" datatype="html">
+        <source>El nombre de la liga está vacío o es demasiado largo.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidLineupBudget" datatype="html">
+        <source>El presupuesto de la alineación no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidLineupLockHours" datatype="html">
+        <source>Las horas de bloqueo de la alineación no son válidas.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidLineupMaxChanges" datatype="html">
+        <source>El máximo de cambios por jornada no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidLineupMinimums" datatype="html">
+        <source>Los mínimos por posición no son válidos o suman más que la alineación.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidLineupSize" datatype="html">
+        <source>El número de jugadores de la alineación no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidMarketK" datatype="html">
+        <source>El factor del mercado no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidMarketMaxChange" datatype="html">
+        <source>La variación máxima de valor no es válida.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidMarketMinValue" datatype="html">
+        <source>El valor mínimo de mercado no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidMatchday" datatype="html">
+        <source>La jornada no es válida.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidOpponent" datatype="html">
+        <source>El nombre del rival está vacío o es demasiado largo.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidPhotoFormat" datatype="html">
+        <source>El formato de la foto no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidPhotoSize" datatype="html">
+        <source>La foto está vacía o es demasiado grande.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidPlayerName" datatype="html">
+        <source>El nombre del jugador está vacío o es demasiado largo.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidRating" datatype="html">
+        <source>La valoración no es válida para el formato de la liga.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidRatingConversion" datatype="html">
+        <source>La conversión de la valoración a puntos no es válida.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidRatingFormat" datatype="html">
+        <source>El formato de valoración no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidRatingMinVotes" datatype="html">
+        <source>El mínimo de votos no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidRatingWindowHours" datatype="html">
+        <source>Las horas para valorar no son válidas.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidShirtNumber" datatype="html">
+        <source>El dorsal no es válido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.invalidStatCount" datatype="html">
+        <source>Alguna estadística no es válida.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.kickoffTaken" datatype="html">
+        <source>Ya hay otro partido a esa hora.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.lineupsNotLocked" datatype="html">
+        <source>Las alineaciones se verán cuando se bloqueen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.lockNotDue" datatype="html">
+        <source>Aún no es hora de bloquear las alineaciones.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.matchdayTaken" datatype="html">
+        <source>Ya hay otro partido en esa jornada.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.matchClosed" datatype="html">
+        <source>El partido está cerrado: no se puede cambiar su jornada ni su hora, ni borrarlo.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.matchNotClosed" datatype="html">
+        <source>El partido aún no está cerrado.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.matchNotScored" datatype="html">
+        <source>El partido aún no tiene puntos.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.matchNotStarted" datatype="html">
+        <source>El partido aún no ha empezado.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.matchSheetIncomplete" datatype="html">
+        <source>El acta necesita el resultado y al menos un jugador.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.maxChangesExceeded" datatype="html">
+        <source>Has pasado del máximo de cambios de esta jornada.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.overBudget" datatype="html">
+        <source>La alineación pasa del presupuesto.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.photoNotUploaded" datatype="html">
+        <source>La foto no se ha subido. Vuelve a intentarlo.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.playerNotInSheet" datatype="html">
+        <source>Solo se puede valorar a los jugadores del acta.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.playerRetired" datatype="html">
+        <source>El jugador está dado de baja.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.raterExcluded" datatype="html">
+        <source>El administrador ha anulado tus valoraciones de este partido.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.ratingWindowClosed" datatype="html">
+        <source>El plazo para valorar ya ha terminado.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.scoringTableIncomplete" datatype="html">
+        <source>Faltan los puntos de alguna acción o posición.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.sheetTooLarge" datatype="html">
+        <source>El acta tiene demasiados jugadores.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.shirtNumberTaken" datatype="html">
+        <source>Ya hay otro jugador con ese dorsal.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.size" datatype="html">
+        <source>La alineación no tiene el número de jugadores de la liga.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.errors.unknownPlayer" datatype="html">
+        <source>Hay un jugador que no es de la liga.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/http/error-texts.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="core.failedRequests.message" datatype="html">
         <source>No se pudo conectar con el servidor.</source>
         <context-group purpose="location">
@@ -16,39 +366,25 @@
           <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="core.leagueSwitcher.role.admin" datatype="html">
-        <source>Admin</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/core/layout/league-switcher.ts</context>
-          <context context-type="linenumber">20</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="core.leagueSwitcher.role.manager" datatype="html">
-        <source>Manager</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/core/layout/league-switcher.ts</context>
-          <context context-type="linenumber">21</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="core.leagueSwitcher.title" datatype="html">
         <source>Cambiar de liga</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/layout/league-switcher.ts</context>
-          <context context-type="linenumber">44,46</context>
+          <context context-type="linenumber">40,42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="core.leagueSwitcher.all" datatype="html">
         <source> Ver todas tus ligas </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/layout/league-switcher.ts</context>
-          <context context-type="linenumber">60,63</context>
+          <context context-type="linenumber">56,59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="core.leagueSwitcher.open" datatype="html">
         <source><x id="league" equiv-text="this.league().name"/>, cambiar de liga</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/layout/league-switcher.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="core.offline.notice" datatype="html">
@@ -56,6 +392,20 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/layout/offline-notice.ts</context>
           <context context-type="linenumber">19,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.roles.admin" datatype="html">
+        <source>Admin</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/role-texts.ts</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.roles.manager" datatype="html">
+        <source>Manager</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/role-texts.ts</context>
+          <context context-type="linenumber">6</context>
         </context-group>
       </trans-unit>
       <trans-unit id="core.shell.profile" datatype="html">
@@ -123,6 +473,608 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/pages/error-page.ts</context>
           <context context-type="linenumber">20,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.login.pageTitle" datatype="html">
+        <source>Entrar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/identity.routes.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.pageTitle" datatype="html">
+        <source>Tu perfil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/identity.routes.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.login.title" datatype="html">
+        <source>El fantasy de tu equipo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/login-page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.login.lead" datatype="html">
+        <source> Valora a los jugadores después de cada partido y compite con tu alineación. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/login-page.html</context>
+          <context context-type="linenumber">10,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.login.error" datatype="html">
+        <source> No se pudo entrar con Google. Vuelve a intentarlo. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/login-page.html</context>
+          <context context-type="linenumber">14,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.login.google" datatype="html">
+        <source>Entrar con Google</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/login-page.html</context>
+          <context context-type="linenumber">26,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.google" datatype="html">
+        <source> Tu nombre y tu foto son los de tu cuenta de Google, y es lo que ven los demás. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
+          <context context-type="linenumber">10,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.theme.label" datatype="html">
+        <source>Tema</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.theme.hint" datatype="html">
+        <source>Automático sigue al de tu dispositivo.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
+          <context context-type="linenumber">22,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.logout" datatype="html">
+        <source>Cerrar sesión</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
+          <context context-type="linenumber">34,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.theme.system" datatype="html">
+        <source>Automático</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.theme.light" datatype="html">
+        <source>Claro</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.theme.dark" datatype="html">
+        <source>Oscuro</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.title" datatype="html">
+        <source>Miembros e invitación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.html</context>
+          <context context-type="linenumber">1,3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.invitationTitle" datatype="html">
+        <source>Enlace de invitación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.html</context>
+          <context context-type="linenumber">4,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.invitationHelp" datatype="html">
+        <source> El enlace solo se ve al generarlo. Para compartirlo, genera uno nuevo: el anterior dejará de funcionar. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.html</context>
+          <context context-type="linenumber">9,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.regenerate" datatype="html">
+        <source> Generar enlace nuevo </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.html</context>
+          <context context-type="linenumber">23,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.revoke" datatype="html">
+        <source> Desactivar enlace </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.html</context>
+          <context context-type="linenumber">34,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.membersTitle" datatype="html">
+        <source>Miembros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.html</context>
+          <context context-type="linenumber">40,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.regenerateTitle" datatype="html">
+        <source>¿Generar un enlace nuevo?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.regenerateMessage" datatype="html">
+        <source>El enlace anterior dejará de funcionar.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.regenerateConfirm" datatype="html">
+        <source>Generar enlace</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.regenerated" datatype="html">
+        <source>Enlace generado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.revokeTitle" datatype="html">
+        <source>¿Desactivar el enlace?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.revokeMessage" datatype="html">
+        <source>Nadie podrá unirse con él. Puedes generar otro cuando quieras.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.revokeConfirm" datatype="html">
+        <source>Desactivar enlace</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.revoked" datatype="html">
+        <source>Enlace desactivado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.unknownName" datatype="html">
+        <source>este miembro</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.removeTitle" datatype="html">
+        <source>¿Expulsar a <x id="name" equiv-text="name"/>?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.removeMessage" datatype="html">
+        <source>Dejará de ver la liga. Podrá volver si le pasas un enlace de invitación.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.removeConfirm" datatype="html">
+        <source>Expulsar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.removed" datatype="html">
+        <source><x id="name" equiv-text="name"/> ya no está en la liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/admin/admin-members-page.ts</context>
+          <context context-type="linenumber">104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.inviteTitle" datatype="html">
+        <source>Invita a tu equipo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">2,3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.inviteLead" datatype="html">
+        <source> Pasa este enlace a los demás para que se unan a <x id="INTERPOLATION" equiv-text="{{ league.name }}"/>. Solo se ve ahora: si lo pierdes, genera otro desde la liga. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">4,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.goToLeague" datatype="html">
+        <source> Ir a la liga </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">10,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.title" datatype="html">
+        <source>Crear liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.lead" datatype="html">
+        <source> La liga es de tu equipo: tú la administras y juegas en ella como uno más. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">16,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.name" datatype="html">
+        <source>Nombre de la liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.nameHint" datatype="html">
+        <source>Lo verán todos los que se unan.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">22,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.submit" datatype="html">
+        <source> Crear liga </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.html</context>
+          <context context-type="linenumber">38,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.created" datatype="html">
+        <source>Liga creada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.nameRequired" datatype="html">
+        <source>Escribe el nombre de la liga.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/create-league-page.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitationLink.label" datatype="html">
+        <source>Enlace de invitación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-link.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitationLink.share" datatype="html">
+        <source>Compartir enlace</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-link.ts</context>
+          <context context-type="linenumber">30,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitationLink.copy" datatype="html">
+        <source>Copiar enlace</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-link.ts</context>
+          <context context-type="linenumber">33,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitationLink.shareTitle" datatype="html">
+        <source>Únete a <x id="league" equiv-text="this.leagueName()"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-link.ts</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitationLink.shareText" datatype="html">
+        <source>Juega en <x id="league" equiv-text="this.leagueName()"/> con nosotros en BuddyFantasy.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-link.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitationLink.copied" datatype="html">
+        <source>Enlace copiado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-link.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitationLink.copyFailed" datatype="html">
+        <source>No se pudo copiar el enlace. Cópialo a mano.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-link.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.title" datatype="html">
+        <source>Invitación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.invalid" datatype="html">
+        <source> Este enlace de invitación ya no vale. Pide uno nuevo a quien lleva la liga. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.toLeagues" datatype="html">
+        <source> Ver tus ligas </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.html</context>
+          <context context-type="linenumber">9,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.invited" datatype="html">
+        <source>Te han invitado a jugar en</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.alreadyMember" datatype="html">
+        <source>Ya juegas en esta liga.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.html</context>
+          <context context-type="linenumber">19,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.goToLeague" datatype="html">
+        <source>Ir a la liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.html</context>
+          <context context-type="linenumber">33,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.join" datatype="html">
+        <source>Unirme a la liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.html</context>
+          <context context-type="linenumber">35,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.joined" datatype="html">
+        <source>Te has unido a <x id="league" equiv-text="preview.leagueName"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/invitation-page.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.home.since" datatype="html">
+        <source>Creada el <x id="INTERPOLATION" equiv-text="{{ league.createdAt | bfDate: &apos;day&apos; }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-home-page.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.home.empty" datatype="html">
+        <source> Aquí verás la jornada: el próximo partido, tu alineación y los plazos para valorar. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-home-page.html</context>
+          <context context-type="linenumber">8,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.home.invite" datatype="html">
+        <source>Invitar a tu equipo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-home-page.html</context>
+          <context context-type="linenumber">18,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.leagues.pageTitle" datatype="html">
+        <source>Tus ligas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.create.pageTitle" datatype="html">
+        <source>Crear liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.invitation.pageTitle" datatype="html">
+        <source>Invitación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.home.pageTitle" datatype="html">
+        <source>Jornada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.pageTitle" datatype="html">
+        <source>Miembros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.admin.members.pageTitle" datatype="html">
+        <source>Miembros e invitación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.leagues.title" datatype="html">
+        <source>Tus ligas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/leagues-page.html</context>
+          <context context-type="linenumber">1,3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.leagues.empty" datatype="html">
+        <source> Aún no juegas en ninguna liga. Crea la de tu equipo o pide el enlace de invitación a quien la lleve. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/leagues-page.html</context>
+          <context context-type="linenumber">6,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.leagues.createFirst" datatype="html">
+        <source>Crear liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/leagues-page.html</context>
+          <context context-type="linenumber">11,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.leagues.create" datatype="html">
+        <source>Crear liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/leagues-page.html</context>
+          <context context-type="linenumber">35,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.leagues.invited" datatype="html">
+        <source> ¿Te han invitado? Abre el enlace que te pasaron. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/leagues-page.html</context>
+          <context context-type="linenumber">38,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.unknownName" datatype="html">
+        <source>Usuario sin nombre</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/member-list.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.you" datatype="html">
+        <source>(tú)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/member-list.ts</context>
+          <context context-type="linenumber">29,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.since" datatype="html">
+        <source>Desde el <x id="INTERPOLATION" equiv-text="{{ member.joinedAt | bfDate: &apos;day&apos; }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/member-list.ts</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.remove" datatype="html">
+        <source>Expulsar a <x id="name" equiv-text="name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/member-list.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.title" datatype="html">
+        <source>Miembros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.html</context>
+          <context context-type="linenumber">3,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.manage" datatype="html">
+        <source> Invitar y gestionar miembros </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.html</context>
+          <context context-type="linenumber">12,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.adminCannotLeave" datatype="html">
+        <source> Como administrador, no puedes salir de la liga. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.html</context>
+          <context context-type="linenumber">31,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.leave" datatype="html">
+        <source> Salir de la liga </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.html</context>
+          <context context-type="linenumber">44,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.leaveTitle" datatype="html">
+        <source>¿Salir de <x id="league" equiv-text="league.name"/>?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.leaveMessage" datatype="html">
+        <source>Dejarás de ver la liga. Podrás volver si te pasan un enlace de invitación.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.leaveConfirm" datatype="html">
+        <source>Salir de la liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.members.left" datatype="html">
+        <source>Has salido de <x id="league" equiv-text="league.name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/members-page.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.confirm.cancel" datatype="html">
+        <source> Cancelar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/confirm/confirm.ts</context>
+          <context context-type="linenumber">74,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.loadError.message" datatype="html">
+        <source> No se ha podido cargar. Comprueba la conexión y vuelve a intentarlo. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/load-error/load-error.ts</context>
+          <context context-type="linenumber">16,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.loadError.retry" datatype="html">
+        <source> Reintentar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/load-error/load-error.ts</context>
+          <context context-type="linenumber">19,22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ui.toaster.label" datatype="html">

@@ -1,0 +1,34 @@
+@use 'page';
+
+:host,
+.form {
+  @include page.page;
+}
+
+.form {
+  flex: 1;
+  margin-top: var(--bf-space-5);
+}
+
+h1 {
+  @include page.title;
+}
+
+.lead {
+  max-width: 40ch;
+  margin-top: var(--bf-space-2);
+  color: var(--bf-color-text-muted);
+}
+
+.link {
+  margin-top: var(--bf-space-5);
+}
+
+.actions {
+  @include page.actions;
+}
+
+// It takes the focus when the league is created, for screen readers: there is nothing to operate.
+h1:focus {
+  outline: none;
+}

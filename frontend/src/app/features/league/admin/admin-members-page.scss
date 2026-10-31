@@ -1,0 +1,37 @@
+@use 'ui/styles/typography' as type;
+@use '../page';
+
+:host {
+  display: block;
+  max-width: page.$max-width;
+}
+
+h1 {
+  @include page.title;
+}
+
+.section {
+  display: grid;
+  gap: var(--bf-space-3);
+  margin-top: var(--bf-space-6);
+}
+
+h2 {
+  @include type.display(4);
+}
+
+.muted {
+  max-width: 48ch;
+  color: var(--bf-color-text-muted);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-3);
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+}

@@ -1,0 +1,31 @@
+@use 'ui/styles/typography' as type;
+@use 'page';
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+.preview {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}
+
+.invited,
+.member {
+  color: var(--bf-color-text-muted);
+}
+
+.league {
+  @include type.display(5);
+
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  @include page.actions;
+}

@@ -1,0 +1,60 @@
+@use 'ui/styles/typography' as type;
+
+.login {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: var(--bf-space-6) var(--bf-space-4) max(var(--bf-space-5), env(safe-area-inset-bottom));
+}
+
+.wordmark {
+  @include type.display(4);
+}
+
+// The only movement that answers nothing the user does: the four bibs drop in, one after another.
+.lineup {
+  display: flex;
+  gap: var(--bf-space-3);
+  margin: auto 0 var(--bf-space-5);
+
+  bf-bib {
+    animation: drop var(--bf-motion-base) var(--bf-ease-out) both;
+
+    @for $i from 2 through 4 {
+      &:nth-child(#{$i}) {
+        animation-delay: ($i - 1) * 80ms;
+      }
+    }
+  }
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+h1 {
+  @include type.display(8);
+}
+
+.lead {
+  max-width: 30ch;
+  margin-top: var(--bf-space-3);
+  color: var(--bf-color-text-muted);
+}
+
+.error {
+  margin-top: var(--bf-space-4);
+  padding: var(--bf-space-3);
+  border-left: 3px solid var(--bf-color-danger);
+  background-color: var(--bf-color-surface);
+  color: var(--bf-color-danger-text);
+}
+
+.google {
+  margin-top: var(--bf-space-6);
+}

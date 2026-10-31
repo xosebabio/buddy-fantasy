@@ -1,0 +1,28 @@
+<main class="login">
+  <bf-wordmark class="wordmark" />
+  <div class="lineup">
+    @for (bib of lineup; track bib.number) {
+      <bf-bib size="large" [position]="bib.position" [number]="bib.number" />
+    }
+  </div>
+  <h1 i18n="@@identity.login.title">El fantasy de tu equipo</h1>
+  <p class="lead" i18n="@@identity.login.lead">
+    Valora a los jugadores después de cada partido y compite con tu alineación.
+  </p>
+  @if (failed()) {
+    <p class="error" role="alert" i18n="@@identity.login.error">
+      No se pudo entrar con Google. Vuelve a intentarlo.
+    </p>
+  }
+  <button
+    bfButton
+    type="button"
+    class="google"
+    block
+    [disabled]="!online.online()"
+    (click)="session.login()"
+  >
+    <img src="/google.svg" alt="" width="20" height="20" />
+    <span i18n="@@identity.login.google">Entrar con Google</span>
+  </button>
+</main>

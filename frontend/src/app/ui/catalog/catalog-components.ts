@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IsActiveMatchOptions, RouterLink } from '@angular/router';
 import {
   LucideCheck,
@@ -25,7 +25,9 @@ import { Card } from '../card/card';
 import { EmptyState } from '../empty-state/empty-state';
 import { Field, FieldInput } from '../field/field';
 import { List, ListItem } from '../list/list';
+import { LoadError } from '../load-error/load-error';
 import { NavBar, NavItem, SideNav } from '../nav/nav';
+import { Segmented, type SegmentedOption } from '../segmented/segmented';
 import { Skeleton } from '../skeleton/skeleton';
 import { TopBar } from '../top-bar/top-bar';
 import { Wordmark } from '../top-bar/wordmark';
@@ -50,6 +52,7 @@ interface NavDemo {
     IconButton,
     List,
     ListItem,
+    LoadError,
     LucideCheck,
     LucideClock,
     LucideDynamicIcon,
@@ -61,6 +64,7 @@ interface NavDemo {
     NavBar,
     NavItem,
     RouterLink,
+    Segmented,
     SideNav,
     Skeleton,
     TopBar,
@@ -76,6 +80,13 @@ export class CatalogComponents {
     { name: 'Brais Otero', role: 'Manager' },
     { name: 'Iago', role: 'Manager' },
   ];
+
+  protected readonly themes: readonly SegmentedOption<string>[] = [
+    { value: 'system', label: 'Automático' },
+    { value: 'light', label: 'Claro' },
+    { value: 'dark', label: 'Oscuro' },
+  ];
+  protected readonly theme = signal('system');
 
   /** A green pixel, for an avatar with a picture without going to the network. */
   protected readonly picture =

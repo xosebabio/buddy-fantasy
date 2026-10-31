@@ -1,0 +1,47 @@
+@let current = league();
+
+<h1 i18n="@@league.members.title">Miembros</h1>
+
+@if (current?.role === 'ADMIN') {
+  <a
+    bfButton
+    class="manage"
+    [routerLink]="['/leagues', current?.leagueId, 'admin', 'members']"
+    i18n="@@league.members.manage"
+  >
+    Invitar y gestionar miembros
+  </a>
+}
+
+@if (members.error()) {
+  <bf-load-error (retry)="members.reload()" />
+} @else if (members.value(); as members) {
+  <bf-member-list class="list" [members]="members" [currentUserId]="session.user()?.id ?? null" />
+} @else {
+  <div class="list loading" aria-busy="true">
+    @for (row of [1, 2, 3]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}
+
+<div class="actions">
+  @if (current?.role === 'ADMIN') {
+    <p class="note" i18n="@@league.members.adminCannotLeave">
+      Como administrador, no puedes salir de la liga.
+    </p>
+  } @else {
+    <button
+      bfButton
+      type="button"
+      variant="danger"
+      block
+      [loading]="leaving()"
+      [disabled]="!online.online()"
+      (click)="leave()"
+      i18n="@@league.members.leave"
+    >
+      Salir de la liga
+    </button>
+  }
+</div>
