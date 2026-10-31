@@ -283,7 +283,7 @@ En el cambio de la tarea que los provoca:
 | 6 | Componentes y pipes de `shared/` de §6.4 | Catálogo de FE-19 (FE-19, FE-23) | ✅ |
 | 7 | Navegación de cinco destinos con prefijos, índice *Liga*, `onVisible` y `canDeactivate` (§4.2, §8) | Shell completo (FE-30) | ✅ |
 | 8 | Plantilla, ficha, calendario, partido y reglas | RF-07, RF-11 a RF-15 vistos por el manager | ✅ |
-| 9 | Alineación y alineaciones bloqueadas | RF-24 a RF-29 | |
+| 9 | Alineación y alineaciones bloqueadas | RF-24 a RF-29 | ✅ |
 | 10 | Valoraciones y valorar un partido | RF-17 a RF-23 | |
 | 11 | Clasificación general, puntos de una jornada e historial de un manager | RF-30 a RF-33 | |
 | 12 | Inicio de la jornada | RF-17, RF-25, RF-32 | |

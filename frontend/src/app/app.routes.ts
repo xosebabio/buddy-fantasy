@@ -6,6 +6,7 @@ import { ERROR_PAGES } from './core/pages/error-page-texts';
 import { devRoutes } from './dev.routes';
 import { identityRoutes, loginRoutes } from './features/identity/identity.routes';
 import { leagueAdminRoutes, leagueRoutes, leaguesRoutes } from './features/league/league.routes';
+import { lineupRoutes } from './features/lineup/lineup.routes';
 import { matchRoutes } from './features/match/match.routes';
 import { squadRoutes } from './features/squad/squad.routes';
 
@@ -35,6 +36,7 @@ export const routes: Routes = [
     children: [
       ...leagueRoutes,
       ...squadRoutes,
+      ...lineupRoutes,
       ...matchRoutes,
       { path: 'admin', canActivate: [adminGuard], children: leagueAdminRoutes },
     ],

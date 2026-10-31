@@ -6,7 +6,7 @@ import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
 import { loadSession } from '../../../core/auth/session.testing';
-import { MEMBERS } from '../members.testing';
+import { MEMBERS } from '../../../shared/roster/members.testing';
 import { AdminMembersPage } from './admin-members-page';
 
 describe('AdminMembersPage', () => {

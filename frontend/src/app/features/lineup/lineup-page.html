@@ -1,0 +1,121 @@
+@if (lineup.error() || settings.error() || squad.error()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (lineup.value(); as saved) {
+  @if (check(); as draft) {
+    @if (saved.targetMatch; as match) {
+      <header>
+        <h1 i18n="@@lineup.lineup.title">Jornada {{ match.matchday }}</h1>
+        <bf-countdown [until]="match.lockAt" (elapsed)="reload()" i18n="@@lineup.lineup.lockIn">
+          Se bloquea en
+        </bf-countdown>
+      </header>
+      <p class="kickoff">{{ match.kickoffAt | bfDate: 'dateTime' }}</p>
+    } @else {
+      <h1 i18n="@@lineup.lineup.titleNone">Tu alineación</h1>
+      <bf-notice i18n="@@lineup.lineup.noMatch">
+        No quedan partidos por jugar. Tu alineación contará para el siguiente que se programe.
+      </bf-notice>
+    }
+
+    <div class="summary">
+      <bf-figure [label]="budgetLabel" [tone]="draft.overBudgetBy > 0 ? 'danger' : 'neutral'">
+        {{ draft.total | bfMoney: 'number' }}
+        @if (saved.budget !== null) {
+          <span bfFigureUnit>/ {{ saved.budget | bfMoney }}</span>
+        }
+      </bf-figure>
+      <bf-figure [label]="changesLabel">
+        {{ saved.changesRemaining === null ? noLimit : saved.changesUsed }}
+        @if (saved.changesRemaining !== null) {
+          <span bfFigureUnit i18n="@@lineup.lineup.changesOf">de {{ saved.maxChanges }}</span>
+        }
+      </bf-figure>
+      <bf-segmented class="view" [label]="viewLabel" [options]="viewOptions" [(value)]="view" />
+    </div>
+
+    <div class="notices">
+      @if (draft.overBudgetBy > 0) {
+        <bf-notice tone="warning" i18n="@@lineup.lineup.overBudget">
+          Te pasas {{ draft.overBudgetBy | bfMoney }} del presupuesto. Puedes guardarla, pero si se
+          bloquea así no puntúa esta jornada.
+        </bf-notice>
+      }
+      @if (draft.retired > 0) {
+        <bf-notice tone="warning" i18n="@@lineup.lineup.retired">
+          Hay jugadores dados de baja. Cámbialos por otros: no cuenta como cambio.
+        </bf-notice>
+      }
+      @if (draft.excess > 0) {
+        <bf-notice tone="warning" i18n="@@lineup.lineup.excess">
+          Sobran {{ draft.excess }} jugadores para el tamaño de la alineación.
+        </bf-notice>
+      }
+      @if (draft.freeSpots.length > 0) {
+        <bf-notice i18n="@@lineup.lineup.free">
+          Faltan {{ draft.freeSpots.length }} jugadores para completar la alineación.
+        </bf-notice>
+      }
+      @if (draft.lacking.length > 0) {
+        <bf-notice tone="warning">
+          <span i18n="@@lineup.lineup.lacking">Faltan jugadores en:</span>
+          @for (position of draft.lacking; track position) {
+            {{ groupTexts[position] }}{{ $last ? '.' : ',' }}
+          }
+        </bf-notice>
+      }
+    </div>
+
+    @if (view() === 'field') {
+      <bf-pitch
+        [label]="lineupLabel"
+        [players]="players()"
+        [freeSpots]="draft.freeSpots"
+        [selected]="selected()"
+        (spotSelected)="edit($event)"
+      />
+    } @else {
+      <bf-lineup-list
+        [label]="lineupLabel"
+        [players]="players()"
+        [freeSpots]="draft.freeSpots"
+        [selected]="selected()"
+        (spotSelected)="edit($event)"
+      />
+    }
+
+    <div class="actions">
+      @if (unsaved()) {
+        <button
+          bfButton
+          type="button"
+          variant="quiet"
+          block
+          (click)="discard()"
+          i18n="@@lineup.lineup.discard"
+        >
+          Descartar cambios
+        </button>
+      }
+      <button
+        bfButton
+        type="button"
+        variant="primary"
+        block
+        [disabled]="!unsaved() || !online.online()"
+        [loading]="saving()"
+        (click)="save()"
+        i18n="@@lineup.lineup.save"
+      >
+        Guardar alineación
+      </button>
+    </div>
+  } @else {
+    <div class="loading" aria-busy="true"><bf-skeleton shape="block" /></div>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+    <bf-skeleton shape="block" />
+  </div>
+}

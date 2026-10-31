@@ -1,5 +1,5 @@
 import { leagueRules, scoringRows } from './rules';
-import { SETTINGS } from './settings.testing';
+import { SETTINGS } from '../../shared/roster/settings.testing';
 
 describe('leagueRules', () => {
   it('lists the lineup and rating parameters in the order of the page', () => {

@@ -1,0 +1,50 @@
+@use 'ui/styles/page';
+@use 'ui/styles/typography' as type;
+
+:host {
+  @include page.page;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-2) var(--bf-space-3);
+}
+
+h1 {
+  @include page.title;
+}
+
+.kickoff {
+  color: var(--bf-color-text-muted);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--bf-space-3) var(--bf-space-6);
+  margin: var(--bf-space-4) 0;
+}
+
+.view {
+  margin-inline-start: auto;
+}
+
+.notices {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-bottom: var(--bf-space-4);
+}
+
+.actions {
+  @include page.actions;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

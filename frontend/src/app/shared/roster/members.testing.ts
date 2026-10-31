@@ -1,11 +1,10 @@
 import type { MemberResponse } from '../../core/api/league/league-api';
-import { USER } from '../../core/auth/session.testing';
 
-/** The members of a league in the tests of its pages; only the tests import this file. */
+/** The members of a league in the tests of its pages; only the tests import this file. The first is the user of `session.testing`. */
 export const MEMBERS: MemberResponse[] = [
   {
-    userId: USER.id,
-    displayName: USER.displayName,
+    userId: 'u1',
+    displayName: 'Xosé Babío',
     avatarUrl: null,
     role: 'ADMIN',
     joinedAt: '2026-01-11T10:00:00Z',

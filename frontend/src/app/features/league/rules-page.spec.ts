@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { render, screen, within } from '@testing-library/angular';
 
 import { RulesPage } from './rules-page';
-import { SETTINGS } from './settings.testing';
+import { SETTINGS } from '../../shared/roster/settings.testing';
 
 describe('RulesPage', () => {
   let http: HttpTestingController;

@@ -1,6 +1,6 @@
 import { DestroyRef, DOCUMENT, inject, type Signal } from '@angular/core';
 import type { CanDeactivateFn } from '@angular/router';
-import { of } from 'rxjs';
+import { type Observable, of } from 'rxjs';
 
 import { Confirm } from '../../ui/confirm/confirm';
 
@@ -11,18 +11,21 @@ export interface HasUnsavedChanges {
 }
 
 /**
- * Asks before leaving a page with unsaved changes (`canDeactivate`), in the confirmation sheet and
- * with «Cancelar» as the safe answer. Leaves without asking if there is nothing to lose.
+ * Asks whether to leave a page with unsaved changes, in the confirmation sheet and with «Cancelar»
+ * as the safe answer. Call it in an injection context.
  */
+export function askToLeave(): Observable<boolean> {
+  return inject(Confirm).ask({
+    title: $localize`:@@core.unsavedChanges.title:¿Salir sin guardar?`,
+    message: $localize`:@@core.unsavedChanges.message:Tienes cambios sin guardar. Si sales, los perderás.`,
+    confirm: $localize`:@@core.unsavedChanges.confirm:Salir sin guardar`,
+    tone: 'danger',
+  });
+}
+
+/** Asks before leaving a page with unsaved changes (`canDeactivate`); leaves if there is nothing to lose. */
 export const unsavedChangesGuard: CanDeactivateFn<HasUnsavedChanges> = (page) =>
-  page.unsaved()
-    ? inject(Confirm).ask({
-        title: $localize`:@@core.unsavedChanges.title:¿Salir sin guardar?`,
-        message: $localize`:@@core.unsavedChanges.message:Tienes cambios sin guardar. Si sales, los perderás.`,
-        confirm: $localize`:@@core.unsavedChanges.confirm:Salir sin guardar`,
-        tone: 'danger',
-      })
-    : of(true);
+  page.unsaved() ? askToLeave() : of(true);
 
 /**
  * Makes the browser ask before closing or reloading the tab while `unsaved()` is true. Call it in an

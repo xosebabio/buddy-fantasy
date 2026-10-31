@@ -461,6 +461,27 @@
           <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="core.unsavedChanges.title" datatype="html">
+        <source>¿Salir sin guardar?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/unsaved-changes.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.unsavedChanges.message" datatype="html">
+        <source>Tienes cambios sin guardar. Si sales, los perderás.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/unsaved-changes.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.unsavedChanges.confirm" datatype="html">
+        <source>Salir sin guardar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/unsaved-changes.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="core.errorPage.forbidden.title" datatype="html">
         <source>Sin acceso</source>
         <context-group purpose="location">
@@ -1287,6 +1308,258 @@
           <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="lineup.candidates.current" datatype="html">
+        <source>En la alineación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/candidates-sheet.ts</context>
+          <context context-type="linenumber">54,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.candidates.over" datatype="html">
+        <source>Supera el presupuesto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/candidates-sheet.ts</context>
+          <context context-type="linenumber">59,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.candidates.remove" datatype="html">
+        <source> Quitar de la alineación </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/candidates-sheet.ts</context>
+          <context context-type="linenumber">77,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.title" datatype="html">
+        <source>Jornada <x id="INTERPOLATION" equiv-text="{{ match.matchday }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.lockIn" datatype="html">
+        <source> Se bloquea en </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">9,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.titleNone" datatype="html">
+        <source>Tu alineación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.noMatch" datatype="html">
+        <source> No quedan partidos por jugar. Tu alineación contará para el siguiente que se programe. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.changesOf" datatype="html">
+        <source>de <x id="INTERPOLATION" equiv-text="{{ saved.maxChanges }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.overBudget" datatype="html">
+        <source> Te pasas <x id="INTERPOLATION" equiv-text="{{ draft.overBudgetBy | bfMoney }}"/> del presupuesto. Puedes guardarla, pero si se bloquea así no puntúa esta jornada. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">39,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.retired" datatype="html">
+        <source> Hay jugadores dados de baja. Cámbialos por otros: no cuenta como cambio. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">45,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.excess" datatype="html">
+        <source> Sobran <x id="INTERPOLATION" equiv-text="{{ draft.excess }}"/> jugadores para el tamaño de la alineación. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">50,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.free" datatype="html">
+        <source> Faltan <x id="INTERPOLATION" equiv-text="{{ draft.freeSpots.length }}"/> jugadores para completar la alineación. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.lacking" datatype="html">
+        <source>Faltan jugadores en:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">60,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.discard" datatype="html">
+        <source> Descartar cambios </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">96,99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.save" datatype="html">
+        <source> Guardar alineación </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.html</context>
+          <context context-type="linenumber">109,111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.viewField" datatype="html">
+        <source>Campo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.viewList" datatype="html">
+        <source>Lista</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.budget" datatype="html">
+        <source>Presupuesto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.changes" datatype="html">
+        <source>Cambios</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.noLimit" datatype="html">
+        <source>Sin límite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.view" datatype="html">
+        <source>Vista</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.label" datatype="html">
+        <source>Tu alineación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.addTitle" datatype="html">
+        <source>Añadir un jugador</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.changeTitle" datatype="html">
+        <source>Cambiar a <x id="name" equiv-text="changing.name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">156</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.leftWith" datatype="html">
+        <source>Te quedan <x id="left" equiv-text="formatMoney(left)"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.leftWithout" datatype="html">
+        <source>Sin él te quedan <x id="left" equiv-text="formatMoney(left)"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">162</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.saved" datatype="html">
+        <source>Alineación guardada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">211</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.lockedNone" datatype="html">
+        <source>La jornada <x id="locked" equiv-text="locked"/> ya se ha bloqueado.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">235</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.lockedNext" datatype="html">
+        <source>La jornada <x id="locked" equiv-text="locked"/> ya se ha bloqueado. Lo que guardes cuenta para la <x id="next" equiv-text="next.matchday"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup-page.ts</context>
+          <context context-type="linenumber">236</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.lineup.pageTitle" datatype="html">
+        <source>Alineación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup.routes.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.locked.pageTitle" datatype="html">
+        <source>Alineaciones bloqueadas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/lineup.routes.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.locked.titleNone" datatype="html">
+        <source>Alineaciones</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/locked-lineups-page.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.locked.notLocked" datatype="html">
+        <source> Las alineaciones se verán cuando se bloqueen. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/locked-lineups-page.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.locked.title" datatype="html">
+        <source>Alineaciones de la jornada <x id="INTERPOLATION" equiv-text="{{ locked.value()?.matchday }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/locked-lineups-page.html</context>
+          <context context-type="linenumber">9,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.locked.overBudget" datatype="html">
+        <source>Fuera de presupuesto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/locked-lineups-page.html</context>
+          <context context-type="linenumber">18,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="lineup.locked.empty" datatype="html">
+        <source> Nadie guardó una alineación antes del bloqueo. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/lineup/locked-lineups-page.html</context>
+          <context context-type="linenumber">32,33</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="match.match.title" datatype="html">
         <source>Jornada <x id="INTERPOLATION" equiv-text="{{ match.matchday }}"/></source>
         <context-group purpose="location">
@@ -1585,6 +1858,13 @@
           <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="shared.lineup.freeSpot" datatype="html">
+        <source>Plaza libre</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/lineup/spot-label.ts</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="shared.position.goalkeeper" datatype="html">
         <source>Portero</source>
         <context-group purpose="location">
@@ -1737,6 +2017,48 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/ui/confirm/confirm.ts</context>
           <context context-type="linenumber">74,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.countdown.underAMinute" datatype="html">
+        <source>menos de 1 min</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/countdown/countdown.ts</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.countdown.days" datatype="html">
+        <source><x id="days" equiv-text="days"/> d</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/countdown/countdown.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.countdown.daysHours" datatype="html">
+        <source><x id="days" equiv-text="days"/> d <x id="hours" equiv-text="hours"/> h</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/countdown/countdown.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.countdown.hours" datatype="html">
+        <source><x id="hours" equiv-text="hours"/> h</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/countdown/countdown.ts</context>
+          <context context-type="linenumber">101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.countdown.hoursMinutes" datatype="html">
+        <source><x id="hours" equiv-text="hours"/> h <x id="minutes" equiv-text="minutes"/> min</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/countdown/countdown.ts</context>
+          <context context-type="linenumber">102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ui.countdown.minutes" datatype="html">
+        <source><x id="minutes" equiv-text="minutes"/> min</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/ui/countdown/countdown.ts</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ui.loadError.message" datatype="html">

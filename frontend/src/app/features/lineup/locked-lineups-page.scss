@@ -1,0 +1,19 @@
+@use 'ui/styles/page';
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+ul {
+  margin-top: var(--bf-space-3);
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

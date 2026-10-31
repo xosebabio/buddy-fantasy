@@ -1,0 +1,42 @@
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (notLocked()) {
+  <h1 i18n="@@lineup.locked.titleNone">Alineaciones</h1>
+  <bf-empty-state i18n="@@lineup.locked.notLocked">
+    Las alineaciones se verán cuando se bloqueen.
+  </bf-empty-state>
+} @else if (rows(); as rows) {
+  <h1 i18n="@@lineup.locked.title">Alineaciones de la jornada {{ locked.value()?.matchday }}</h1>
+  <ul bfList bleed>
+    @for (row of rows; track row.lineup.userId) {
+      <li bfDisclosure size="compact">
+        <bf-avatar bfListItemLeading [name]="row.name" [src]="row.avatarUrl" />
+        {{ row.name }}
+        <span bfListItemMeta>{{ row.lineup.totalValue | bfMoney }}</span>
+        @if (row.lineup.overBudget) {
+          <bf-badge bfListItemMeta tone="warning" i18n="@@lineup.locked.overBudget"
+            >Fuera de presupuesto</bf-badge
+          >
+        }
+        <ul bfDisclosurePanel bfList>
+          @for (entry of row.players; track entry.player.id) {
+            <li>
+              <bf-player-row [player]="entry.player" [value]="entry.value" />
+            </li>
+          }
+        </ul>
+      </li>
+    } @empty {
+      <li>
+        <bf-empty-state i18n="@@lineup.locked.empty">
+          Nadie guardó una alineación antes del bloqueo.
+        </bf-empty-state>
+      </li>
+    }
+  </ul>
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+  </div>
+}

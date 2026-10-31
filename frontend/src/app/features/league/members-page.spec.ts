@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { LEAGUES, loadSession } from '../../core/auth/session.testing';
 import { SessionStore } from '../../core/auth/session-store';
 import { MembersPage } from './members-page';
-import { MEMBERS } from './members.testing';
+import { MEMBERS } from '../../shared/roster/members.testing';
 
 describe('MembersPage', () => {
   let http: HttpTestingController;
