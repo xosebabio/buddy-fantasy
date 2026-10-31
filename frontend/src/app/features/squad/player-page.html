@@ -25,6 +25,18 @@
     </bf-figure>
   </div>
 
+  @if (isAdmin()) {
+    <a
+      bfButton
+      variant="quiet"
+      class="admin"
+      [routerLink]="['/leagues', leagueId(), 'admin', 'squad', player.id]"
+      i18n="@@squad.player.edit"
+    >
+      Editar jugador
+    </a>
+  }
+
   <h2 i18n="@@squad.player.matchdays">Jornadas</h2>
   @if (points.error()) {
     <bf-load-error (retry)="points.reload()" />

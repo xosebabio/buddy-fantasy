@@ -3,10 +3,12 @@ import { RouterLink } from '@angular/router';
 
 import { MatchApi } from '../../core/api/match/match-api';
 import { SquadApi } from '../../core/api/squad/squad-api';
+import { SessionStore } from '../../core/auth/session-store';
 import { PlayerRow } from '../../shared/player/player-row';
 import { playerIndex } from '../../shared/roster/roster';
 import { VENUE_TEXTS } from '../../shared/match/venue';
 import { BfDatePipe } from '../../shared/time/date-pipe';
+import { Button } from '../../ui/button/button';
 import { EmptyState } from '../../ui/empty-state/empty-state';
 import { List, ListItem } from '../../ui/list/list';
 import { LoadError } from '../../ui/load-error/load-error';
@@ -19,7 +21,17 @@ import { performanceSummary } from '../../shared/performance/performance';
  */
 @Component({
   selector: 'bf-match-page',
-  imports: [BfDatePipe, EmptyState, List, ListItem, LoadError, PlayerRow, RouterLink, Skeleton],
+  imports: [
+    BfDatePipe,
+    Button,
+    EmptyState,
+    List,
+    ListItem,
+    LoadError,
+    PlayerRow,
+    RouterLink,
+    Skeleton,
+  ],
   templateUrl: './match-page.html',
   styleUrl: './match-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,6 +39,12 @@ import { performanceSummary } from '../../shared/performance/performance';
 export class MatchPage {
   readonly leagueId = input<string>();
   readonly matchId = input<string>();
+
+  private readonly session = inject(SessionStore);
+
+  protected readonly isAdmin = computed(
+    () => this.session.league(this.leagueId() ?? '')?.role === 'ADMIN',
+  );
 
   protected readonly match = inject(MatchApi).match(this.leagueId, this.matchId);
   protected readonly players = inject(SquadApi).players(this.leagueId);

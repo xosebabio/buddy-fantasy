@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { render, screen, within } from '@testing-library/angular';
 
 import type { MatchResponse } from '../../core/api/match/match-api';
+import { loadSession, USER } from '../../core/auth/session.testing';
 import { PLAYERS } from '../../shared/roster/players.testing';
 import { CLOSED_MATCH, SCHEDULED_MATCH } from '../../shared/roster/matches.testing';
 import { MatchPage } from './match-page';
@@ -77,5 +78,24 @@ describe('MatchPage', () => {
     await fixture.whenStable();
 
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+  });
+
+  it('links the admin, and nobody else, to the administration of the match', async () => {
+    const { fixture } = await renderMatch('m11');
+    await loadSession();
+    answer('m11', CLOSED_MATCH);
+    await fixture.whenStable();
+    expect(screen.queryByRole('link', { name: 'Administrar partido' })).not.toBeInTheDocument();
+  });
+
+  it('shows the admin the way to administer the match', async () => {
+    const { fixture } = await renderMatch('m11');
+    await loadSession(USER, [{ leagueId: 'l2', name: 'Veteranos do Sar', role: 'ADMIN' as const }]);
+    answer('m11', CLOSED_MATCH);
+    await fixture.whenStable();
+    expect(screen.getByRole('link', { name: 'Administrar partido' })).toHaveAttribute(
+      'href',
+      '/leagues/l2/admin/matches/m11',
+    );
   });
 });

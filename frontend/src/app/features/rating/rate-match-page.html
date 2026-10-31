@@ -87,6 +87,18 @@
       }
     </ul>
 
+    @if (isAdmin()) {
+      <a
+        bfButton
+        variant="quiet"
+        class="admin"
+        [routerLink]="['/leagues', leagueId(), 'admin', 'ratings', ratings.matchId]"
+        i18n="@@rating.rate.cancel"
+      >
+        Cancelar valoraciones de un manager
+      </a>
+    }
+
     <div class="actions">
       @if (canRate()) {
         <button

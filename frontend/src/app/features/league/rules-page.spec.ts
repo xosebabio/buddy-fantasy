@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { render, screen, within } from '@testing-library/angular';
 
+import { provideRouter } from '@angular/router';
+import { loadSession, USER } from '../../core/auth/session.testing';
 import { RulesPage } from './rules-page';
 import { SETTINGS } from '../../shared/roster/settings.testing';
 
@@ -16,7 +18,7 @@ describe('RulesPage', () => {
   async function renderRules() {
     const result = await render(RulesPage, {
       inputs: { leagueId: 'l2' },
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     http = TestBed.inject(HttpTestingController);
     return result;
@@ -56,5 +58,24 @@ describe('RulesPage', () => {
     await fixture.whenStable();
 
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+  });
+
+  it('links the admin, and nobody else, to the parameters', async () => {
+    const { fixture } = await renderRules();
+    await loadSession();
+    http.expectOne('/api/leagues/l2/settings').flush(SETTINGS);
+    await fixture.whenStable();
+    expect(screen.queryByRole('link', { name: 'Cambiar parámetros' })).not.toBeInTheDocument();
+  });
+
+  it('shows the admin the way to change the parameters', async () => {
+    const { fixture } = await renderRules();
+    await loadSession(USER, [{ leagueId: 'l2', name: 'Veteranos do Sar', role: 'ADMIN' as const }]);
+    http.expectOne('/api/leagues/l2/settings').flush(SETTINGS);
+    await fixture.whenStable();
+    expect(screen.getByRole('link', { name: 'Cambiar parámetros' })).toHaveAttribute(
+      'href',
+      '/leagues/l2/admin/settings',
+    );
   });
 });

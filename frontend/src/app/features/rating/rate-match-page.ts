@@ -12,6 +12,7 @@ import { RouterLink } from '@angular/router';
 import { MatchApi, type MatchResultResponse } from '../../core/api/match/match-api';
 import { RatingApi } from '../../core/api/rating/rating-api';
 import { SquadApi } from '../../core/api/squad/squad-api';
+import { SessionStore } from '../../core/auth/session-store';
 import { handling } from '../../core/http/error-interceptor';
 import { ERROR_TEXTS } from '../../core/http/error-texts';
 import { Online } from '../../core/http/online';
@@ -77,8 +78,12 @@ export class RateMatchPage implements HasUnsavedChanges {
 
   private readonly ratingApi = inject(RatingApi);
   private readonly toasts = inject(Toasts);
+  private readonly session = inject(SessionStore);
 
   protected readonly online = inject(Online);
+  protected readonly isAdmin = computed(
+    () => this.session.league(this.leagueId() ?? '')?.role === 'ADMIN',
+  );
   protected readonly ratings = this.ratingApi.ratings(this.leagueId, this.matchId, handling(409));
   protected readonly match = inject(MatchApi).match(this.leagueId, this.matchId);
   protected readonly squad = inject(SquadApi).players(this.leagueId);

@@ -9,6 +9,7 @@ import type { MatchRatingsResponse, PlayerRatingResponse } from '../../core/api/
 import { PLAYERS } from '../../shared/roster/players.testing';
 import { Toasts } from '../../ui/toast/toasts';
 import { CLOSED_MATCH } from '../../shared/roster/matches.testing';
+import { loadSession, USER } from '../../core/auth/session.testing';
 import { RateMatchPage } from './rate-match-page';
 
 function rating(overrides: Partial<PlayerRatingResponse>): PlayerRatingResponse {
@@ -237,5 +238,22 @@ describe('RateMatchPage', () => {
     });
 
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+  });
+
+  it('links the admin, and nobody else, to cancelling the ratings of a manager', async () => {
+    const { fixture } = await renderPage();
+    await loadSession();
+    await fixture.whenStable();
+    expect(screen.queryByRole('link', { name: /Cancelar valoraciones/ })).not.toBeInTheDocument();
+  });
+
+  it('shows the admin the way to cancel the ratings of a manager', async () => {
+    const { fixture } = await renderPage();
+    await loadSession(USER, [{ leagueId: 'l2', name: 'Veteranos do Sar', role: 'ADMIN' as const }]);
+    await fixture.whenStable();
+    expect(screen.getByRole('link', { name: /Cancelar valoraciones/ })).toHaveAttribute(
+      'href',
+      '/leagues/l2/admin/ratings/m11',
+    );
   });
 });

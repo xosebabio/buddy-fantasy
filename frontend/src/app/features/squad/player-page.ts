@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
+import { SessionStore } from '../../core/auth/session-store';
 import { ScoringApi, type PlayerMatchdayResponse } from '../../core/api/scoring/scoring-api';
 import { SquadApi } from '../../core/api/squad/squad-api';
 import { Bib } from '../../shared/bib/bib';
@@ -9,6 +11,7 @@ import { Points } from '../../shared/scoring/points';
 import { PointsBreakdown } from '../../shared/scoring/points-breakdown';
 import { BfDatePipe } from '../../shared/time/date-pipe';
 import { Badge } from '../../ui/badge/badge';
+import { Button } from '../../ui/button/button';
 import { Disclosure } from '../../ui/disclosure/disclosure';
 import { EmptyState } from '../../ui/empty-state/empty-state';
 import { Figure } from '../../ui/figure/figure';
@@ -31,6 +34,7 @@ export function latestFirst(
   selector: 'bf-player-page',
   imports: [
     Badge,
+    Button,
     BfDatePipe,
     BfMoneyPipe,
     Bib,
@@ -42,6 +46,7 @@ export function latestFirst(
     Points,
     PointsBreakdown,
     PositionChip,
+    RouterLink,
     Skeleton,
   ],
   templateUrl: './player-page.html',
@@ -51,6 +56,12 @@ export function latestFirst(
 export class PlayerPage {
   readonly leagueId = input<string>();
   readonly playerId = input<string>();
+
+  private readonly session = inject(SessionStore);
+
+  protected readonly isAdmin = computed(
+    () => this.session.league(this.leagueId() ?? '')?.role === 'ADMIN',
+  );
 
   protected readonly player = inject(SquadApi).player(this.leagueId, this.playerId);
   protected readonly points = inject(ScoringApi).playerPoints(this.leagueId, this.playerId);

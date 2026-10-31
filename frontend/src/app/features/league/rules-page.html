@@ -35,6 +35,18 @@
       </tbody>
     </table>
   </div>
+
+  @if (isAdmin()) {
+    <a
+      bfButton
+      variant="quiet"
+      class="admin"
+      [routerLink]="['/leagues', leagueId(), 'admin', 'settings']"
+      i18n="@@league.rules.change"
+    >
+      Cambiar parámetros
+    </a>
+  }
 } @else {
   <div class="loading" aria-busy="true">
     @for (row of [1, 2, 3, 4]; track row) {

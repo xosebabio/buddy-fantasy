@@ -16,3 +16,6 @@ export const ratingRoutes: Routes = [
     title: $localize`:@@rating.rate.pageTitle:Valorar un partido`,
   },
 ];
+
+/** The admin pages of the ratings, under `leagues/:leagueId/admin`. */
+export const ratingAdminRoutes: Routes = [];

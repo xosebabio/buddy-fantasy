@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { LeagueApi } from '../../core/api/league/league-api';
+import { SessionStore } from '../../core/auth/session-store';
 import { POSITION_GROUP_TEXTS, POSITIONS } from '../../shared/position/position';
 import { Points } from '../../shared/scoring/points';
+import { Button } from '../../ui/button/button';
 import { LoadError } from '../../ui/load-error/load-error';
 import { Skeleton } from '../../ui/skeleton/skeleton';
 import { leagueRules, scoringRows } from './rules';
@@ -10,7 +13,7 @@ import { leagueRules, scoringRows } from './rules';
 /** The rules of the league (RF-07, RF-15), read-only: how a lineup is made and how each action scores. */
 @Component({
   selector: 'bf-rules-page',
-  imports: [LoadError, Points, Skeleton],
+  imports: [Button, LoadError, Points, RouterLink, Skeleton],
   templateUrl: './rules-page.html',
   styleUrl: './rules-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +21,11 @@ import { leagueRules, scoringRows } from './rules';
 export class RulesPage {
   readonly leagueId = input<string>();
 
+  private readonly session = inject(SessionStore);
+
+  protected readonly isAdmin = computed(
+    () => this.session.league(this.leagueId() ?? '')?.role === 'ADMIN',
+  );
   protected readonly settings = inject(LeagueApi).settings(this.leagueId);
   protected readonly rules = computed(() => {
     const settings = this.settings.value();

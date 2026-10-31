@@ -13,3 +13,6 @@ export const squadRoutes: Routes = [
     title: $localize`:@@squad.player.pageTitle:Jugador`,
   },
 ];
+
+/** The admin pages of the squad, under `leagues/:leagueId/admin`. */
+export const squadAdminRoutes: Routes = [];

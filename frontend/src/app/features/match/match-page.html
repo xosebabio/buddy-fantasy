@@ -11,6 +11,18 @@
     <p class="score">{{ result.goalsFor }}–{{ result.goalsAgainst }}</p>
   }
 
+  @if (isAdmin()) {
+    <a
+      bfButton
+      variant="quiet"
+      class="admin"
+      [routerLink]="['/leagues', leagueId(), 'admin', 'matches', match.id]"
+      i18n="@@match.match.admin"
+    >
+      Administrar partido
+    </a>
+  }
+
   @if (match.status === 'CLOSED') {
     <ul bfList bleed class="links">
       <li>

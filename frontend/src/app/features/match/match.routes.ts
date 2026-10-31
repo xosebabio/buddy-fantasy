@@ -13,3 +13,6 @@ export const matchRoutes: Routes = [
     title: $localize`:@@match.match.pageTitle:Partido`,
   },
 ];
+
+/** The admin pages of the calendar, under `leagues/:leagueId/admin`. */
+export const matchAdminRoutes: Routes = [];

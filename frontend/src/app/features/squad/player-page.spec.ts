@@ -5,6 +5,8 @@ import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
 import type { PlayerMatchdayResponse } from '../../core/api/scoring/scoring-api';
+import { provideRouter } from '@angular/router';
+import { loadSession, USER } from '../../core/auth/session.testing';
 import { latestFirst, PlayerPage } from './player-page';
 import { PABLO, XURXO } from '../../shared/roster/players.testing';
 
@@ -41,7 +43,7 @@ describe('PlayerPage', () => {
   async function renderPlayer(playerId = 'p9') {
     const result = await render(PlayerPage, {
       inputs: { leagueId: 'l2', playerId },
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     http = TestBed.inject(HttpTestingController);
     return result;
@@ -95,6 +97,26 @@ describe('PlayerPage', () => {
     await fixture.whenStable();
 
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+  });
+  it('shows the admin, and nobody else, the way to edit the player', async () => {
+    const { fixture } = await renderPlayer();
+    await loadSession();
+    http.expectOne('/api/leagues/l2/players/p9').flush(PABLO);
+    http.expectOne('/api/leagues/l2/players/p9/points').flush(POINTS);
+    await fixture.whenStable();
+    expect(screen.queryByRole('link', { name: 'Editar jugador' })).not.toBeInTheDocument();
+  });
+
+  it('links the admin to the edition of the player', async () => {
+    const { fixture } = await renderPlayer();
+    await loadSession(USER, [{ leagueId: 'l2', name: 'Veteranos do Sar', role: 'ADMIN' as const }]);
+    http.expectOne('/api/leagues/l2/players/p9').flush(PABLO);
+    http.expectOne('/api/leagues/l2/players/p9/points').flush(POINTS);
+    await fixture.whenStable();
+    expect(screen.getByRole('link', { name: 'Editar jugador' })).toHaveAttribute(
+      'href',
+      '/leagues/l2/admin/squad/p9',
+    );
   });
 });
 

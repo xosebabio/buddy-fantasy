@@ -31,8 +31,33 @@
 
   @if (league.role === 'ADMIN') {
     <section aria-labelledby="admin-title">
-      <h2 id="admin-title" i18n="@@league.index.admin">Administrar</h2>
+      <header>
+        <h2 id="admin-title" i18n="@@league.index.admin">Administrar</h2>
+        <bf-badge tone="accent" i18n="@@league.index.adminBadge">Admin</bf-badge>
+      </header>
       <ul bfList bleed class="links">
+        <li>
+          <a bfListItem [routerLink]="['/leagues', league.leagueId, 'admin', 'settings']">
+            <ng-container i18n="@@league.index.adminSettings">Parámetros</ng-container>
+            <span bfListItemMeta i18n="@@league.index.adminSettingsMeta">
+              Reglas, plazos y tabla de puntos
+            </span>
+          </a>
+        </li>
+        <li>
+          <a bfListItem [routerLink]="['/leagues', league.leagueId, 'admin', 'squad']">
+            <ng-container i18n="@@league.index.adminSquad">Jugadores</ng-container>
+            <span bfListItemMeta i18n="@@league.index.adminSquadMeta">Altas, cambios y bajas</span>
+          </a>
+        </li>
+        <li>
+          <a bfListItem [routerLink]="['/leagues', league.leagueId, 'admin', 'matches']">
+            <ng-container i18n="@@league.index.adminMatches">Partidos</ng-container>
+            <span bfListItemMeta i18n="@@league.index.adminMatchesMeta">
+              Calendario, actas y cierres
+            </span>
+          </a>
+        </li>
         <li>
           <a bfListItem [routerLink]="['/leagues', league.leagueId, 'admin', 'members']">
             <ng-container i18n="@@league.index.adminMembers">Miembros e invitación</ng-container>

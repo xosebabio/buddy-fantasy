@@ -52,6 +52,16 @@ describe('LeagueIndexPage', () => {
     await renderIndex('l1');
 
     const admin = screen.getByRole('region', { name: 'Administrar' });
+    for (const [name, page] of [
+      [/^Parámetros/, 'settings'],
+      [/^Jugadores/, 'squad'],
+      [/^Partidos/, 'matches'],
+    ] as const) {
+      expect(within(admin).getByRole('link', { name })).toHaveAttribute(
+        'href',
+        `/leagues/l1/admin/${page}`,
+      );
+    }
     expect(within(admin).getByRole('link', { name: /Miembros e invitación/ })).toHaveAttribute(
       'href',
       '/leagues/l1/admin/members',

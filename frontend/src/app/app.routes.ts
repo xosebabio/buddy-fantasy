@@ -7,10 +7,10 @@ import { devRoutes } from './dev.routes';
 import { identityRoutes, loginRoutes } from './features/identity/identity.routes';
 import { leagueAdminRoutes, leagueRoutes, leaguesRoutes } from './features/league/league.routes';
 import { lineupRoutes } from './features/lineup/lineup.routes';
-import { matchRoutes } from './features/match/match.routes';
-import { ratingRoutes } from './features/rating/rating.routes';
+import { matchAdminRoutes, matchRoutes } from './features/match/match.routes';
+import { ratingAdminRoutes, ratingRoutes } from './features/rating/rating.routes';
 import { scoringRoutes } from './features/scoring/scoring.routes';
-import { squadRoutes } from './features/squad/squad.routes';
+import { squadAdminRoutes, squadRoutes } from './features/squad/squad.routes';
 
 // Lazy as well, to keep the initial bundle under its budget (RNF-13).
 const shell = () => import('./core/layout/shell').then((m) => m.Shell);
@@ -42,7 +42,16 @@ export const routes: Routes = [
       ...matchRoutes,
       ...ratingRoutes,
       ...scoringRoutes,
-      { path: 'admin', canActivate: [adminGuard], children: leagueAdminRoutes },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        children: [
+          ...leagueAdminRoutes,
+          ...squadAdminRoutes,
+          ...matchAdminRoutes,
+          ...ratingAdminRoutes,
+        ],
+      },
     ],
   },
   {

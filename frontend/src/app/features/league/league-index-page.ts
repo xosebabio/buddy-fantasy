@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { RouterLink } from '@angular/router';
 
 import { SessionStore } from '../../core/auth/session-store';
+import { Badge } from '../../ui/badge/badge';
 import { List, ListItem } from '../../ui/list/list';
 
 /**
@@ -10,7 +11,7 @@ import { List, ListItem } from '../../ui/list/list';
  */
 @Component({
   selector: 'bf-league-index-page',
-  imports: [List, ListItem, RouterLink],
+  imports: [Badge, List, ListItem, RouterLink],
   templateUrl: './league-index-page.html',
   styleUrl: './league-index-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
