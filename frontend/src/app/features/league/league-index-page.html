@@ -1,0 +1,47 @@
+@if (league(); as league) {
+  <h1 i18n="@@league.index.title">Liga</h1>
+  <p class="name">{{ league.name }}</p>
+
+  <ul bfList bleed class="links">
+    <li>
+      <a bfListItem [routerLink]="['/leagues', league.leagueId, 'squad']">
+        <ng-container i18n="@@league.index.squad">Plantilla</ng-container>
+        <span bfListItemMeta i18n="@@league.index.squadMeta">Jugadores, valor y puntos</span>
+      </a>
+    </li>
+    <li>
+      <a bfListItem [routerLink]="['/leagues', league.leagueId, 'matches']">
+        <ng-container i18n="@@league.index.calendar">Calendario</ng-container>
+        <span bfListItemMeta i18n="@@league.index.calendarMeta">Partidos y resultados</span>
+      </a>
+    </li>
+    <li>
+      <a bfListItem [routerLink]="['/leagues', league.leagueId, 'rules']">
+        <ng-container i18n="@@league.index.rules">Reglas</ng-container>
+        <span bfListItemMeta i18n="@@league.index.rulesMeta">Cómo se puntúa y se juega</span>
+      </a>
+    </li>
+    <li>
+      <a bfListItem [routerLink]="['/leagues', league.leagueId, 'members']">
+        <ng-container i18n="@@league.index.members">Miembros</ng-container>
+        <span bfListItemMeta i18n="@@league.index.membersMeta">Quién juega en la liga</span>
+      </a>
+    </li>
+  </ul>
+
+  @if (league.role === 'ADMIN') {
+    <section aria-labelledby="admin-title">
+      <h2 id="admin-title" i18n="@@league.index.admin">Administrar</h2>
+      <ul bfList bleed class="links">
+        <li>
+          <a bfListItem [routerLink]="['/leagues', league.leagueId, 'admin', 'members']">
+            <ng-container i18n="@@league.index.adminMembers">Miembros e invitación</ng-container>
+            <span bfListItemMeta i18n="@@league.index.adminMembersMeta">
+              El enlace para invitar y quién puede jugar
+            </span>
+          </a>
+        </li>
+      </ul>
+    </section>
+  }
+}

@@ -26,11 +26,7 @@
       <a bfSideNavHeader class="home" routerLink="/"><bf-wordmark /></a>
       <bf-league-switcher bfSideNavHeader [league]="current" />
       @for (destination of destinations(); track destination.path) {
-        <a
-          bfNavItem
-          [routerLink]="destination.link"
-          [routerLinkActiveOptions]="{ exact: destination.exact }"
-        >
+        <a bfNavItem [routerLink]="destination.link" [active]="destination.active">
           <svg [lucideIcon]="destination.icon"></svg>
           {{ destination.label }}
         </a>
@@ -51,11 +47,7 @@
   @if (current) {
     <bf-nav-bar class="nav-bar" label="Principal" i18n-label="@@core.shell.nav.label">
       @for (destination of destinations(); track destination.path) {
-        <a
-          bfNavItem
-          [routerLink]="destination.link"
-          [routerLinkActiveOptions]="{ exact: destination.exact }"
-        >
+        <a bfNavItem [routerLink]="destination.link" [active]="destination.active">
           <svg [lucideIcon]="destination.icon"></svg>
           {{ destination.label }}
         </a>

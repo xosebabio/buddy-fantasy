@@ -33,6 +33,11 @@ export const leagueRoutes: Routes = [
     title: $localize`:@@league.home.pageTitle:Jornada`,
   },
   {
+    path: 'league',
+    loadComponent: () => import('./league-index-page').then((m) => m.LeagueIndexPage),
+    title: $localize`:@@league.index.pageTitle:Liga`,
+  },
+  {
     path: 'members',
     loadComponent: () => import('./members-page').then((m) => m.MembersPage),
     title: $localize`:@@league.members.pageTitle:Miembros`,

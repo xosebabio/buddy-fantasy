@@ -1,0 +1,26 @@
+@use 'ui/styles/typography' as type;
+@use 'page';
+
+:host {
+  display: block;
+  max-width: page.$max-width;
+}
+
+h1 {
+  @include page.title;
+}
+
+.name {
+  margin-top: var(--bf-space-1);
+  color: var(--bf-color-text-muted);
+}
+
+.links {
+  margin-top: var(--bf-space-5);
+}
+
+h2 {
+  @include type.display(4);
+
+  margin-top: var(--bf-space-6);
+}

@@ -42,7 +42,10 @@ test('the admin creates a league, invites a member, sees them and removes them',
   await brais.goto(link);
   await brais.getByRole('button', { name: 'Unirme a la liga' }).click();
   await expect(brais.getByRole('heading', { name: leagueName })).toBeVisible();
-  await brais.getByRole('link', { name: 'Liga' }).click();
+  await brais.getByRole('link', { name: 'Liga', exact: true }).click();
+  await expect(brais.getByRole('heading', { name: 'Liga', exact: true })).toBeVisible();
+  await expectAccessible(brais);
+  await brais.getByRole('link', { name: /^Miembros/ }).click();
   await expect(brais.getByRole('heading', { name: 'Miembros' })).toBeVisible();
   await expect(brais.getByText(`${member.displayName} (tú)`)).toBeVisible();
   await expectAccessible(brais);

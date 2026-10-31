@@ -155,7 +155,7 @@ Las piezas con dominio (FE-19) están en `shared/` y no salen en `/_ui`, que sol
 ```
 
 - Fuera de una liga (`/leagues`, `/profile`), la barra lleva el logotipo de texto «BuddyFantasy», con _Fantasy_ en `brand-text`, y no hay navegación inferior.
-- La navegación solo muestra los destinos que existen (FE-30).
+- La navegación solo muestra los destinos que existen (FE-30). Un destino que cubre varias rutas (_Liga_ cubre la plantilla, el calendario, las reglas…) recibe `[active]` de quien lo monta y ese valor manda sobre el de su enlace.
 - Con cinco destinos, cada uno crece desde el ancho de su texto (`flex: 1 1 auto`), no a partes iguales: a partes iguales, _Clasificación_ no cabe en 360 px a 13 px.
 - **`lg` (≥ 1024):** navegación lateral de 248 px en `surface` con el logotipo, el cambio de liga, los destinos (el activo con fondo `brand-subtle`) y el perfil abajo. El contenido va en dos columnas: la principal (el campo) y la de apoyo (cifras, banquillo y la acción).
 

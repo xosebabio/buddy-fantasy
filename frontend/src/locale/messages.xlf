@@ -366,6 +366,41 @@
           <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="core.shell.nav.matchday" datatype="html">
+        <source>Jornada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/destinations.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.shell.nav.lineup" datatype="html">
+        <source>Alineación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/destinations.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.shell.nav.ratings" datatype="html">
+        <source>Valorar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/destinations.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.shell.nav.standings" datatype="html">
+        <source>Clasificación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/destinations.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="core.shell.nav.league" datatype="html">
+        <source>Liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/core/layout/destinations.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="core.leagueSwitcher.title" datatype="html">
         <source>Cambiar de liga</source>
         <context-group purpose="location">
@@ -423,21 +458,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/layout/shell.html</context>
-          <context context-type="linenumber">52</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="core.shell.nav.matchday" datatype="html">
-        <source>Jornada</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/core/layout/shell.ts</context>
-          <context context-type="linenumber">26</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="core.shell.nav.league" datatype="html">
-        <source>Liga</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/core/layout/shell.ts</context>
-          <context context-type="linenumber">27</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="core.errorPage.forbidden.title" datatype="html">
@@ -895,6 +916,90 @@
           <context context-type="linenumber">18,21</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="league.index.title" datatype="html">
+        <source>Liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">2,3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.squad" datatype="html">
+        <source>Plantilla</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.squadMeta" datatype="html">
+        <source>Jugadores, valor y puntos</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">9,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.calendar" datatype="html">
+        <source>Calendario</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.calendarMeta" datatype="html">
+        <source>Partidos y resultados</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">15,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.rules" datatype="html">
+        <source>Reglas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.rulesMeta" datatype="html">
+        <source>Cómo se puntúa y se juega</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">21,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.members" datatype="html">
+        <source>Miembros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.membersMeta" datatype="html">
+        <source>Quién juega en la liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">27,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.admin" datatype="html">
+        <source>Administrar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.adminMembers" datatype="html">
+        <source>Miembros e invitación</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">38,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="league.index.adminMembersMeta" datatype="html">
+        <source> El enlace para invitar y quién puede jugar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league-index-page.html</context>
+          <context context-type="linenumber">40,42</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="league.leagues.pageTitle" datatype="html">
         <source>Tus ligas</source>
         <context-group purpose="location">
@@ -923,18 +1028,25 @@
           <context context-type="linenumber">33</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="league.index.pageTitle" datatype="html">
+        <source>Liga</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="league.members.pageTitle" datatype="html">
         <source>Miembros</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="league.admin.members.pageTitle" datatype="html">
         <source>Miembros e invitación</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/league/league.routes.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="league.leagues.title" datatype="html">

@@ -30,6 +30,12 @@ const routes = [
     component: Shell,
     children: [
       { path: '', component: Page },
+      { path: 'lineup', component: Page },
+      { path: 'lineups/:matchId', component: Page },
+      { path: 'ratings', component: Page },
+      { path: 'standings', component: Page },
+      { path: 'league', component: Page },
+      { path: 'squad/:playerId', component: Page },
       { path: 'members', component: Page },
     ],
   },
@@ -83,17 +89,55 @@ describe('Shell', () => {
     );
   });
 
-  it('in a league, navigates between the destinations that exist', async () => {
-    const { container } = await renderAt('/leagues/l1/members');
-
+  async function navBar(url: string) {
+    const { container } = await renderAt(url);
     const bar = container.querySelector('bf-nav-bar');
     expect(bar).not.toBeNull();
-    const nav = within(bar instanceof HTMLElement ? bar : document.body);
-    const links = nav.getAllByRole('link');
-    expect(links.map((link) => link.textContent.trim())).toEqual(['Jornada', 'Liga']);
-    expect(nav.getByRole('link', { name: 'Jornada' })).toHaveAttribute('href', '/leagues/l1');
-    expect(nav.getByRole('link', { name: 'Jornada' })).not.toHaveAttribute('aria-current');
+    return within(bar instanceof HTMLElement ? bar : document.body);
+  }
+
+  it('in a league, has the five destinations', async () => {
+    const nav = await navBar('/leagues/l1');
+
+    expect(nav.getAllByRole('link').map((link) => link.textContent.trim())).toEqual([
+      'Jornada',
+      'Alineación',
+      'Valorar',
+      'Clasificación',
+      'Liga',
+    ]);
+    expect(nav.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/leagues/l1',
+      '/leagues/l1/lineup',
+      '/leagues/l1/ratings',
+      '/leagues/l1/standings',
+      '/leagues/l1/league',
+    ]);
+  });
+
+  it.each([
+    ['/leagues/l1', 'Jornada'],
+    ['/leagues/l1/lineup', 'Alineación'],
+    ['/leagues/l1/lineups/m1', 'Alineación'],
+    ['/leagues/l1/ratings', 'Valorar'],
+    ['/leagues/l1/standings', 'Clasificación'],
+    ['/leagues/l1/league', 'Liga'],
+    ['/leagues/l1/squad/p1', 'Liga'],
+    ['/leagues/l1/members', 'Liga'],
+  ])('at %s, marks only «%s» as the current destination', async (url, label) => {
+    const nav = await navBar(url);
+
+    expect(nav.getAllByRole('link', { current: 'page' })).toHaveLength(1);
+    expect(nav.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('moves the current destination when navigating inside the league', async () => {
+    const nav = await navBar('/leagues/l1/squad/p1');
     expect(nav.getByRole('link', { name: 'Liga' })).toHaveAttribute('aria-current', 'page');
+
+    await TestBed.inject(Router).navigateByUrl('/leagues/l1/lineup');
+
+    expect(await nav.findByRole('link', { current: 'page' })).toHaveTextContent('Alineación');
   });
 
   it('in a league, has the side navigation with the profile for large screens', async () => {

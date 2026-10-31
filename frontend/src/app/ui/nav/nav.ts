@@ -1,13 +1,20 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
+  ElementRef,
   inject,
   InjectionToken,
+  Injector,
   input,
+  Renderer2,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLinkActive } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLinkActive } from '@angular/router';
+import { filter } from 'rxjs';
 
 /** Where a `bfNavItem` is: the bottom bar on mobile or the side navigation from `lg`. */
 type NavLayout = 'bar' | 'side';
@@ -52,7 +59,8 @@ export class SideNav {
 /**
  * A destination of `bf-nav-bar` or `bf-side-nav`: a `routerLink` with its icon (at the default 24 px)
  * and its text. It is active, with `aria-current="page"`, while its route is; pass
- * `[routerLinkActiveOptions]="{ exact: true }"` to the one whose route contains the others'.
+ * `[routerLinkActiveOptions]="{ exact: true }"` to the one whose route contains the others'. A
+ * destination that covers several routes passes `[active]`, which then decides instead of its link.
  */
 @Component({
   selector: 'a[bfNavItem]',
@@ -62,19 +70,50 @@ export class SideNav {
   hostDirectives: [{ directive: RouterLinkActive, inputs: ['routerLinkActiveOptions'] }],
   host: {
     '[class]': 'layout',
-    '[class.active]': 'active()',
-    '[attr.aria-current]': 'active() ? "page" : null',
+    '[class.active]': 'current()',
   },
 })
 export class NavItem {
+  /** Whether the destination is the current one, when its link's route does not say it. */
+  readonly active = input<boolean>();
+
   protected readonly layout = inject(NAV_LAYOUT);
-  protected readonly active = signal(false);
+  private readonly onRoute = signal(false);
+  protected readonly current = computed(() => this.active() ?? this.onRoute());
 
   constructor() {
     inject(RouterLinkActive)
       .isActiveChange.pipe(takeUntilDestroyed())
       .subscribe((active) => {
-        this.active.set(active);
+        this.onRoute.set(active);
       });
+
+    // `RouterLinkActive` clears `aria-current` each time it updates: on each navigation and in a
+    // microtask after its first render. So the attribute is set by an effect, once the render that
+    // follows has queued that microtask, and then again after it.
+    const injector = inject(Injector);
+    const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const renderer = inject(Renderer2);
+    const navigated = toSignal(
+      inject(Router).events.pipe(filter((event) => event instanceof NavigationEnd)),
+    );
+    const mark = (): void => {
+      if (this.current()) {
+        renderer.setAttribute(element, 'aria-current', 'page');
+      } else {
+        renderer.removeAttribute(element, 'aria-current');
+      }
+    };
+    effect(() => {
+      navigated();
+      this.current();
+      afterNextRender(
+        () => {
+          mark();
+          queueMicrotask(mark);
+        },
+        { injector },
+      );
+    });
   }
 }

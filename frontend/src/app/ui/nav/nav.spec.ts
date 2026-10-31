@@ -53,6 +53,23 @@ describe('NavBar', () => {
   });
 });
 
+describe('NavItem', () => {
+  it('is active as `active` says, whatever its own route', async () => {
+    const { navigate } = await render(
+      `<bf-nav-bar label="Principal">
+        <a bfNavItem routerLink="/leagues/1" [active]="false"><svg lucideHouse></svg>Jornada</a>
+        <a bfNavItem routerLink="/leagues/1/members" [active]="true"><svg lucideUsers></svg>Liga</a>
+      </bf-nav-bar>`,
+      { imports, routes },
+    );
+
+    await navigate('/leagues/1');
+
+    expect(screen.getByRole('link', { current: 'page' })).toHaveTextContent('Liga');
+    expect(screen.getByRole('link', { name: 'Jornada' })).not.toHaveAttribute('aria-current');
+  });
+});
+
 describe('SideNav', () => {
   it('has its header and footer around the navigation', async () => {
     const { navigate } = await render(

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
-import { LucideDynamicIcon, LucideHouse, type LucideIcon, LucideUsers } from '@lucide/angular';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, PRIMARY_OUTLET, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { LucideDynamicIcon } from '@lucide/angular';
+import { filter, map } from 'rxjs';
 
 import { LastLeague } from '../auth/last-league';
 import { SessionStore } from '../auth/session-store';
@@ -9,23 +11,8 @@ import { IconButton } from '../../ui/button/icon-button';
 import { NavBar, NavItem, SideNav } from '../../ui/nav/nav';
 import { TopBar } from '../../ui/top-bar/top-bar';
 import { Wordmark } from '../../ui/top-bar/wordmark';
+import { DESTINATIONS, destinationOf } from './destinations';
 import { LeagueSwitcher } from './league-switcher';
-
-interface Destination {
-  /** Relative to the league, `''` being its start. */
-  readonly path: string;
-  readonly label: string;
-  readonly icon: LucideIcon;
-}
-
-/**
- * The destinations of a league that exist so far (FE-30): the navigation grows with each screen, up
- * to the five of the matchday.
- */
-const DESTINATIONS: readonly Destination[] = [
-  { path: '', label: $localize`:@@core.shell.nav.matchday:Jornada`, icon: LucideHouse },
-  { path: 'members', label: $localize`:@@core.shell.nav.league:Liga`, icon: LucideUsers },
-];
 
 /**
  * The frame of the pages (FE-29, FE-30). Outside a league, the top bar with the logotype and the
@@ -61,14 +48,31 @@ export class Shell {
     const leagueId = this.leagueId();
     return leagueId === undefined ? undefined : this.session.league(leagueId);
   });
+  private readonly router = inject(Router);
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+  /** The first segment of the page after the league (`''` at its start). */
+  private readonly section = computed(() => {
+    const segments =
+      this.router
+        .parseUrl(this.url())
+        .root.children[PRIMARY_OUTLET]?.segments.map((segment) => segment.path) ?? [];
+    return segments[2] ?? '';
+  });
   protected readonly destinations = computed(() => {
     const leagueId = this.leagueId();
+    const active = destinationOf(this.section());
     return leagueId === undefined
       ? []
       : DESTINATIONS.map((destination) => ({
           ...destination,
           link: ['/leagues', leagueId, ...(destination.path === '' ? [] : [destination.path])],
-          exact: destination.path === '',
+          active: destination === active,
         }));
   });
 
