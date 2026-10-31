@@ -1,0 +1,41 @@
+@use 'ui/styles/page';
+
+:host {
+  @include page.page;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-4);
+}
+
+h1 {
+  @include page.title;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-2);
+}
+
+.form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--bf-space-4);
+  margin-top: var(--bf-space-5);
+}
+
+.actions {
+  @include page.actions;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

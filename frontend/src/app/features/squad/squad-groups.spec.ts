@@ -1,4 +1,4 @@
-import { squadGroups } from './squad-groups';
+import { retiredPlayers, squadGroups } from './squad-groups';
 import { PLAYERS } from '../../shared/roster/players.testing';
 
 describe('squadGroups', () => {
@@ -14,5 +14,12 @@ describe('squadGroups', () => {
       'Xurxo',
     );
     expect(squadGroups([])).toEqual([]);
+  });
+});
+
+describe('retiredPlayers', () => {
+  it('keeps only the retired players, by name', () => {
+    expect(retiredPlayers(PLAYERS).map((player) => player.name)).toEqual(['Xurxo']);
+    expect(retiredPlayers([])).toEqual([]);
   });
 });

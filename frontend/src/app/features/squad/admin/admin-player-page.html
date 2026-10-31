@@ -1,0 +1,115 @@
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (ready()) {
+  @if (current(); as player) {
+    <header>
+      <bf-bib size="large" [position]="player.position" [number]="player.shirtNumber" />
+      <div class="who">
+        <h1>{{ player.name }}</h1>
+        <p class="tags">
+          <bf-position-chip [position]="player.position" />
+          @if (retired()) {
+            <bf-badge i18n="@@squad.admin.player.retiredBadge">Dado de baja</bf-badge>
+          }
+        </p>
+      </div>
+    </header>
+  } @else {
+    <h1 i18n="@@squad.admin.player.newTitle">Nuevo jugador</h1>
+  }
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <bf-field
+      label="Nombre"
+      i18n-label="@@squad.admin.player.name"
+      [hint]="nameHint()"
+      [error]="fieldErrors()['name'] ?? null"
+    >
+      <input
+        bfInput
+        type="text"
+        autocomplete="off"
+        formControlName="name"
+        [attr.maxlength]="limits.value()?.nameMaxLength"
+      />
+    </bf-field>
+    <bf-field
+      label="Dorsal"
+      i18n-label="@@squad.admin.player.shirtNumber"
+      [hint]="shirtHint()"
+      [error]="fieldErrors()['shirtNumber'] ?? null"
+    >
+      <input
+        bfInput
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        formControlName="shirtNumber"
+      />
+    </bf-field>
+    <bf-segmented
+      label="Posición"
+      i18n-label="@@squad.admin.player.position"
+      [options]="positionOptions"
+      [disabled]="retired()"
+      [value]="form.controls.position.value"
+      (valueChange)="setPosition($event)"
+    />
+    <bf-field
+      label="Valor inicial (M)"
+      i18n-label="@@squad.admin.player.initialValue"
+      hint="Es el valor con el que entra al mercado."
+      i18n-hint="@@squad.admin.player.initialValueHint"
+      [error]="fieldErrors()['initialValue'] ?? null"
+    >
+      <input
+        bfInput
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        formControlName="initialValue"
+      />
+    </bf-field>
+
+    @if (!retired()) {
+      <div class="actions">
+        @if (notice(); as notice) {
+          <bf-notice tone="danger" role="alert">{{ notice }}</bf-notice>
+        }
+        @if (!isNew()) {
+          <button
+            bfButton
+            type="button"
+            variant="danger"
+            block
+            [disabled]="!online.online() || saving()"
+            (click)="retire()"
+            i18n="@@squad.admin.player.retire"
+          >
+            Dar de baja
+          </button>
+        }
+        <button
+          bfButton
+          type="submit"
+          variant="primary"
+          block
+          [loading]="saving()"
+          [disabled]="!online.online()"
+        >
+          @if (isNew()) {
+            <ng-container i18n="@@squad.admin.player.register">Dar de alta jugador</ng-container>
+          } @else {
+            <ng-container i18n="@@squad.admin.player.save">Guardar jugador</ng-container>
+          }
+        </button>
+      </div>
+    }
+  </form>
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+    <bf-skeleton shape="block" />
+  </div>
+}

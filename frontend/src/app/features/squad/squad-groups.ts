@@ -21,3 +21,10 @@ export function squadGroups(players: readonly PlayerResponse[]): SquadGroup[] {
       .sort((a, b) => a.name.localeCompare(b.name, 'es')),
   })).filter((group) => group.players.length > 0);
 }
+
+/** The retired players by name: the admin sees them apart, read-only, because they cannot come back. */
+export function retiredPlayers(players: readonly PlayerResponse[]): PlayerResponse[] {
+  return players
+    .filter((player) => player.retiredAt !== null)
+    .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+}

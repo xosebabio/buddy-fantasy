@@ -1,0 +1,75 @@
+<header>
+  <h1 i18n="@@squad.admin.squad.title">Jugadores</h1>
+  <bf-badge tone="accent" i18n="@@squad.admin.squad.badge">Admin</bf-badge>
+</header>
+
+@if (players.error()) {
+  <bf-load-error (retry)="players.reload()" />
+} @else if (players.value()) {
+  @for (group of groups(); track group.position) {
+    <section [attr.aria-labelledby]="'group-' + group.position">
+      <h2 [id]="'group-' + group.position">{{ groupTexts[group.position] }}</h2>
+      <ul bfList bleed>
+        @for (player of group.players; track player.id) {
+          <li>
+            <a
+              bfListItem
+              size="compact"
+              [routerLink]="['/leagues', leagueId(), 'admin', 'squad', player.id]"
+            >
+              <bf-player-row
+                [player]="player"
+                [value]="player.currentValue"
+                [showPosition]="false"
+              />
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  } @empty {
+    <bf-empty-state i18n="@@squad.admin.squad.empty">
+      Aún no hay jugadores. Da de alta al primero.
+    </bf-empty-state>
+  }
+
+  @if (retired().length > 0) {
+    <ul bfList bleed class="retired">
+      <li bfDisclosure size="compact">
+        <ng-container i18n="@@squad.admin.squad.retired">Dados de baja</ng-container>
+        <span bfListItemMeta>{{ retired().length }}</span>
+        <ul bfDisclosurePanel bfList>
+          @for (player of retired(); track player.id) {
+            <li>
+              <a
+                bfListItem
+                size="compact"
+                [routerLink]="['/leagues', leagueId(), 'admin', 'squad', player.id]"
+              >
+                <bf-player-row [player]="player" [value]="player.currentValue" />
+              </a>
+            </li>
+          }
+        </ul>
+      </li>
+    </ul>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3, 4]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}
+
+<div class="actions">
+  <a
+    bfButton
+    variant="primary"
+    block
+    [routerLink]="['/leagues', leagueId(), 'admin', 'squad', 'new']"
+    i18n="@@squad.admin.squad.register"
+  >
+    Dar de alta jugador
+  </a>
+</div>

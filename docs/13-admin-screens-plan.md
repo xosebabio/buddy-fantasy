@@ -293,7 +293,7 @@ En el cambio de la tarea que los provoca:
 | 5   | `bfCheckbox`, `bfSwitch` y `bf-stepper` sin límites en `ui/` y `/_ui`; `bf-match-row` y los textos de avisos en `shared/` (§6.3, §6.4) | Componentes de admin (FE-16 a FE-20)      | ✅    |
 | 6   | Rutas de admin por feature, sección _Administrar_ del índice y enlaces de admin en las pantallas de miembro (§4, decisión 18)          | Accesos de admin                          | ✅    |
 | 7   | Parámetros y tabla de puntos                                                                                                           | RF-07, RF-15                              | ✅    |
-| 8   | Plantilla de admin, alta, edición y baja                                                                                               | RF-09, RF-10                              |       |
+| 8   | Plantilla de admin, alta, edición y baja                                                                                               | RF-09, RF-10                              | ✅    |
 | 9   | Calendario de admin, programar, editar, aplazar, borrar y página del partido                                                           | RF-12                                     |       |
 | 10  | Acta, cierre y correcciones                                                                                                            | RF-13 a RF-16                             |       |
 | 11  | Auditoría de un partido                                                                                                                | RF-16, RNF-04                             |       |

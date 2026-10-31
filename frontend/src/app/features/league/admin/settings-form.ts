@@ -1,5 +1,6 @@
 import type { LeagueSettingsBody } from '../../../core/api/league/league-api';
 import type { ErrorCode } from '../../../core/http/error-texts';
+import { decimalText, parseDecimal } from '../../../shared/format/decimal';
 import { POSITIONS } from '../../../shared/position/position';
 import type { ScoringAction } from '../../../shared/scoring/scoring-action';
 import { type ScoringRow, scoringRows } from '../rules';
@@ -52,16 +53,6 @@ export interface SettingsDraft extends Record<SettingsNumberKey, number> {
   readonly decimalFactor: string;
   readonly decimalBase: string;
   readonly scoring: readonly ScoringRow[];
-}
-
-export function decimalText(value: number): string {
-  return String(value).replace('.', ',');
-}
-
-/** A decimal typed in Spanish (comma or point, optional minus); `null` if it is not a number. */
-export function parseDecimal(text: string): number | null {
-  const normalized = text.trim().replace(',', '.').replace('−', '-');
-  return /^-?\d+(\.\d+)?$/.test(normalized) ? Number(normalized) : null;
 }
 
 export function toSettingsDraft(settings: LeagueSettingsBody): SettingsDraft {
