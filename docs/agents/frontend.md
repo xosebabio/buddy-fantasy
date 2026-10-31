@@ -2,7 +2,7 @@
 
 Guía para agentes de `frontend/`. La fuente de verdad son las secciones *Requisitos no funcionales* (RNF-01, RNF-12 a RNF-16) y *Frontend* (FE-01 a FE-35) de `docs/requirements.md`; esto es un resumen para trabajar. Cita los códigos en commits y revisiones, como los RF.
 
-El esqueleto de `frontend/` se monta según `docs/11-frontend-foundation-plan.md`: Angular 22 (zoneless, Vitest con `@angular/build:unit-test`, nombres de fichero de la guía de 2025: `app.ts`, `catalog-page.ts`), TypeScript 6 y Node 26 LTS (`.nvmrc`; Angular 22 no admite Node 25). `openapi-typescript` 7 pide TypeScript 5 como *peer*: un `overrides` de `package.json` le da el 6 del proyecto, con el que genera igual.
+El esqueleto de `frontend/` se montó según `docs/11-frontend-foundation-plan.md` (completo: núcleo, shell, sistema de diseño, pantallas de identidad y liga, Caddy, E2E de humo y CI); las demás pantallas llegan con los planes de la Fase 2. Angular 22 (zoneless, Vitest con `@angular/build:unit-test`, nombres de fichero de la guía de 2025: `app.ts`, `catalog-page.ts`), TypeScript 6 y Node 26 LTS (`.nvmrc`; Angular 22 no admite Node 25). `openapi-typescript` 7 pide TypeScript 5 como *peer*: un `overrides` de `package.json` le da el 6 del proyecto, con el que genera igual.
 
 ## Qué es
 
@@ -81,7 +81,8 @@ frontend/src/app/
 
 - ESLint (flat config, `strictTypeChecked`, `boundaries`, reglas de accesibilidad de plantillas) y Prettier; un aviso de lint es un error.
 - Tests: ver el apartado *Frontend* de [testing.md](testing.md).
-- Scripts npm: `start`, `build`, `lint`, `format`, `format:check`, `test`, `e2e`, `api:types` e `i18n:extract` (detalle en [commands.md](commands.md) cuando exista `frontend/`).
+- Scripts npm: `start`, `build`, `lint`, `format`, `format:check`, `test`, `e2e`, `palette`, `api:types` e `i18n:extract` (detalle en [commands.md](commands.md)). CI (jobs `frontend` y `e2e`) los ejecuta todos y falla si un fichero generado no está al día.
+- Servido: en producción y en local con el perfil `caddy`, `deploy/Caddyfile` (estáticos, proxy, cabeceras y CSP; variables en [commands.md](commands.md)). Un origen nuevo del que la app cargue imágenes o datos se añade a la CSP de Caddy (`img-src`, `connect-src`): la `<meta>` de `autoCsp` solo fija scripts, `object-src` y `base-uri`, y las dos se aplican a la vez. El E2E falla ante cualquier violación.
 
 ## Cómo añadir o cambiar un endpoint
 

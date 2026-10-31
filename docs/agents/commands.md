@@ -76,6 +76,16 @@ E2E_BASE_URL=http://localhost:4200 npm run e2e   # contra npm start en vez de Ca
 
 `E2E_BASE_URL` es el origen contra el que corren (por defecto `http://localhost:8081`). Cada test crea sus propios usuarios y ligas, así que no hace falta vaciar la BD entre ejecuciones. Si falla, la traza queda en `frontend/test-results/` (`npx playwright show-trace <ruta>/trace.zip`).
 
+### CI
+
+`.github/workflows/ci.yml`, en cada push a `main` y cada PR: `backend` (`mvn -B verify`, con `OpenApiSpecTests`), `frontend` y, tras los dos, `e2e` (los pasos de *E2E*; si falla, sube el informe, las trazas y el log del backend). Para repetir el job `frontend` antes de subir, desde `frontend/`:
+
+```bash
+npm run api:types && npm run palette && npm run i18n:extract \
+  && git diff --exit-code -- src/app/core/api/schema.d.ts src/app/ui/styles/_palette.scss src/locale/messages.xlf \
+  && npm run lint && npm run format:check && npm test && npm run build
+```
+
 ## API
 
 La documentación OpenAPI de la API está en `/v3/api-docs` (con sesión iniciada), versionada en `api/openapi.json`, y, con `SWAGGER_UI_ENABLED=true`, en Swagger UI (`/swagger-ui.html`).

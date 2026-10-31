@@ -308,7 +308,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 - [x] Spring Security con login de Google y roles por liga
 - [ ] Dockerfile, Docker Compose (app + Postgres + Caddy) y pipeline de CI
 - [ ] VPS con dominio, HTTPS y backup diario de la base de datos
-- [ ] Esqueleto de `frontend/`: Angular, ESLint, Prettier, Vitest, tipos del OpenAPI, tokens y tema, shell con navegación, login y CI (FE-01 a FE-35)
+- [x] Esqueleto de `frontend/`: Angular, ESLint, Prettier, Vitest, tipos del OpenAPI, tokens y tema, shell con navegación, login y CI (FE-01 a FE-35)
 
 ### Fase 1 · Núcleo jugable
 
