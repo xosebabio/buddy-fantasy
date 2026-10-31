@@ -2,8 +2,9 @@ import { HttpContext, HttpContextToken, provideHttpClient } from '@angular/commo
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationRef, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { firstValueFrom } from 'rxjs';
 
-import { type PlayerResponse, SquadApi } from './squad-api';
+import { type PlayerRequest, type PlayerResponse, SquadApi } from './squad-api';
 
 const LEAGUE_ID = '3f6c2a1e';
 
@@ -74,5 +75,58 @@ describe('SquadApi', () => {
     await settle();
 
     expect(player.value()).toEqual(PLAYER);
+  });
+
+  it('reads the limits of the player form once the league is known', async () => {
+    const leagueId = signal<string | undefined>(undefined);
+    const limits = TestBed.runInInjectionContext(() => api.limits(leagueId));
+
+    TestBed.tick();
+    http.expectNone(() => true);
+
+    leagueId.set(LEAGUE_ID);
+    TestBed.tick();
+    const body = { nameMaxLength: 40, shirtNumberMin: 1, shirtNumberMax: 99 };
+    http.expectOne({ method: 'GET', url: `/api/leagues/${LEAGUE_ID}/players/limits` }).flush(body);
+    await settle();
+
+    expect(limits.value()).toEqual(body);
+  });
+
+  it('registers a player', async () => {
+    const body: PlayerRequest = {
+      name: 'Diego',
+      position: 'GOALKEEPER',
+      shirtNumber: 1,
+      initialValue: 10,
+    };
+    const result = firstValueFrom(api.register(LEAGUE_ID, body));
+
+    const request = http.expectOne({ method: 'POST', url: `/api/leagues/${LEAGUE_ID}/players` });
+    expect(request.request.body).toEqual(body);
+    request.flush(PLAYER, { status: 201, statusText: 'Created' });
+
+    expect(await result).toEqual(PLAYER);
+  });
+
+  it('replaces the data of a player', async () => {
+    const body: PlayerRequest = { name: 'Diego', position: 'GOALKEEPER', initialValue: 10 };
+    const result = firstValueFrom(api.update(LEAGUE_ID, 'p1', body));
+
+    const request = http.expectOne({ method: 'PUT', url: `/api/leagues/${LEAGUE_ID}/players/p1` });
+    expect(request.request.body).toEqual(body);
+    request.flush(PLAYER);
+
+    expect(await result).toEqual(PLAYER);
+  });
+
+  it('retires a player', async () => {
+    const result = firstValueFrom(api.retire(LEAGUE_ID, 'p1'));
+
+    http
+      .expectOne({ method: 'DELETE', url: `/api/leagues/${LEAGUE_ID}/players/p1` })
+      .flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(await result).toBeNull();
   });
 });

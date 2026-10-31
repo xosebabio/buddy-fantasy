@@ -14,6 +14,7 @@ export type InvitationPreviewResponse = components['schemas']['InvitationPreview
 export type JoinLeagueResponse = components['schemas']['JoinLeagueResponse'];
 export type MemberResponse = components['schemas']['MemberResponse'];
 export type LeagueSettingsBody = components['schemas']['LeagueSettingsBody'];
+export type LeagueLimitsResponse = components['schemas']['LeagueLimitsResponse'];
 export type LeagueRole = MemberResponse['role'];
 
 /**
@@ -123,5 +124,18 @@ export class LeagueApi {
       apiPath('/api/leagues/{id}/settings', { id: leagueId }),
       body,
     );
+  }
+
+  /** The configured limits of the settings form (RF-07); only for the admin. */
+  limits(
+    leagueId: () => string | undefined,
+    context?: HttpContext,
+  ): HttpResourceRef<LeagueLimitsResponse | undefined> {
+    return httpResource<LeagueLimitsResponse>(() => {
+      const id = leagueId();
+      return id === undefined
+        ? undefined
+        : { url: apiPath('/api/leagues/{id}/settings/limits', { id }), context };
+    });
   }
 }

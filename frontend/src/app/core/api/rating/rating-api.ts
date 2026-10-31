@@ -63,4 +63,19 @@ export class RatingApi {
       body,
     );
   }
+
+  /**
+   * Cancels a member's ratings of a match and keeps them from rating it again; `409`
+   * `RATING_WINDOW_CLOSED` or `MATCH_NOT_CLOSED`. Only for the admin (RF-41).
+   */
+  exclude(leagueId: string, matchId: string, userId: string): Observable<null> {
+    return this.http.put<null>(
+      apiPath('/api/leagues/{id}/ratings/{matchId}/exclusions/{userId}', {
+        id: leagueId,
+        matchId,
+        userId,
+      }),
+      null,
+    );
+  }
 }

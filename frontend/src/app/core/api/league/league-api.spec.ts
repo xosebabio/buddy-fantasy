@@ -215,4 +215,21 @@ describe('LeagueApi', () => {
       expect(settings.value()).toEqual(SETTINGS);
     });
   });
+
+  it('reads the limits of the settings form once the league is known', async () => {
+    const leagueId = signal<string | undefined>(undefined);
+    const limits = TestBed.runInInjectionContext(() => api.limits(leagueId));
+
+    TestBed.tick();
+    http.expectNone(() => true);
+
+    leagueId.set(LEAGUE_ID);
+    TestBed.tick();
+    http
+      .expectOne({ method: 'GET', url: `/api/leagues/${LEAGUE_ID}/settings/limits` })
+      .flush({ lineupLockHoursMax: 48 });
+    await settle();
+
+    expect(limits.value()).toEqual({ lineupLockHoursMax: 48 });
+  });
 });

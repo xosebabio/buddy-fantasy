@@ -105,4 +105,16 @@ describe('RatingApi', () => {
 
     expect(await result).toEqual(RATINGS);
   });
+
+  it("cancels a member's ratings of a match", async () => {
+    const result = firstValueFrom(api.exclude(LEAGUE_ID, 'm1', 'u2'));
+
+    const request = http.expectOne({
+      method: 'PUT',
+      url: `/api/leagues/${LEAGUE_ID}/ratings/m1/exclusions/u2`,
+    });
+    request.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(await result).toBeNull();
+  });
 });
