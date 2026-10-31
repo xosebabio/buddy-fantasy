@@ -22,8 +22,8 @@ frontend/src/app/
   features/   # una carpeta por módulo del backend: identity, league, squad, match, lineup, rating, scoring
 ```
 
-- `ui` no importa nada de la app; `shared` usa `ui` y los tipos de `core/api`; una feature usa `core`, `ui` y `shared`, **nunca otra feature** (se navega por ruta). Lo comprueba `eslint-plugin-boundaries`, como Modulith en el backend.
-- Rutas lazy por feature, en inglés, con la liga en la URL (`/leagues/:leagueId/...`); parámetros como `input()` (`withComponentInputBinding`). Admin bajo `features/<feature>/admin/` con `adminGuard`.
+- `ui` no importa nada de la app; `shared` usa `ui`, los tipos de `core/api` y las funciones de fecha de `core/time`; una feature usa `core`, `ui` y `shared`, **nunca otra feature** (se navega por ruta). Lo comprueba `eslint-plugin-boundaries`, como Modulith en el backend.
+- Rutas lazy por feature, en inglés, con la liga en la URL (`/leagues/:leagueId/...`); parámetros y `data` de la ruta como `input()` (`withComponentInputBinding`, con `paramsInheritanceStrategy: 'always'`, así que `leagueId` llega a cualquier página de la liga). Admin bajo `features/<feature>/admin/` con `adminGuard`. Las páginas de una liga van como hijas de `leagues/:leagueId` (shell con `authGuard` y `memberGuard`) en `app.routes.ts`; las de fuera de una liga, como hijas de la ruta `''` del shell, antes de `**`. Cada ruta lleva su `title` (con `$localize`): `PageTitle` lo pone en la pestaña.
 - Solo las páginas (`*-page`) inyectan servicios de API y orquestan; los componentes de `ui/` y `shared/` son de presentación (`input()`, `output()`, `model()`).
 
 ### Contrato con el backend (FE-05 a FE-11)
@@ -34,7 +34,7 @@ frontend/src/app/
 - Un servicio por módulo del backend (`LeagueApi`, `SquadApi`, `MatchApi`, `LineupApi`, `RatingApi`, `ScoringApi`, `IdentityApi`), un método por endpoint, URLs relativas, sin lógica de negocio. Las lecturas que dependen de un signal (la liga o el token de la ruta) devuelven un `httpResource` y reciben `() => string | undefined` (con `undefined` no piden nada): se llaman en un contexto de inyección, como un inicializador de campo de la página. Las demás devuelven un `Observable`, y una respuesta `204`, `Observable<null>`.
 - Errores `ProblemDetail`: el interceptor (`core/http`, solo en `/api/`) resuelve `401` (login guardando la ruta), `403` y `404` (su página, sin cambiar la URL), y `5xx` y la red (la petición espera en `FailedRequests` a que el usuario reintente o desista); los `400` y `409` los trata la pantalla con `toProblem(error)`: los `violations` (campo obligatorio que falta), en su campo; el `code` (todo `409` y los `400` de un límite o regla de negocio), con su texto de `ERROR_TEXTS`, un `Record<ErrorCode, string>` exhaustivo sobre el enum `ErrorCode` del spec. Una pantalla que trata ella misma un estado global (el `404` de una invitación caducada) pasa `handling(404)` como `HttpContext` al método del servicio.
 - **Plazos y límites en el servidor** (RNF-03): las cuentas atrás son orientativas y un `409` refresca y explica. Ningún límite ni valor por defecto de negocio como constante en el front: se lee del API o valida solo el servidor.
-- Sesión: `GET /api/me` al arrancar; login con navegación completa a `/oauth2/authorization/google` (ruta de vuelta en `sessionStorage`: el backend vuelve siempre a `/`, o a `/login?error` si falla); logout con `POST /api/logout`. Los guards solo ocultan: autoriza el backend.
+- Sesión (`core/auth/SessionStore`): `GET /api/me` al arrancar; login con navegación completa a `/oauth2/authorization/google` con `session.login(returnUrl?)` (ruta de vuelta en `sessionStorage`: el backend vuelve siempre a `/`, que la recupera; o a `/login?error` si falla); logout con `session.logout()`. Tras crear, unirse o salir de una liga, la página llama a `session.reloadLeagues()`. Los guards solo ocultan: autoriza el backend. `/` lleva a la ruta guardada, a la última liga usada (`LastLeague`) o a `/leagues`.
 - **Anonimato** (RF-21): nunca se muestran ni deducen votos individuales de otros.
 
 ### Estado y datos (FE-12 a FE-15)
@@ -66,7 +66,8 @@ frontend/src/app/
 - Barlow Condensed (títulos y cifras tabulares) y Barlow (texto), de `@fontsource`; inputs de 16 px como mínimo. Iconos con `@lucide/angular`, un componente por icono (`<svg lucideHouse></svg>`). La dirección visual (peto, césped, escala, radios, movimiento y textos) está en `ui/README.md`, con el boceto en `docs/design/visual-direction.html`: léela antes de construir una pantalla o un componente.
 - Puntos de corte: base (< 600), `md` (≥ 600) y `lg` (≥ 1024: navegación lateral y dos columnas), siempre con `min-width`.
 - Acción principal abajo; navegación inferior de 4–5 destinos; *safe areas* y `dvh`; `type` e `inputmode` correctos; nada solo con hover y todo gesto con alternativa de botón.
-- Sin conexión: aviso y envíos deshabilitados.
+- Sin conexión: el componente raíz muestra el aviso; cada página deshabilita sus envíos con `[disabled]="!online.online()"` (`Online` de `core/http`). El toast de reintento de `FailedRequests` y `bf-toaster` también están en el componente raíz, así que valen en cualquier página.
+- Fechas: `formatInstant` y `madridToInstant` de `core/time` (`es-ES`, `Europe/Madrid`); en plantillas, `{{ instant | bfDate: 'dateTime' }}` (`shared/time`).
 
 ### No funcionales (RNF-12 a RNF-16)
 

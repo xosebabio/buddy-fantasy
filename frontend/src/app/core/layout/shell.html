@@ -1,0 +1,65 @@
+@let current = league();
+@let user = session.user();
+
+<div class="shell" [class.in-league]="current !== undefined">
+  <bf-top-bar class="top-bar">
+    @if (current) {
+      <bf-league-switcher [league]="current" />
+    } @else {
+      <a class="home" routerLink="/"><bf-wordmark /></a>
+    }
+    @if (user) {
+      <a
+        bfIconButton
+        bfTopBarEnd
+        routerLink="/profile"
+        label="Tu perfil"
+        i18n-label="@@core.shell.profile"
+      >
+        <bf-avatar [name]="user.displayName" [src]="user.avatarUrl" />
+      </a>
+    }
+  </bf-top-bar>
+
+  @if (current) {
+    <bf-side-nav class="side-nav" label="Principal" i18n-label="@@core.shell.nav.label">
+      <a bfSideNavHeader class="home" routerLink="/"><bf-wordmark /></a>
+      <bf-league-switcher bfSideNavHeader [league]="current" />
+      @for (destination of destinations(); track destination.path) {
+        <a
+          bfNavItem
+          [routerLink]="destination.link"
+          [routerLinkActiveOptions]="{ exact: destination.exact }"
+        >
+          <svg [lucideIcon]="destination.icon"></svg>
+          {{ destination.label }}
+        </a>
+      }
+      @if (user) {
+        <a bfSideNavFooter class="me" routerLink="/profile">
+          <bf-avatar [name]="user.displayName" [src]="user.avatarUrl" />
+          <span class="name">{{ user.displayName }}</span>
+        </a>
+      }
+    </bf-side-nav>
+  }
+
+  <main class="content">
+    <router-outlet />
+  </main>
+
+  @if (current) {
+    <bf-nav-bar class="nav-bar" label="Principal" i18n-label="@@core.shell.nav.label">
+      @for (destination of destinations(); track destination.path) {
+        <a
+          bfNavItem
+          [routerLink]="destination.link"
+          [routerLinkActiveOptions]="{ exact: destination.exact }"
+        >
+          <svg [lucideIcon]="destination.icon"></svg>
+          {{ destination.label }}
+        </a>
+      }
+    </bf-nav-bar>
+  }
+</div>

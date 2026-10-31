@@ -24,7 +24,6 @@ import { Button } from '../button/button';
 import { Confirm } from '../confirm/confirm';
 import { List, ListItem } from '../list/list';
 import { Sheet, SheetClose, SheetTitle } from '../sheet/sheet';
-import { Toaster } from '../toast/toaster';
 import { Toasts } from '../toast/toasts';
 import { CatalogComponents } from './catalog-components';
 
@@ -48,7 +47,6 @@ type PageTheme = 'system' | 'light' | 'dark';
     LucideUsers,
     SheetClose,
     SheetTitle,
-    Toaster,
   ],
   templateUrl: './catalog-page.html',
   styleUrl: './catalog-page.scss',

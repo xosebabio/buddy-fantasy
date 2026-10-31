@@ -1,0 +1,5 @@
+@use 'ui/styles/typography' as type;
+
+h1 {
+  @include type.display(6);
+}

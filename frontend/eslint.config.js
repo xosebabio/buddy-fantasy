@@ -64,6 +64,8 @@ module.exports = defineConfig([
       },
       'boundaries/elements': [
         { type: 'core-api', pattern: 'src/app/core/api', partialMatch: false },
+        // Pure date functions, which the bfDate pipe of shared/ needs (FE-19).
+        { type: 'core-time', pattern: 'src/app/core/time', partialMatch: false },
         { type: 'core', pattern: 'src/app/core', partialMatch: false },
         { type: 'ui', pattern: 'src/app/ui', partialMatch: false },
         { type: 'shared', pattern: 'src/app/shared', partialMatch: false },
@@ -89,22 +91,32 @@ module.exports = defineConfig([
             {
               from: { element: { type: 'core' } },
               allow: {
-                to: { element: { types: { anyOf: ['core', 'core-api', 'ui', 'shared'] } } },
+                to: {
+                  element: { types: { anyOf: ['core', 'core-api', 'core-time', 'ui', 'shared'] } },
+                },
               },
             },
             {
               from: { element: { type: 'core-api' } },
               allow: { to: { element: { type: 'core-api' } } },
             },
+            {
+              from: { element: { type: 'core-time' } },
+              allow: { to: { element: { type: 'core-time' } } },
+            },
             { from: { element: { type: 'ui' } }, allow: { to: { element: { type: 'ui' } } } },
             {
               from: { element: { type: 'shared' } },
-              allow: { to: { element: { types: { anyOf: ['shared', 'ui', 'core-api'] } } } },
+              allow: {
+                to: { element: { types: { anyOf: ['shared', 'ui', 'core-api', 'core-time'] } } },
+              },
             },
             {
               from: { element: { type: 'feature' } },
               allow: {
-                to: { element: { types: { anyOf: ['core', 'core-api', 'ui', 'shared'] } } },
+                to: {
+                  element: { types: { anyOf: ['core', 'core-api', 'core-time', 'ui', 'shared'] } },
+                },
               },
             },
             {
@@ -145,6 +157,7 @@ module.exports = defineConfig([
             'viewBox',
             'inputmode',
             'referrerpolicy',
+            'aria-haspopup',
           ],
         },
       ],

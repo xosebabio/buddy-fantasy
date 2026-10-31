@@ -1,0 +1,43 @@
+@use 'ui/styles/typography' as type;
+
+.switcher {
+  @include type.display(3);
+
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-1);
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  flex: none;
+  color: var(--bf-color-text-muted);
+}
+
+.check {
+  flex: none;
+  color: var(--bf-color-brand-text);
+}
+
+.all {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  color: var(--bf-color-accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

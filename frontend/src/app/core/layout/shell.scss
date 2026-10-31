@@ -1,0 +1,71 @@
+@use 'ui/styles/breakpoints' as bp;
+
+.shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+}
+
+.home {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.side-nav {
+  display: none;
+}
+
+.content {
+  min-width: 0;
+  padding: var(--bf-space-5) var(--bf-space-4) var(--bf-space-6);
+}
+
+.nav-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.me {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  min-height: 44px;
+  padding: var(--bf-space-2);
+  border-radius: var(--bf-radius-control);
+  color: inherit;
+  text-decoration: none;
+}
+
+.me .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// From lg, in a league: the side navigation takes the place of both bars.
+@include bp.lg {
+  .shell.in-league {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr;
+
+    .top-bar,
+    .nav-bar {
+      display: none;
+    }
+
+    .side-nav {
+      position: sticky;
+      top: 0;
+      display: flex;
+      height: 100dvh;
+    }
+
+    .content {
+      padding: var(--bf-space-6) var(--bf-space-7);
+    }
+  }
+}
