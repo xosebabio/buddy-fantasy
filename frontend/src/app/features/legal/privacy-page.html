@@ -1,0 +1,277 @@
+<bf-legal-layout [current]="'privacy'">
+  <article>
+    <h1 i18n="@@legal.privacy.title">Política de privacidad</h1>
+    <p class="updated" i18n="@@legal.privacy.updated">
+      Última actualización: 2 de noviembre de 2026
+    </p>
+
+    <h2 id="responsable" i18n="@@legal.privacy.controller.title">Quién es el responsable</h2>
+    <p i18n="@@legal.privacy.controller.text">
+      Buddy Fantasy es un proyecto personal, gratuito y sin ánimo de lucro. El responsable del
+      tratamiento de tus datos es Xosé Babío Sabín. Para cualquier duda o petición sobre tus datos,
+      escribe a docksidegarage@gmail.com.
+    </p>
+
+    <h2 id="datos" i18n="@@legal.privacy.data.title">Qué datos tratamos</h2>
+    <ul>
+      <li i18n="@@legal.privacy.data.google">
+        <strong>De tu cuenta de Google:</strong> tu identificador de Google, tu correo, tu nombre,
+        la dirección de tu foto de perfil, y las fechas de alta y de tu último acceso.
+      </li>
+      <li i18n="@@legal.privacy.data.game">
+        <strong>De tu juego:</strong> las ligas en las que estás y tu rol en cada una, tus
+        alineaciones, tus valoraciones y tus puntos.
+      </li>
+      <li i18n="@@legal.privacy.data.admin">
+        <strong>Si eres administrador:</strong> tu identificador en el registro de cambios de los
+        partidos y de los jugadores, y en las cancelaciones de valoraciones que hagas, con la fecha
+        de cada cambio.
+      </li>
+      <li i18n="@@legal.privacy.data.players">
+        <strong>De los jugadores del equipo:</strong> nombre, dorsal, posición, estadísticas de cada
+        partido, valoraciones y valor. Cuando se active, también su foto. Ver «Jugadores sin
+        cuenta».
+      </li>
+      <li i18n="@@legal.privacy.data.technical">
+        <strong>Técnicos:</strong> la sesión que te mantiene dentro y los registros de errores del
+        servidor. Los registros no incluyen tu correo ni tu nombre. En un caso raro, un error
+        inesperado puede dejar tu identificador de Google.
+      </li>
+    </ul>
+    <p i18n="@@legal.privacy.data.none">
+      No usamos analítica, publicidad ni rastreadores. Tampoco cargamos scripts ni fuentes de
+      terceros. La única excepción es la foto de perfil, que se carga desde Google (ver «Encargados
+      y terceros»).
+    </p>
+
+    <h2 id="base" i18n="@@legal.privacy.basis.title">Para qué los usamos y con qué base</h2>
+    <ul>
+      <li i18n="@@legal.privacy.basis.service">
+        <strong>Prestarte el servicio</strong> con los datos de tu cuenta y de tu juego. Es lo que
+        pides al entrar (base: artículo 6.1.b del RGPD).
+      </li>
+      <li i18n="@@legal.privacy.basis.security">
+        <strong>Seguridad, registros de errores y copias de seguridad:</strong> interés legítimo
+        (artículo 6.1.f), para proteger el servicio y poder recuperarlo si falla.
+      </li>
+      <li i18n="@@legal.privacy.basis.players">
+        <strong>Datos de los jugadores:</strong> interés legítimo de la liga en llevar su juego
+        (artículo 6.1.f). Un jugador puede oponerse o pedir que se borren sus datos o se cambie su
+        nombre (ver «Tus derechos»).
+      </li>
+      <li i18n="@@legal.privacy.basis.stability">
+        <strong>Conservar alineaciones, puntos y valoraciones ya contados</strong> aunque se borre
+        una cuenta: interés legítimo en que la clasificación de la liga sea estable (artículo
+        6.1.f).
+      </li>
+    </ul>
+    <p i18n="@@legal.privacy.basis.calc">
+      Los puntos y el valor de los jugadores se calculan con reglas fijas y automáticas. No hay
+      decisiones que produzcan efectos jurídicos sobre ti. Para entrar necesitas tu cuenta de
+      Google; no te pedimos ningún otro dato personal.
+    </p>
+
+    <h2 id="quien-ve" i18n="@@legal.privacy.who.title">Quién ve tus datos</h2>
+    <ul>
+      <li i18n="@@legal.privacy.who.members">
+        Los <strong>miembros de tu liga</strong> ven tu nombre y tu foto, tus alineaciones una vez
+        bloqueadas, y tus puntos y tu posición en la clasificación.
+      </li>
+      <li i18n="@@legal.privacy.who.ratings">
+        Tus <strong>valoraciones son anónimas</strong>. Nadie, tampoco el administrador, ve el voto
+        individual de otra persona: solo se publica la media y el número de votos.
+      </li>
+      <li i18n="@@legal.privacy.who.excluded">
+        Si el administrador te excluye de valorar un partido, lo ves tú, sin motivo.
+      </li>
+      <li i18n="@@legal.privacy.who.outside">
+        <strong>Nadie fuera de tu liga</strong> ve nada de tu juego.
+      </li>
+    </ul>
+
+    <h2 id="encargados" i18n="@@legal.privacy.providers.title">Encargados y terceros</h2>
+    <ul>
+      <li i18n="@@legal.privacy.providers.hetzner">
+        <strong>Hetzner Online GmbH</strong> (Alemania): aloja el servidor donde funcionan la
+        aplicación y su base de datos.
+      </li>
+      <li i18n="@@legal.privacy.providers.aws">
+        <strong>Amazon Web Services EMEA SARL:</strong> guarda las copias de seguridad en un bucket
+        de la UE. Las copias van cifradas antes de salir del servidor, y la clave para abrirlas no
+        está ni en el servidor ni en AWS.
+      </li>
+      <li i18n="@@legal.privacy.providers.google">
+        <strong>Google</strong>, como responsable independiente: cuando entras con Google, trata tus
+        datos de acceso según su propia política de privacidad. La foto de tu perfil se carga desde
+        sus servidores (<code>googleusercontent.com</code>), así que Google ve la dirección IP desde
+        la que se muestra.
+      </li>
+    </ul>
+
+    <h2 id="transferencias" i18n="@@legal.privacy.transfers.title">
+      Transferencias fuera de la UE
+    </h2>
+    <p i18n="@@legal.privacy.transfers.text">
+      Los datos del servicio están en la UE: el servidor, en Alemania, y las copias, en un bucket de
+      la UE. Google y Amazon Web Services son empresas de Estados Unidos adheridas al Marco de
+      Privacidad de Datos UE-EE. UU.
+    </p>
+
+    <h2 id="conservacion" i18n="@@legal.privacy.retention.title">Cuánto tiempo los guardamos</h2>
+    <ul>
+      <li i18n="@@legal.privacy.retention.account">
+        <strong>Tu cuenta y tu juego:</strong> mientras exista tu cuenta.
+      </li>
+      <li i18n="@@legal.privacy.retention.left">
+        <strong>Alineaciones, puntos y valoraciones ya contados:</strong> se conservan aunque borres
+        tu cuenta. En la liga aparecen como «Antiguo miembro». Son datos seudonimizados: sin tu
+        cuenta no se puede saber quién eres a partir de ellos, pero siguen siendo datos personales.
+      </li>
+      <li i18n="@@legal.privacy.retention.league">
+        <strong>Liga cerrada por el borrado de su administrador:</strong> sus datos de juego se
+        borran con ella. Las copias de seguridad los guardan hasta que caducan.
+      </li>
+      <li i18n="@@legal.privacy.retention.events">
+        <strong>Registro interno de eventos:</strong> guarda identificadores de lo que pasa en la
+        liga (un partido cerrado, una alineación bloqueada), sin nombres ni correos. No tiene un
+        plazo de borrado fijo.
+      </li>
+      <li i18n="@@legal.privacy.retention.session">
+        <strong>Sesión:</strong> hasta que cierras sesión o caduca por inactividad (30 minutos sin
+        actividad).
+      </li>
+      <li i18n="@@legal.privacy.retention.backups">
+        <strong>Copias de seguridad:</strong> 30 días las diarias y 14 días las de antes de cada
+        despliegue. Tus datos pueden seguir en ellas hasta que caduquen, también después de borrar
+        tu cuenta.
+      </li>
+      <li i18n="@@legal.privacy.retention.logs">
+        <strong>Registros de errores del servidor:</strong> Docker guarda hasta tres ficheros de 10
+        MB por servicio, y los más antiguos se borran solos.
+      </li>
+    </ul>
+
+    <h2 id="derechos" i18n="@@legal.privacy.rights.title">Tus derechos</h2>
+    <p i18n="@@legal.privacy.rights.intro">Puedes pedir:</p>
+    <ul>
+      <li i18n="@@legal.privacy.rights.access">acceder a tus datos;</li>
+      <li i18n="@@legal.privacy.rights.rectify">corregirlos;</li>
+      <li i18n="@@legal.privacy.rights.erase">borrarlos;</li>
+      <li i18n="@@legal.privacy.rights.object">oponerte a su tratamiento o pedir que se limite;</li>
+      <li i18n="@@legal.privacy.rights.portability">
+        recibirlos en un formato común para llevártelos (portabilidad).
+      </li>
+    </ul>
+    <p i18n="@@legal.privacy.rights.how">
+      Para hacerlo, escribe a docksidegarage@gmail.com. Te respondemos en un mes como máximo. Hasta
+      que la app permita borrar la cuenta desde dentro, el borrado se pide por correo y se hace a
+      mano.
+    </p>
+    <p i18n="@@legal.privacy.rights.leave">Darte de baja de una liga no borra tu cuenta.</p>
+    <p i18n="@@legal.privacy.rights.admin">
+      Si eres administrador de una liga, borrar tu cuenta cierra la liga: desaparece para todos sus
+      miembros, con sus partidos, alineaciones, valoraciones y puntos. Escríbenos antes para
+      organizarlo. Para ti no hay plazo fijo, porque el cierre se hace a mano.
+    </p>
+    <p i18n="@@legal.privacy.rights.aepd">
+      Si no estás conforme con cómo tratamos tus datos, puedes reclamar ante la Agencia Española de
+      Protección de Datos (aepd.es).
+    </p>
+
+    <h2 id="jugadores" i18n="@@legal.privacy.players.title">Jugadores sin cuenta</h2>
+    <p i18n="@@legal.privacy.players.text">
+      El administrador de la liga registra a los jugadores del equipo. Si estás en la plantilla y no
+      tienes cuenta, esta política es la información sobre cómo tratamos tus datos. Puedes pedir que
+      se borren o que se cambie tu nombre escribiendo a docksidegarage@gmail.com.
+    </p>
+
+    <h2 id="cookies" i18n="@@legal.privacy.cookies.title">Cookies y almacenamiento local</h2>
+    <p i18n="@@legal.privacy.cookies.intro">
+      No usamos cookies de publicidad ni de analítica, y por eso no mostramos un aviso de cookies.
+      Las que usamos son técnicas y hacen falta para que la app funcione, así que no necesitan tu
+      consentimiento. Si esto cambia, actualizaremos esta página.
+    </p>
+    <div class="scroll" role="region" tabindex="0" aria-labelledby="cookies">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" i18n="@@legal.privacy.cookies.head.name">Nombre</th>
+            <th scope="col" i18n="@@legal.privacy.cookies.head.where">Dónde</th>
+            <th scope="col" i18n="@@legal.privacy.cookies.head.purpose">Para qué</th>
+            <th scope="col" i18n="@@legal.privacy.cookies.head.lifetime">Cuánto dura</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td i18n="@@legal.privacy.cookies.session.name"><code>SESSION</code></td>
+            <td i18n="@@legal.privacy.cookies.where.cookie">Cookie</td>
+            <td i18n="@@legal.privacy.cookies.session.purpose">
+              Mantiene tu sesión iniciada. El código de la página no puede leerla.
+            </td>
+            <td i18n="@@legal.privacy.cookies.session.lifetime">
+              Hasta que cierras el navegador o cierras sesión. En el servidor, la sesión caduca tras
+              30 minutos sin actividad.
+            </td>
+          </tr>
+          <tr>
+            <td i18n="@@legal.privacy.cookies.xsrf.name"><code>XSRF-TOKEN</code></td>
+            <td i18n="@@legal.privacy.cookies.where.cookie">Cookie</td>
+            <td i18n="@@legal.privacy.cookies.xsrf.purpose">
+              Protege las acciones frente a peticiones falsas enviadas desde otras webs.
+            </td>
+            <td i18n="@@legal.privacy.cookies.xsrf.lifetime">Hasta que cierras el navegador.</td>
+          </tr>
+          <tr>
+            <td i18n="@@legal.privacy.cookies.theme.name"><code>bf.theme</code></td>
+            <td i18n="@@legal.privacy.cookies.where.storage">Almacenamiento local</td>
+            <td i18n="@@legal.privacy.cookies.theme.purpose">
+              Guarda si usas el tema claro o el oscuro. Si eliges «Automático», se borra.
+            </td>
+            <td i18n="@@legal.privacy.cookies.theme.lifetime">
+              Hasta que cambias el tema. Cerrar sesión no la borra.
+            </td>
+          </tr>
+          <tr>
+            <td i18n="@@legal.privacy.cookies.league.name"><code>bf.lastLeague</code></td>
+            <td i18n="@@legal.privacy.cookies.where.storage">Almacenamiento local</td>
+            <td i18n="@@legal.privacy.cookies.league.purpose">
+              Guarda la última liga que abriste, para llevarte a ella desde la pantalla de inicio.
+            </td>
+            <td i18n="@@legal.privacy.cookies.league.lifetime">
+              Hasta que abres otra liga. Cerrar sesión no la borra; puedes borrarla desde los datos
+              del sitio en tu navegador.
+            </td>
+          </tr>
+          <tr>
+            <td i18n="@@legal.privacy.cookies.return.name"><code>bf.returnUrl</code></td>
+            <td i18n="@@legal.privacy.cookies.where.tab">Almacenamiento de la pestaña</td>
+            <td i18n="@@legal.privacy.cookies.return.purpose">
+              Guarda a qué página volver después de entrar con Google.
+            </td>
+            <td i18n="@@legal.privacy.cookies.return.lifetime">
+              Se borra al usarla o al cerrar la pestaña.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p i18n="@@legal.privacy.cookies.google">
+      Google puede poner sus propias cookies cuando entras con Google. Son de Google y se rigen por
+      su política.
+    </p>
+
+    <h2 id="menores" i18n="@@legal.privacy.minors.title">Menores</h2>
+    <p i18n="@@legal.privacy.minors.text">
+      Buddy Fantasy es para personas de 14 años o más, la edad a la que en España se puede dar el
+      consentimiento para tratar datos en internet. No comprobamos la edad, porque Google no nos la
+      comunica. Si eres menor de 14 años y tus datos están aquí, escribe a docksidegarage@gmail.com
+      y se borran.
+    </p>
+
+    <h2 id="cambios" i18n="@@legal.privacy.changes.title">Cambios</h2>
+    <p i18n="@@legal.privacy.changes.text">
+      Cada versión de esta página lleva su fecha arriba. Si el cambio es importante, te lo
+      avisaremos dentro de la app cuando exista esa función.
+    </p>
+  </article>
+</bf-legal-layout>

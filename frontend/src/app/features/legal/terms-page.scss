@@ -1,0 +1,5 @@
+@use 'features/legal/prose' as prose;
+
+article {
+  @include prose.prose;
+}

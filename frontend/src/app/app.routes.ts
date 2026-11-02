@@ -6,6 +6,7 @@ import { ERROR_PAGES } from './core/pages/error-page-texts';
 import { devRoutes } from './dev.routes';
 import { identityRoutes, loginRoutes } from './features/identity/identity.routes';
 import { leagueAdminRoutes, leagueRoutes, leaguesRoutes } from './features/league/league.routes';
+import { legalRoutes } from './features/legal/legal.routes';
 import { lineupRoutes } from './features/lineup/lineup.routes';
 import { matchAdminRoutes, matchRoutes } from './features/match/match.routes';
 import { ratingAdminRoutes, ratingRoutes } from './features/rating/rating.routes';
@@ -20,12 +21,14 @@ const errorPage = () => import('./core/pages/error-page').then((m) => m.ErrorPag
  * The routes of the app (FE-03), in English and with the league in the URL. The pages of each
  * feature are lazy and go inside the shell: those outside a league first (so that `leagues/new`
  * is not taken for a league), then those of a league under `leagues/:leagueId`, with its admin
- * ones under `admin`. The login has the whole screen.
+ * ones under `admin`. The login and the legal pages have the whole screen, and the legal ones
+ * need no session.
  */
 export const routes: Routes = [
   ...devRoutes,
   { path: '', pathMatch: 'full', redirectTo: homeRedirect },
   ...loginRoutes,
+  ...legalRoutes,
   {
     path: '',
     loadComponent: shell,

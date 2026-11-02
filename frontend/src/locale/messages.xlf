@@ -1866,6 +1866,826 @@
           <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="legal.links.terms" datatype="html">
+        <source>Condiciones de servicio</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/legal-layout.html</context>
+          <context context-type="linenumber">11,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.links.privacy" datatype="html">
+        <source>Política de privacidad</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/legal-layout.html</context>
+          <context context-type="linenumber">13,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.pageTitle" datatype="html">
+        <source>Política de privacidad</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/legal.routes.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.pageTitle" datatype="html">
+        <source>Condiciones de servicio</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/legal.routes.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.title" datatype="html">
+        <source>Política de privacidad</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.updated" datatype="html">
+        <source> Última actualización: 2 de noviembre de 2026 </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">5,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.controller.title" datatype="html">
+        <source>Quién es el responsable</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.controller.text" datatype="html">
+        <source> Buddy Fantasy es un proyecto personal, gratuito y sin ánimo de lucro. El responsable del tratamiento de tus datos es Xosé Babío Sabín. Para cualquier duda o petición sobre tus datos, escribe a docksidegarage@gmail.com. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">10,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.data.title" datatype="html">
+        <source>Qué datos tratamos</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">15,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.data.google" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>De tu cuenta de Google:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> tu identificador de Google, tu correo, tu nombre, la dirección de tu foto de perfil, y las fechas de alta y de tu último acceso. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">18,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.data.game" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>De tu juego:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> las ligas en las que estás y tu rol en cada una, tus alineaciones, tus valoraciones y tus puntos. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">22,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.data.admin" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Si eres administrador:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> tu identificador en el registro de cambios de los partidos y de los jugadores, y en las cancelaciones de valoraciones que hagas, con la fecha de cada cambio. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">26,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.data.players" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>De los jugadores del equipo:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> nombre, dorsal, posición, estadísticas de cada partido, valoraciones y valor. Cuando se active, también su foto. Ver «Jugadores sin cuenta». </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">31,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.data.technical" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Técnicos:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> la sesión que te mantiene dentro y los registros de errores del servidor. Los registros no incluyen tu correo ni tu nombre. En un caso raro, un error inesperado puede dejar tu identificador de Google. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">36,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.data.none" datatype="html">
+        <source> No usamos analítica, publicidad ni rastreadores. Tampoco cargamos scripts ni fuentes de terceros. La única excepción es la foto de perfil, que se carga desde Google (ver «Encargados y terceros»). </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">42,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.basis.title" datatype="html">
+        <source>Para qué los usamos y con qué base</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">47,49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.basis.service" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Prestarte el servicio<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> con los datos de tu cuenta y de tu juego. Es lo que pides al entrar (base: artículo 6.1.b del RGPD). </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">50,53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.basis.security" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Seguridad, registros de errores y copias de seguridad:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> interés legítimo (artículo 6.1.f), para proteger el servicio y poder recuperarlo si falla. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">54,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.basis.players" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Datos de los jugadores:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> interés legítimo de la liga en llevar su juego (artículo 6.1.f). Un jugador puede oponerse o pedir que se borren sus datos o se cambie su nombre (ver «Tus derechos»). </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">58,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.basis.stability" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Conservar alineaciones, puntos y valoraciones ya contados<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> aunque se borre una cuenta: interés legítimo en que la clasificación de la liga sea estable (artículo 6.1.f). </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">63,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.basis.calc" datatype="html">
+        <source> Los puntos y el valor de los jugadores se calculan con reglas fijas y automáticas. No hay decisiones que produzcan efectos jurídicos sobre ti. Para entrar necesitas tu cuenta de Google; no te pedimos ningún otro dato personal. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">69,74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.who.title" datatype="html">
+        <source>Quién ve tus datos</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">74,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.who.members" datatype="html">
+        <source> Los <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>miembros de tu liga<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ven tu nombre y tu foto, tus alineaciones una vez bloqueadas, y tus puntos y tu posición en la clasificación. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">77,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.who.ratings" datatype="html">
+        <source> Tus <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>valoraciones son anónimas<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. Nadie, tampoco el administrador, ve el voto individual de otra persona: solo se publica la media y el número de votos. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">81,84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.who.excluded" datatype="html">
+        <source> Si el administrador te excluye de valorar un partido, lo ves tú, sin motivo. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">85,87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.who.outside" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Nadie fuera de tu liga<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ve nada de tu juego. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">88,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.providers.title" datatype="html">
+        <source>Encargados y terceros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">92,94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.providers.hetzner" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Hetzner Online GmbH<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> (Alemania): aloja el servidor donde funcionan la aplicación y su base de datos. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">95,98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.providers.aws" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Amazon Web Services EMEA SARL:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> guarda las copias de seguridad en un bucket de la UE. Las copias van cifradas antes de salir del servidor, y la clave para abrirlas no está ni en el servidor ni en AWS. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">99,102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.providers.google" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Google<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, como responsable independiente: cuando entras con Google, trata tus datos de acceso según su propia política de privacidad. La foto de tu perfil se carga desde sus servidores (<x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>googleusercontent.com<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>), así que Google ve la dirección IP desde la que se muestra. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">104,108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.transfers.title" datatype="html">
+        <source> Transferencias fuera de la UE </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">112,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.transfers.text" datatype="html">
+        <source> Los datos del servicio están en la UE: el servidor, en Alemania, y las copias, en un bucket de la UE. Google y Amazon Web Services son empresas de Estados Unidos adheridas al Marco de Privacidad de Datos UE-EE. UU. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">115,120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.title" datatype="html">
+        <source>Cuánto tiempo los guardamos</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">120,122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.account" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Tu cuenta y tu juego:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> mientras exista tu cuenta. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">123,125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.left" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Alineaciones, puntos y valoraciones ya contados:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> se conservan aunque borres tu cuenta. En la liga aparecen como «Antiguo miembro». Son datos seudonimizados: sin tu cuenta no se puede saber quién eres a partir de ellos, pero siguen siendo datos personales. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">126,129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.league" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Liga cerrada por el borrado de su administrador:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> sus datos de juego se borran con ella. Las copias de seguridad los guardan hasta que caducan. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">131,134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.events" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Registro interno de eventos:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> guarda identificadores de lo que pasa en la liga (un partido cerrado, una alineación bloqueada), sin nombres ni correos. No tiene un plazo de borrado fijo. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">135,138</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.session" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Sesión:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> hasta que cierras sesión o caduca por inactividad (30 minutos sin actividad). </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">140,143</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.backups" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Copias de seguridad:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> 30 días las diarias y 14 días las de antes de cada despliegue. Tus datos pueden seguir en ellas hasta que caduquen, también después de borrar tu cuenta. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">144,147</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.retention.logs" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Registros de errores del servidor:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Docker guarda hasta tres ficheros de 10 MB por servicio, y los más antiguos se borran solos. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">149,152</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.title" datatype="html">
+        <source>Tus derechos</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">154,155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.intro" datatype="html">
+        <source>Puedes pedir:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">155,157</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.access" datatype="html">
+        <source>acceder a tus datos;</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">157,158</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.rectify" datatype="html">
+        <source>corregirlos;</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">158,159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.erase" datatype="html">
+        <source>borrarlos;</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">159,160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.object" datatype="html">
+        <source>oponerte a su tratamiento o pedir que se limite;</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">160,161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.portability" datatype="html">
+        <source> recibirlos en un formato común para llevártelos (portabilidad). </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">162,165</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.how" datatype="html">
+        <source> Para hacerlo, escribe a docksidegarage@gmail.com. Te respondemos en un mes como máximo. Hasta que la app permita borrar la cuenta desde dentro, el borrado se pide por correo y se hace a mano. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">166,170</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.leave" datatype="html">
+        <source>Darte de baja de una liga no borra tu cuenta.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">170,171</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.admin" datatype="html">
+        <source> Si eres administrador de una liga, borrar tu cuenta cierra la liga: desaparece para todos sus miembros, con sus partidos, alineaciones, valoraciones y puntos. Escríbenos antes para organizarlo. Para ti no hay plazo fijo, porque el cierre se hace a mano. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">172,176</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.rights.aepd" datatype="html">
+        <source> Si no estás conforme con cómo tratamos tus datos, puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es). </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">177,181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.players.title" datatype="html">
+        <source>Jugadores sin cuenta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">181,182</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.players.text" datatype="html">
+        <source> El administrador de la liga registra a los jugadores del equipo. Si estás en la plantilla y no tienes cuenta, esta política es la información sobre cómo tratamos tus datos. Puedes pedir que se borren o que se cambie tu nombre escribiendo a docksidegarage@gmail.com. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">183,188</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.title" datatype="html">
+        <source>Cookies y almacenamiento local</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">188,189</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.intro" datatype="html">
+        <source> No usamos cookies de publicidad ni de analítica, y por eso no mostramos un aviso de cookies. Las que usamos son técnicas y hacen falta para que la app funcione, así que no necesitan tu consentimiento. Si esto cambia, actualizaremos esta página. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">190,194</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.head.name" datatype="html">
+        <source>Nombre</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">198,199</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.head.where" datatype="html">
+        <source>Dónde</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">199,200</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.head.purpose" datatype="html">
+        <source>Para qué</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">200,201</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.head.lifetime" datatype="html">
+        <source>Cuánto dura</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">201,204</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.session.name" datatype="html">
+        <source><x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>SESSION<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">206,207</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.where.cookie" datatype="html">
+        <source>Cookie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">207,208</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">218,219</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.session.purpose" datatype="html">
+        <source> Mantiene tu sesión iniciada. El código de la página no puede leerla. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">209,211</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.session.lifetime" datatype="html">
+        <source> Hasta que cierras el navegador o cierras sesión. En el servidor, la sesión caduca tras 30 minutos sin actividad. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">212,215</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.xsrf.name" datatype="html">
+        <source><x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>XSRF-TOKEN<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">217,218</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.xsrf.purpose" datatype="html">
+        <source> Protege las acciones frente a peticiones falsas enviadas desde otras webs. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">220,222</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.xsrf.lifetime" datatype="html">
+        <source>Hasta que cierras el navegador.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">222,225</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.theme.name" datatype="html">
+        <source><x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>bf.theme<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">225,226</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.where.storage" datatype="html">
+        <source>Almacenamiento local</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">226,227</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">236,237</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.theme.purpose" datatype="html">
+        <source> Guarda si usas el tema claro o el oscuro. Si eliges «Automático», se borra. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">228,230</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.theme.lifetime" datatype="html">
+        <source> Hasta que cambias el tema. Cerrar sesión no la borra. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">231,234</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.league.name" datatype="html">
+        <source><x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>bf.lastLeague<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">235,236</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.league.purpose" datatype="html">
+        <source> Guarda la última liga que abriste, para llevarte a ella desde la pantalla de inicio. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">238,240</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.league.lifetime" datatype="html">
+        <source> Hasta que abres otra liga. Cerrar sesión no la borra; puedes borrarla desde los datos del sitio en tu navegador. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">241,244</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.return.name" datatype="html">
+        <source><x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>bf.returnUrl<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">246,247</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.where.tab" datatype="html">
+        <source>Almacenamiento de la pestaña</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">247,248</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.return.purpose" datatype="html">
+        <source> Guarda a qué página volver después de entrar con Google. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">249,251</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.return.lifetime" datatype="html">
+        <source> Se borra al usarla o al cerrar la pestaña. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">252,255</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.cookies.google" datatype="html">
+        <source> Google puede poner sus propias cookies cuando entras con Google. Son de Google y se rigen por su política. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">259,263</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.minors.title" datatype="html">
+        <source>Menores</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">263,264</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.minors.text" datatype="html">
+        <source> Buddy Fantasy es para personas de 14 años o más, la edad a la que en España se puede dar el consentimiento para tratar datos en internet. No comprobamos la edad, porque Google no nos la comunica. Si eres menor de 14 años y tus datos están aquí, escribe a docksidegarage@gmail.com y se borran. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">265,271</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.changes.title" datatype="html">
+        <source>Cambios</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">271,272</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.privacy.changes.text" datatype="html">
+        <source> Cada versión de esta página lleva su fecha arriba. Si el cambio es importante, te lo avisaremos dentro de la app cuando exista esa función. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/privacy-page.html</context>
+          <context context-type="linenumber">273,277</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.title" datatype="html">
+        <source>Condiciones de servicio</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.updated" datatype="html">
+        <source>Última actualización: 2 de noviembre de 2026</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">4,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.what.title" datatype="html">
+        <source>Qué es y quién lo ofrece</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.what.text" datatype="html">
+        <source> Buddy Fantasy es un juego de fantasy para una liga de peñas de domingo. Es gratuito: no hay pagos ni premios. Lo ofrece su responsable, Xosé Babío Sabín, como proyecto personal y sin ánimo de lucro. Contacto: docksidegarage@gmail.com. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">8,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.account.title" datatype="html">
+        <source>Tu cuenta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">13,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.account.login" datatype="html">
+        <source> Entras con tu cuenta de Google. Cada persona tiene una sola cuenta. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">16,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.account.age" datatype="html">
+        <source> Tienes que tener al menos 14 años (ver la <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/privacy&quot;&gt;"/>política de privacidad<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>). No comprobamos la edad. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">19,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.account.responsible" datatype="html">
+        <source> Eres responsable de lo que se hace desde tu cuenta. Si crees que alguien la usa sin permiso, avisa al contacto. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">23,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.leagues.title" datatype="html">
+        <source>Ligas y roles</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">28,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.leagues.admin" datatype="html">
+        <source> Cada liga la crea su administrador. El administrador registra el equipo, los jugadores, los partidos y las actas; invita y expulsa managers; y puede cancelar las valoraciones de un manager en un partido. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">31,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.leagues.managers" datatype="html">
+        <source> Los managers forman su alineación antes de cada partido y valoran a los jugadores después. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">36,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.leagues.players" datatype="html">
+        <source> Si eres administrador, solo registras a jugadores que estén de acuerdo en ser registrados, y los quitas o cambias si te lo piden. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">39,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.leagues.leave" datatype="html">
+        <source> Mientras seas administrador, no puedes salir de tu liga. Si borras tu cuenta como administrador, la liga se cierra para todos sus miembros, con sus partidos y puntos. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">43,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.use.title" datatype="html">
+        <source>Uso aceptable</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">48,49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.use.intro" datatype="html">
+        <source>No puedes:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">49,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.use.impersonate" datatype="html">
+        <source>hacerte pasar por otra persona;</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.use.offensive" datatype="html">
+        <source>poner nombres de liga o de jugador ofensivos;</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">52,53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.use.automate" datatype="html">
+        <source> automatizar el uso del servicio, ni sobrecargarlo o atacarlo. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">54,58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.ratings.title" datatype="html">
+        <source>Valoraciones</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.ratings.text" datatype="html">
+        <source> Las valoraciones son opiniones sobre el rendimiento de los jugadores. Son anónimas: nadie ve tu voto, solo la media. Valora con respeto y según lo que has visto del partido. Si el administrador te excluye de valorar un partido, lo verás, sin motivo. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">60,65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.content.title" datatype="html">
+        <source>Tu contenido</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">65,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.content.text" datatype="html">
+        <source> Lo que escribes, como nombres de liga o de jugador, sigue siendo tuyo. Nos das permiso para guardarlo y mostrarlo a los miembros de tu liga, solo en lo que el servicio necesita. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">67,71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.availability.title" datatype="html">
+        <source>Disponibilidad</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">71,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.availability.text" datatype="html">
+        <source> El servicio se ofrece tal cual. No garantizamos que esté siempre disponible ni que no se pierdan datos, aunque hay copias de seguridad cada día. Podemos cambiarlo o cerrarlo; si lo cerramos, avisaremos antes cuando sea posible. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">73,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.liability.title" datatype="html">
+        <source>Responsabilidad</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">78,79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.liability.text" datatype="html">
+        <source> En lo que permita la ley, el responsable no responde de los daños que se deriven del uso del servicio o de no poder usarlo. Esto no quita ninguno de los derechos que te reconoce la normativa de consumidores. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">80,85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.exit.title" datatype="html">
+        <source>Baja y suspensión</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">85,87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.exit.leave" datatype="html">
+        <source> Puedes dejar tu liga cuando quieras, salvo que seas su administrador. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">88,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.exit.delete" datatype="html">
+        <source> Puedes pedir el borrado de tu cuenta. Cómo hacerlo está en la <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/privacy&quot;&gt;"/>política de privacidad<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">91,94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.exit.suspend" datatype="html">
+        <source> El responsable puede suspender una cuenta que incumpla estas condiciones. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">95,99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.changes.title" datatype="html">
+        <source>Cambios</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">99,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.changes.text" datatype="html">
+        <source> Cada versión de estas condiciones lleva su fecha arriba. Si el cambio es importante, te lo avisaremos dentro de la app cuando exista esa función. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">101,105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.law.title" datatype="html">
+        <source>Ley aplicable</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">105,106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="legal.terms.law.text" datatype="html">
+        <source> Estas condiciones se rigen por la ley española. Si eres consumidor, puedes acudir a los juzgados de tu domicilio. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/legal/terms-page.html</context>
+          <context context-type="linenumber">107,111</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="lineup.candidates.current" datatype="html">
         <source>En la alineación</source>
         <context-group purpose="location">

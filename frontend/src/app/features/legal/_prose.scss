@@ -1,0 +1,32 @@
+// The text of the legal pages: titles, paragraphs, lists and links, shared by both pages.
+@use 'ui/styles/typography' as type;
+
+@mixin prose {
+  display: grid;
+  gap: var(--bf-space-4);
+
+  h1 {
+    @include type.display(6);
+
+    overflow-wrap: anywhere;
+  }
+
+  h2 {
+    @include type.display(4);
+
+    // The top bar stays over the page while scrolling; the title must not hide under it.
+    scroll-margin-top: var(--bf-space-8);
+    margin-top: var(--bf-space-4);
+  }
+
+  ul {
+    display: grid;
+    gap: var(--bf-space-2);
+    padding-left: var(--bf-space-5);
+  }
+
+  a {
+    color: var(--bf-color-accent-text);
+    text-underline-offset: 2px;
+  }
+}
