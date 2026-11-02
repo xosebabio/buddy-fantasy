@@ -80,7 +80,7 @@ E2E_BASE_URL=http://localhost:4200 npm run e2e   # contra npm start en vez de Ca
 
 ### CI
 
-`.github/workflows/ci.yml`, en cada push a `develop` o `main` y cada PR: `backend` (`mvn -B verify`, con `OpenApiSpecTests`), `frontend` y, tras los dos, `e2e` (los pasos de *E2E*; si falla, sube el informe, las trazas y el log del backend). Para repetir el job `frontend` antes de subir, desde `frontend/`:
+`.github/workflows/ci.yml`, en cada push a `develop` o `main` y cada PR: `backend` (`mvn -B verify`, con `OpenApiSpecTests`), `frontend` `images` (construye las imágenes del backend y la web, con la caché de GitHub Actions, y las guarda como artefacto) y, tras los tres, `e2e` (carga esas imágenes, levanta `docker-compose.prod.yml` con `docker-compose.e2e.yml` y pasa `npm run e2e`; si falla, sube el informe, las trazas y `compose.log`). Para repetir el job `frontend` antes de subir, desde `frontend/`:
 
 ```bash
 npm run api:types && npm run palette && npm run i18n:extract \
@@ -119,6 +119,7 @@ Del `deploy/Caddyfile` (en local las fija el servicio `caddy` de `deploy/docker-
 | Variable | Para qué |
 | --- | --- |
 | `SITE_ADDRESS` | Dominio en producción (HTTPS automático y HSTS); por defecto `:80`, HTTP sin dominio |
+| `WWW_ADDRESS` | Host `www` que redirige con un `301` a `SITE_ADDRESS`; el Compose de producción lo fija a `www.${SITE_ADDRESS}`. Sin definir (local, E2E) el bloque no casa con ninguna petición |
 | `BACKEND_UPSTREAM` | `host:puerto` del backend; por defecto `backend:8080` (en local, `host.docker.internal:8080`) |
 | `PHOTOS_ORIGIN` | Origen de las fotos en `img-src` de la CSP: el de `PHOTOS_BASE_URL` (CloudFront en producción, `http://localhost:8333` en local) |
 | `UPLOADS_ORIGIN` | Origen del bucket en `connect-src` de la CSP, para la subida directa de fotos (`https://<bucket>.s3.<región>.amazonaws.com` en producción, `http://localhost:8333` en local) |
