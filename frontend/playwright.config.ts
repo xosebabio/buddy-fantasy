@@ -19,7 +19,15 @@ const setups = browsers.flatMap(({ name, device }) =>
 );
 const projectName = ({ name, colorScheme }: (typeof setups)[number]) => `${name}-${colorScheme}`;
 /** The specs that advance the server's clock (`POST /api/e2e/clock`). */
-const CLOCK_SPECS = /matchday\.spec\.ts/;
+const CLOCK_SPECS = [
+  { name: 'matchday', match: /(?<!admin-)matchday\.spec\.ts/ },
+  { name: 'admin-matchday', match: /admin-matchday\.spec\.ts/ },
+] as const;
+const CLOCK_SPEC_FILES = CLOCK_SPECS.map(({ match }) => match);
+// Every project that moves the clock, in the order they run: each waits for the previous one.
+const clockProjects = CLOCK_SPECS.flatMap((spec) =>
+  setups.map((setup) => ({ spec, setup, name: `${projectName(setup)}-${spec.name}` })),
+);
 
 export default defineConfig({
   testDir: './e2e',
@@ -38,19 +46,19 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: setups.flatMap((setup, index) => {
-    const { device, colorScheme } = setup;
-    const previous = setups[index - 1];
-    return [
-      { name: projectName(setup), testIgnore: CLOCK_SPECS, use: { ...device, colorScheme } },
-      // The server's clock is the whole backend's and only moves forward, so the specs that move it
-      // never run at once: each of these projects waits for the previous one.
-      {
-        name: `${projectName(setup)}-matchday`,
-        testMatch: CLOCK_SPECS,
-        use: { ...device, colorScheme },
-        dependencies: previous ? [`${projectName(previous)}-matchday`] : [],
-      },
-    ];
-  }),
+  projects: [
+    ...setups.map((setup) => ({
+      name: projectName(setup),
+      testIgnore: CLOCK_SPEC_FILES,
+      use: { ...setup.device, colorScheme: setup.colorScheme },
+    })),
+    // The server's clock is the whole backend's and only moves forward, so the specs that move it
+    // never run at once: each of these projects waits for the previous one.
+    ...clockProjects.map(({ spec, setup, name }, index) => ({
+      name,
+      testMatch: spec.match,
+      use: { ...setup.device, colorScheme: setup.colorScheme },
+      dependencies: index > 0 ? [clockProjects[index - 1]?.name ?? ''] : [],
+    })),
+  ],
 });
