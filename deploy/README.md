@@ -189,3 +189,61 @@ Para restaurar sobre producción tras una migración fallida, para el backend (`
 ## 9. Tras la primera semana
 
 Hasta las alertas de la Fase 4, un backup que falla solo queda en `journalctl`. Comprueba a mano que hay siete volcados en `daily/` y que la regla de ciclo de vida funciona.
+
+## 10. Borrar una cuenta a mano (hasta la Fase 4)
+
+Hasta que la app permita borrar la cuenta (RNF-10; plan `docs/14bis-legal-pages-plan.md`, §7), el responsable lo hace a mano en el plazo de un mes desde la petición, como dice la política. Se hace en el servidor, con el backend levantado. Cada borrado va en una sola transacción.
+
+**No uses este procedimiento si la cuenta es admin de alguna liga.** Ver el paso 2.
+
+Abre `psql` en el contenedor de Postgres como `deploy`, desde `/opt/buddy-fantasy`:
+
+```bash
+docker compose --env-file .env -f docker-compose.prod.yml exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+```
+
+**1. Localizar la cuenta.** Con el correo de la cuenta de Google que pide el borrado:
+
+```sql
+SELECT id, google_sub FROM identity_user WHERE email = '<correo>';
+```
+
+- Ninguna fila: la cuenta ya no existe. Responde a la persona y termina.
+- Más de una fila: para. No borres a ojo; decide con la persona cuál es la cuenta.
+
+Guarda `id` y `google_sub` para los pasos siguientes. No los copies a ningún sitio público, ni al repo ni a un issue.
+
+**2. Comprobar que no es admin.**
+
+```sql
+SELECT league_id FROM league_membership WHERE user_id = '<id>' AND role = 'ADMIN';
+```
+
+Si devuelve alguna fila, **para aquí**. Un admin no puede salir de su liga (`ADMIN_CANNOT_LEAVE`), y sin él la liga se queda sin admin. Qué hacer con esa liga está pendiente de decisión: no lo resuelvas con SQL.
+
+**3. Borrar.** Primero las sesiones, porque `principal_name` es el `sub` de Google. `spring_session_attributes` se borra en cascada.
+
+```sql
+BEGIN;
+DELETE FROM spring_session WHERE principal_name = '<google_sub>';
+DELETE FROM league_membership WHERE user_id = '<id>';
+DELETE FROM identity_user WHERE id = '<id>';
+COMMIT;
+```
+
+Si algún paso da error, escribe `ROLLBACK;` y no sigas.
+
+**4. Comprobar.** Las tres consultas devuelven `0`:
+
+```sql
+SELECT count(*) FROM identity_user WHERE id = '<id>';
+SELECT count(*) FROM spring_session WHERE principal_name = '<google_sub>';
+SELECT count(*) FROM league_membership WHERE user_id = '<id>';
+```
+
+**5. Lo que se queda, a propósito.**
+
+- Las alineaciones (`lineup_*`), los puntos y los votos (`scoring_lineup*`, `rating_vote`, `rating_exclusion`) y la auditoría de partidos (`match_audit_entry`) guardan el `user_id`. Sin `identity_user` no se puede volver a relacionar con la persona. En la liga sale como «Antiguo miembro», igual que quien ha salido.
+- `event_publication` conserva los eventos ya completados, con ids y estadísticas, sin nombres ni correos.
+- Si la persona vuelve a entrar con la misma cuenta de Google, se crea una cuenta nueva, sin ligas.
+- Las copias de S3 caducan solas: `daily/` a los 30 días y `deploy/` a los 14 (§6).
