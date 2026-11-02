@@ -145,13 +145,121 @@ En _Settings_ del repo:
 
 4. **Paquetes en GHCR:** tras la primera publicación (tarea 8), las tres imágenes nacen privadas. Cambia cada una a **pública** (_Packages → Package settings → Change visibility_) para que el servidor las baje sin credenciales. No llevan nada secreto.
 
-## 6. AWS: bucket y usuario de backup (Usuario)
+## 6. AWS: bucket y usuarios de backup (Usuario)
 
-1. **Clave de `age`.** En tu máquina: `age-keygen -o buddy-fantasy-age.key`. La línea `Public key: age1…` es `BACKUP_AGE_RECIPIENT`. **La privada (`buddy-fantasy-age.key`) se guarda fuera del servidor y de GitHub**, por ejemplo en tu gestor de contraseñas y una copia offline: sin ella, los backups no se pueden restaurar.
-2. **Bucket S3** en una región de la UE (p. ej. `eu-west-1`), privado, con _Block all public access_ activado. Cifrado por defecto del bucket activado.
-3. **Ciclo de vida** del bucket, dos reglas con prefijo: `daily/` expira a los 30 días y `deploy/` a los 14. Añade también _Delete expired object delete markers / abort incomplete multipart uploads_.
-4. **Usuario IAM** `buddy-fantasy-backup` sin consola, con una clave de acceso y esta política en línea: [`backup/iam-policy.json`](backup/iam-policy.json), sustituyendo `BUCKET_NAME` por el nombre del bucket. Solo permite `s3:PutObject`: quien entre en el servidor no puede leer ni borrar backups. La clave de acceso va al `.env` del servidor.
-5. **Usuario IAM de restauración**, en tu máquina y nunca en el servidor, con `s3:GetObject` y `s3:ListBucket` sobre el bucket, para `restore.sh`.
+Todo se hace desde tu máquina con la AWS CLI, con un perfil que pueda administrar S3 e IAM en la cuenta. El servidor no necesita AWS ni credenciales de administración. Los bloques son para `bash` o `zsh`, y se ejecutan desde la raíz del repo.
+
+```bash
+export AWS_PROFILE="<perfil-admin>"                      # perfil de la CLI con permisos de administración
+aws sts get-caller-identity                              # comprueba que es la cuenta correcta
+REGION=eu-west-1                                         # una región de la UE
+BUCKET="buddy-fantasy-backups-$(openssl rand -hex 4)"    # nombre global único
+```
+
+Las variables se pierden al cerrar la terminal. Apunta `BUCKET` antes de cerrarla: es el `BACKUP_S3_BUCKET` del `.env`. Si lo vuelves a generar, obtienes otro nombre y otro bucket.
+
+### Clave de `age`
+
+En tu máquina (no es AWS): `age-keygen -o buddy-fantasy-age.key`. La línea `Public key: age1…` es `BACKUP_AGE_RECIPIENT`. **La privada (`buddy-fantasy-age.key`) se guarda fuera del servidor y de GitHub**, por ejemplo en tu gestor de contraseñas y una copia offline: sin ella, los backups no se pueden restaurar.
+
+### Bucket
+
+Privado, con el bloqueo de acceso público activado y cifrado por defecto.
+
+```bash
+aws s3api create-bucket --bucket "$BUCKET" --region "$REGION" \
+  --create-bucket-configuration LocationConstraint="$REGION"
+
+aws s3api put-public-access-block --bucket "$BUCKET" \
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+
+aws s3api put-bucket-encryption --bucket "$BUCKET" --server-side-encryption-configuration \
+  '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+```
+
+### Ciclo de vida
+
+`daily/` expira a los 30 días y `deploy/` a los 14. Además, aborta las subidas incompletas a los 7 días y limpia los delete markers caducados.
+
+```bash
+aws s3api put-bucket-lifecycle-configuration --bucket "$BUCKET" --lifecycle-configuration '{
+  "Rules": [
+    {"ID": "expire-daily-30d", "Status": "Enabled", "Filter": {"Prefix": "daily/"}, "Expiration": {"Days": 30}},
+    {"ID": "expire-deploy-14d", "Status": "Enabled", "Filter": {"Prefix": "deploy/"}, "Expiration": {"Days": 14}},
+    {"ID": "abort-incomplete-multipart", "Status": "Enabled", "Filter": {"Prefix": ""}, "AbortIncompleteMultipartUpload": {"DaysAfterInitiation": 7}},
+    {"ID": "expired-delete-markers", "Status": "Enabled", "Filter": {"Prefix": ""}, "Expiration": {"ExpiredObjectDeleteMarker": true}}
+  ]
+}'
+```
+
+### Usuario de escritura
+
+`buddy-fantasy-backup`, sin contraseña de consola, con una sola política en línea: `s3:PutObject` sobre el bucket. Se genera a partir de [`backup/iam-policy.json`](backup/iam-policy.json), sustituyendo `BUCKET_NAME`. Quien entre en el servidor no puede leer ni borrar backups.
+
+```bash
+aws iam create-user --user-name buddy-fantasy-backup
+
+POLICY=$(mktemp)
+sed "s/BUCKET_NAME/$BUCKET/" deploy/backup/iam-policy.json > "$POLICY"
+aws iam put-user-policy --user-name buddy-fantasy-backup \
+  --policy-name upload-backups-only --policy-document "file://$POLICY"
+rm "$POLICY"
+```
+
+La clave de acceso se guarda en un fichero con permisos restringidos, sin mostrarla en pantalla:
+
+```bash
+install -d -m 700 ~/.config/buddy-fantasy
+read -r KEY_ID SECRET <<< "$(aws iam create-access-key --user-name buddy-fantasy-backup \
+  --query 'AccessKey.[AccessKeyId,SecretAccessKey]' --output text)"
+(umask 077 && printf 'BACKUP_S3_BUCKET=%s\nBACKUP_S3_REGION=%s\nBACKUP_AWS_ACCESS_KEY_ID=%s\nBACKUP_AWS_SECRET_ACCESS_KEY=%s\n' \
+  "$BUCKET" "$REGION" "$KEY_ID" "$SECRET" > ~/.config/buddy-fantasy/backup-aws.env)
+unset KEY_ID SECRET
+```
+
+Copia esas cuatro líneas al `.env` del servidor (§3) y borra `backup-aws.env` de tu máquina cuando estén allí.
+
+### Usuario de restauración
+
+`buddy-fantasy-restore`, solo lectura (`s3:GetObject` y `s3:ListBucket`), para `restore.sh` (§8). Sus credenciales se quedan en tu máquina y nunca van al servidor.
+
+```bash
+aws iam create-user --user-name buddy-fantasy-restore
+
+POLICY=$(mktemp)
+cat > "$POLICY" <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Sid": "ReadBackups", "Effect": "Allow", "Action": "s3:GetObject", "Resource": "arn:aws:s3:::$BUCKET/*"},
+    {"Sid": "ListBackups", "Effect": "Allow", "Action": "s3:ListBucket", "Resource": "arn:aws:s3:::$BUCKET"}
+  ]
+}
+EOF
+aws iam put-user-policy --user-name buddy-fantasy-restore \
+  --policy-name read-backups-only --policy-document "file://$POLICY"
+rm "$POLICY"
+
+read -r KEY_ID SECRET <<< "$(aws iam create-access-key --user-name buddy-fantasy-restore \
+  --query 'AccessKey.[AccessKeyId,SecretAccessKey]' --output text)"
+(umask 077 && printf 'AWS_ACCESS_KEY_ID=%s\nAWS_SECRET_ACCESS_KEY=%s\nAWS_DEFAULT_REGION=%s\nBACKUP_S3_BUCKET=%s\n' \
+  "$KEY_ID" "$SECRET" "$REGION" "$BUCKET" > ~/.config/buddy-fantasy/restore-aws.env)
+unset KEY_ID SECRET
+```
+
+Para restaurar (§8), carga esas credenciales en la sesión con `set -a; . ~/.config/buddy-fantasy/restore-aws.env; set +a`.
+
+### Comprobar
+
+```bash
+aws s3api get-public-access-block --bucket "$BUCKET"
+aws s3api get-bucket-encryption --bucket "$BUCKET"
+aws s3api get-bucket-lifecycle-configuration --bucket "$BUCKET"
+aws iam list-user-policies --user-name buddy-fantasy-backup
+aws iam list-user-policies --user-name buddy-fantasy-restore
+```
+
+Si repites un paso que ya estaba hecho, la CLI responde con `EntityAlreadyExists` o `BucketAlreadyOwnedByYou` y puedes seguir con el siguiente. La excepción es la clave de acceso: cada `create-access-key` crea una nueva, y cada usuario admite dos como máximo. Para revocar una: `aws iam list-access-keys --user-name <usuario>` y después `aws iam delete-access-key --user-name <usuario> --access-key-id <id>`.
 
 ## 7. Desplegar y volver atrás
 
