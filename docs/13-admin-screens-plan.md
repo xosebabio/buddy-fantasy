@@ -296,7 +296,7 @@ En el cambio de la tarea que los provoca:
 | 8   | Plantilla de admin, alta, edición y baja                                                                                               | RF-09, RF-10                              | ✅    |
 | 9   | Calendario de admin, programar, editar, aplazar, borrar y página del partido                                                           | RF-12                                     | ✅    |
 | 10  | Acta, cierre y correcciones                                                                                                            | RF-13 a RF-16                             |✅    |
-| 11  | Auditoría de un partido                                                                                                                | RF-16, RNF-04                             |       |
+| 11  | Auditoría de un partido                                                                                                                | RF-16, RNF-04                             | ✅    |
 | 12  | Cancelar valoraciones                                                                                                                  | RF-41                                     |       |
 | 13  | Fila de admin en el inicio de la jornada (decisión 4)                                                                                  | Atajos del admin                          |       |
 | 14  | E2E del admin con el reloj de pruebas y axe, y la cadena de specs del reloj (§9)                                                       | Jornada completa automatizada (FE-34)     |       |

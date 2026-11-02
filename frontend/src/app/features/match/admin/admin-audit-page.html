@@ -1,0 +1,44 @@
+<h1 i18n="@@match.admin.audit.title">Auditoría</h1>
+
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (ready()) {
+  @if (current(); as match) {
+    <p class="meta" i18n="@@match.admin.audit.match">
+      Jornada {{ match.matchday }}, contra {{ match.opponent }}
+    </p>
+  }
+  @if (rows().length > 0) {
+    <ul bfList bleed cdkAccordion class="rows">
+      @for (row of rows(); track $index) {
+        <li bfDisclosure size="compact">
+          {{ actionTexts[row.action] }}
+          <span bfListItemMeta>{{ row.who }}, {{ row.at | bfDate: 'short' }}</span>
+          <ul bfDisclosurePanel class="changes">
+            @for (change of row.changes; track $index) {
+              <li>
+                {{ change.text }}
+                @if (change.before !== null) {
+                  <s>{{ change.before }}</s>
+                }
+                @if (change.after !== null) {
+                  <b>{{ change.after }}</b>
+                }
+              </li>
+            }
+          </ul>
+        </li>
+      }
+    </ul>
+  } @else {
+    <bf-empty-state i18n="@@match.admin.audit.empty">
+      Aún no hay cambios en este partido.
+    </bf-empty-state>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

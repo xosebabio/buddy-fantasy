@@ -41,6 +41,11 @@ export const matchAdminRoutes: Routes = [
     title: $localize`:@@match.admin.sheet.pageTitle:Acta`,
   },
   {
+    path: 'matches/:matchId/audit',
+    loadComponent: () => import('./admin/admin-audit-page').then((m) => m.AdminAuditPage),
+    title: $localize`:@@match.admin.audit.pageTitle:Auditoría`,
+  },
+  {
     path: 'matches/:matchId/edit',
     loadComponent: () => import('./admin/admin-match-form-page').then((m) => m.AdminMatchFormPage),
     canDeactivate: [lazyUnsavedChangesGuard],

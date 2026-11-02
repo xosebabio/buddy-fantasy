@@ -1,0 +1,40 @@
+@use 'ui/styles/page';
+
+:host {
+  @include page.page;
+}
+
+h1 {
+  @include page.title;
+}
+
+.meta {
+  margin-top: var(--bf-space-1);
+  color: var(--bf-color-text-muted);
+}
+
+.rows {
+  margin-top: var(--bf-space-5);
+}
+
+.changes {
+  display: grid;
+  gap: var(--bf-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+s {
+  color: var(--bf-color-text-muted);
+}
+
+b {
+  font-weight: 600;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}
