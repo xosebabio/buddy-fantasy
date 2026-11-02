@@ -11,6 +11,7 @@ import { handling } from '../../core/http/error-interceptor';
 import { toProblem } from '../../core/http/problem';
 import { onVisible } from '../../core/http/visible';
 import { BfMoneyPipe } from '../../shared/format/money';
+import { matchPhase } from '../../shared/match/match-phase';
 import { Points } from '../../shared/scoring/points';
 import { BfDatePipe } from '../../shared/time/date-pipe';
 import { Button } from '../../ui/button/button';
@@ -54,6 +55,19 @@ export function lockedMatch(
 }
 
 /**
+ * The match the admin owes the sheet for: the oldest one that has started and is not closed. It uses
+ * the browser's clock, so it is a guide (FE-09): the server decides whether it can be closed.
+ */
+export function pendingMatch(
+  matches: readonly MatchSummaryResponse[],
+  now: Date,
+): MatchSummaryResponse | undefined {
+  return matches
+    .filter((m) => matchPhase(m, now) === 'PENDING')
+    .sort((a, b) => a.matchday - b.matchday)[0];
+}
+
+/**
  * The start of a league, the matchday (RF-17, RF-25, RF-32): the next match with its lock deadline,
  * the state of the user's lineup, the rating windows still open, their last matchday and their
  * place in the standings, and the main action that fits (decision 14 of plan 12).
@@ -89,6 +103,27 @@ export class LeagueHomePage {
   protected readonly matches = inject(MatchApi).matches(this.leagueId);
 
   protected readonly warningTexts = WARNING_TEXTS;
+
+  protected readonly isAdmin = computed(
+    () => this.session.league(this.leagueId() ?? '')?.role === 'ADMIN',
+  );
+  /** The shortcut of the admin: the sheet they owe, or to schedule a match when none is left to play. */
+  protected readonly adminRow = computed<
+    { kind: 'sheet'; match: MatchSummaryResponse } | { kind: 'schedule' } | undefined
+  >(() => {
+    if (!this.isAdmin()) {
+      return undefined;
+    }
+    const matches = this.matches.value() ?? [];
+    const now = new Date();
+    const sheet = pendingMatch(matches, now);
+    if (sheet !== undefined) {
+      return { kind: 'sheet', match: sheet };
+    }
+    return matches.some((m) => matchPhase(m, now) === 'SCHEDULED')
+      ? undefined
+      : { kind: 'schedule' };
+  });
 
   protected readonly target = computed(() => this.lineup.value()?.targetMatch ?? null);
   protected readonly targetSummary = computed(() => {
@@ -149,7 +184,8 @@ export class LeagueHomePage {
       this.target() === null &&
       this.locked() === undefined &&
       this.pending() === undefined &&
-      this.mine() === undefined,
+      this.mine() === undefined &&
+      this.adminRow() === undefined,
   );
 
   constructor() {

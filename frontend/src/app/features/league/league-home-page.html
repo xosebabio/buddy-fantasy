@@ -86,6 +86,25 @@
           </a>
         </li>
       }
+      @if (adminRow(); as row) {
+        <li>
+          @if (row.kind === 'sheet') {
+            <a
+              bfListItem
+              [routerLink]="['/leagues', leagueId(), 'admin', 'matches', row.match.id, 'sheet']"
+            >
+              <ng-container i18n="@@league.home.admin.sheet">
+                Acta de la jornada {{ row.match.matchday }}
+              </ng-container>
+              <span bfListItemMeta i18n="@@league.home.admin.sheetPending">Pendiente</span>
+            </a>
+          } @else {
+            <a bfListItem [routerLink]="['/leagues', leagueId(), 'admin', 'matches', 'new']">
+              <ng-container i18n="@@league.home.admin.schedule">Programar partido</ng-container>
+            </a>
+          }
+        </li>
+      }
     </ul>
 
     @if (target() && lineup.value(); as saved) {

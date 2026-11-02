@@ -298,7 +298,7 @@ En el cambio de la tarea que los provoca:
 | 10  | Acta, cierre y correcciones                                                                                                            | RF-13 a RF-16                             |✅    |
 | 11  | Auditoría de un partido                                                                                                                | RF-16, RNF-04                             | ✅    |
 | 12  | Cancelar valoraciones                                                                                                                  | RF-41                                     | ✅    |
-| 13  | Fila de admin en el inicio de la jornada (decisión 4)                                                                                  | Atajos del admin                          |       |
+| 13  | Fila de admin en el inicio de la jornada (decisión 4)                                                                                  | Atajos del admin                          | ✅    |
 | 14  | E2E del admin con el reloj de pruebas y axe, y la cadena de specs del reloj (§9)                                                       | Jornada completa automatizada (FE-34)     |       |
 | 15  | Documentación de §10, `status.md`, _Estado_ de `AGENTS.md` y marcar los dos ítems de la Fase 2 en `requirements.md`                    | Ítems de la Fase 2 cerrados               |       |
 

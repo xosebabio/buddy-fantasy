@@ -10,7 +10,7 @@ import type { RatingWindowResponse } from '../../core/api/rating/rating-api';
 import type { StandingResponse } from '../../core/api/scoring/scoring-api';
 import { loadSession } from '../../core/auth/session.testing';
 import { CLOSED_SUMMARY, SCHEDULED_SUMMARY } from '../../shared/roster/matches.testing';
-import { LeagueHomePage, lockedMatch, pendingWindow } from './league-home-page';
+import { LeagueHomePage, lockedMatch, pendingMatch, pendingWindow } from './league-home-page';
 
 const NEXT = {
   id: 'm12',
@@ -90,6 +90,32 @@ describe('lockedMatch', () => {
   });
 });
 
+describe('pendingMatch', () => {
+  const at = (matchday: number, kickoffAt: string, status: MatchSummaryResponse['status']) => ({
+    ...SCHEDULED_SUMMARY,
+    id: `m${String(matchday)}`,
+    matchday,
+    kickoffAt,
+    status,
+  });
+
+  it('takes the oldest match that has started and is not closed', () => {
+    const now = new Date('2026-11-02T12:00:00Z');
+    const pending = pendingMatch(
+      [
+        at(9, '2026-10-19T10:00:00Z', 'CLOSED'),
+        at(11, '2026-11-01T10:00:00Z', 'SCHEDULED'),
+        at(10, '2026-10-26T10:00:00Z', 'SCHEDULED'),
+        at(12, '2026-11-09T10:00:00Z', 'SCHEDULED'),
+      ],
+      now,
+    );
+
+    expect(pending?.id).toBe('m10');
+    expect(pendingMatch([at(12, '2026-11-09T10:00:00Z', 'SCHEDULED')], now)).toBeUndefined();
+  });
+});
+
 describe('LeagueHomePage', () => {
   let http: HttpTestingController;
 
@@ -104,16 +130,20 @@ describe('LeagueHomePage', () => {
     matches?: MatchSummaryResponse[];
   }
 
-  async function renderHome(data: Data | null, followUp: () => void = () => undefined) {
+  async function renderHome(
+    data: Data | null,
+    followUp: () => void = () => undefined,
+    leagueId = 'l2',
+  ) {
     const result = await render(LeagueHomePage, {
-      inputs: { leagueId: 'l2' },
+      inputs: { leagueId },
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     http = TestBed.inject(HttpTestingController);
     await loadSession();
     expect(screen.getByText('', { selector: '[aria-busy="true"]' })).toBeInTheDocument();
     const reply = (path: string, body: object) => {
-      const request = http.expectOne(`/api/leagues/l2/${path}`);
+      const request = http.expectOne(`/api/leagues/${leagueId}/${path}`);
       if (data === null) {
         request.flush(null, { status: 500, statusText: 'Error' });
       } else {
@@ -214,6 +244,54 @@ describe('LeagueHomePage', () => {
 
     expect(screen.getByText(/Aún no hay partidos/)).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /alineación/i })).not.toBeInTheDocument();
+  });
+
+  it('shows the admin the sheet they owe', async () => {
+    const started = { ...SCHEDULED_SUMMARY, kickoffAt: '2026-10-01T10:00:00Z' };
+    await renderHome(
+      { matches: [started], lineup: lineup({ targetMatch: null }) },
+      () => {
+        http
+          .expectOne('/api/leagues/l1/lineups/m12')
+          .flush(
+            { status: 409, code: 'LINEUPS_NOT_LOCKED' },
+            { status: 409, statusText: 'Conflict' },
+          );
+      },
+      'l1',
+    );
+
+    expect(screen.getByRole('link', { name: /Acta de la jornada 12/ })).toHaveAttribute(
+      'href',
+      `/leagues/l1/admin/matches/${started.id}/sheet`,
+    );
+    expect(screen.getByText('Pendiente')).toBeInTheDocument();
+  });
+
+  it('offers the admin to schedule a match when none is left to play', async () => {
+    await renderHome(
+      { matches: [CLOSED_SUMMARY], lineup: lineup({ targetMatch: null }) },
+      undefined,
+      'l1',
+    );
+
+    expect(screen.getByRole('link', { name: 'Programar partido' })).toHaveAttribute(
+      'href',
+      '/leagues/l1/admin/matches/new',
+    );
+  });
+
+  it('shows no admin row while a match is still to be played', async () => {
+    const next = { ...SCHEDULED_SUMMARY, kickoffAt: NEXT.kickoffAt };
+    await renderHome({ matches: [CLOSED_SUMMARY, next] }, undefined, 'l1');
+
+    expect(screen.queryByRole('link', { name: /Acta de la jornada|Programar partido/ })).toBeNull();
+  });
+
+  it('shows no admin row to a manager', async () => {
+    await renderHome({ matches: [], lineup: lineup({ targetMatch: null }) });
+
+    expect(screen.queryByRole('link', { name: 'Programar partido' })).toBeNull();
   });
 
   it('offers to retry when it cannot be loaded', async () => {
