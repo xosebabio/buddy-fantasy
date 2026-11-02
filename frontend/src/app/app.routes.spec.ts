@@ -10,8 +10,11 @@ import './core/layout/shell';
 import './core/pages/error-page';
 import './features/league/create-league-page';
 import './features/league/members-page';
+import './features/legal/privacy-page';
+import './features/legal/terms-page';
 import { answerSession, USER } from './core/auth/session.testing';
 import { SessionStore } from './core/auth/session-store';
+import { routes } from './app.routes';
 
 describe('routes', () => {
   beforeEach(async () => {
@@ -69,5 +72,38 @@ describe('routes', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Sin acceso' })).toBeInTheDocument();
     expect(TestBed.inject(Location).path()).toBe('/leagues/l2/admin/members');
+  });
+
+  it('shows the privacy policy outside the shell, with its title', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/privacy');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Política de privacidad' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Tu perfil' })).not.toBeInTheDocument();
+    expect(document.title).toBe('Política de privacidad – Buddy Fantasy');
+  });
+
+  it('shows the terms of service outside the shell, with its title', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/terms');
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Condiciones de servicio' }),
+    ).toBeInTheDocument();
+    expect(document.title).toBe('Condiciones de servicio – Buddy Fantasy');
+  });
+
+  it('leaves the legal pages without any guard, so that anyone can read them', () => {
+    const legal = routes.filter((route) => ['privacy', 'terms'].includes(route.path ?? ''));
+
+    expect(legal.map((route) => route.path)).toEqual(['privacy', 'terms']);
+    for (const route of legal) {
+      expect(route.canActivate).toBeUndefined();
+      expect(route.canMatch).toBeUndefined();
+    }
   });
 });

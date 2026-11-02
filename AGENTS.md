@@ -12,7 +12,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) con el backend (plan 09), las pantallas de manager (plan 12) y las de admin con el E2E de la jornada completa (plan 13) hechos y cerrados; solo falta la prueba real, que necesita además el VPS. Fase 0: hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` (plan 11, cerrado); faltan Dockerfile, Compose de producción y VPS. Siguiente: la Fase 0 pendiente (plan 14, por redactar) y después la Fase 3. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el backend (plan 09), las pantallas de manager (plan 12) y las de admin con el E2E de la jornada completa (plan 13) hechos y cerrados; solo falta la prueba real, que necesita además el VPS. Fase 0: hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` (plan 11, cerrado); los textos legales (plan 14 bis: `/privacy` y `/terms`, enlazadas desde el login y el perfil) hechos, a falta de publicarlos con el VPS, rellenar _Branding_ en Google y cerrar las comprobaciones de `docs/14bis-legal-texts.md`; faltan Dockerfile, Compose de producción y VPS. Siguiente: la Fase 0 pendiente (`docs/14-deploy-plan.md`, con las decisiones cerradas; empieza por la tarea 3) y después la Fase 3. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 
@@ -25,6 +25,7 @@ Fase 1 completa; Fase 2 (valoraciones) con el backend (plan 09), las pantallas d
 | [docs/agents/frontend.md](docs/agents/frontend.md) | Reglas del frontend (FE-xx), cómo añadir un endpoint o un componente |
 | [docs/agents/testing.md](docs/agents/testing.md) | Tests obligatorios, infraestructura de integración y escaneos |
 | [docs/agents/commands.md](docs/agents/commands.md) | Build, tests, arranque local y variables de entorno |
+| [deploy/README.md](deploy/README.md) | Servidor, DNS, Google, AWS y GitHub; desplegar, volver atrás y restaurar backups |
 | `docs/NN-*-plan.md` | Plan de cada módulo, con su *Orden de ejecución* |
 
 ## Reglas core inviolables
@@ -47,6 +48,7 @@ Código, identificadores y commits en **inglés**; textos de la interfaz y de Op
 ## Flujo de trabajo
 
 - **No hagas commits ni push salvo que el usuario lo pida.** Deja los cambios en el árbol de trabajo. Commits en Conventional Commits, citando `RF-xx`/`RNF-xx`.
+- **Ramas:** `develop` es la rama por defecto y donde se integra; `main` es producción (se despliega sola) y está protegida: solo recibe PR de `develop`. Trabaja sobre `develop` o una rama tuya que parta de ella, nunca sobre `main`, y abre los PR contra `develop`.
 - **Autoría:** los commits y PR van solo con la identidad git del usuario (`git config user.name`/`user.email`). Nada de trailers `Co-Authored-By`, `Generated with…` ni enlaces de sesión de ningún agente, y no cambies autor ni committer.
 - **Marca el progreso** en el mismo cambio que completa la tarea: ✅ en la columna `Hecho` del plan, `- [x]` en el roadmap de `docs/requirements.md` cuando el ítem esté completo, y actualiza [status.md](docs/agents/status.md) (y la sección *Estado* de aquí) al cerrar un ítem.
 - Si añades comandos o variables de entorno, actualiza [commands.md](docs/agents/commands.md).

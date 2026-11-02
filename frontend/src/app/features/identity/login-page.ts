@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { SessionStore } from '../../core/auth/session-store';
 import { Online } from '../../core/http/online';
@@ -21,7 +22,7 @@ const LINEUP: readonly { position: Position; number: number }[] = [
  */
 @Component({
   selector: 'bf-login-page',
-  imports: [Bib, Button, Wordmark],
+  imports: [Bib, Button, RouterLink, Wordmark],
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

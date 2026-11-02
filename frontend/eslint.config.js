@@ -157,6 +157,7 @@ module.exports = defineConfig([
             'viewBox',
             'inputmode',
             'referrerpolicy',
+            'scope',
             'aria-haspopup',
             'aria-labelledby',
             'bfTab',

@@ -1,0 +1,37 @@
+@use 'features/legal/prose' as prose;
+
+article {
+  @include prose.prose;
+}
+
+// The table of cookies scrolls sideways on a phone; its region takes focus so that keyboards can
+// reach it (WCAG 2.1.1).
+.scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: var(--bf-font-size-2);
+}
+
+th,
+td {
+  padding: var(--bf-space-2) var(--bf-space-3);
+  border-bottom: 1px solid var(--bf-color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+th {
+  color: var(--bf-color-text-muted);
+  font-weight: 600;
+}
+
+code {
+  font-family: inherit;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}

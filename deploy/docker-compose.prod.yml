@@ -1,0 +1,90 @@
+# Production stack (RNF-06): backend, PostgreSQL and Caddy, which serves the web and is the only service
+# that publishes ports. Configuration comes from the .env next to this file (see .env.example).
+# docker compose --env-file .env -f docker-compose.prod.yml up -d --wait
+# Fixed, so volumes and containers do not depend on the directory name (nor clash with the dev stack).
+name: buddy-fantasy-prod
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME}
+      POSTGRES_USER: ${DB_USER:?set DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    image: ghcr.io/xosebabio/buddy-fantasy-backend:${IMAGE_TAG:?set IMAGE_TAG}
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # A literal, not from the .env, so the e2e profile cannot reach production by mistake.
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?set GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?set GOOGLE_CLIENT_SECRET}
+
+  caddy:
+    image: ghcr.io/xosebabio/buddy-fantasy-web:${IMAGE_TAG}
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS}
+      WWW_ADDRESS: www.${SITE_ADDRESS} # redirected to SITE_ADDRESS with a 301
+      # No photos in production for now: the CSP origins stay empty.
+      PHOTOS_ORIGIN: ""
+      UPLOADS_ORIGIN: ""
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data # certificates: losing them forces new Let's Encrypt issuances
+      - caddy-config:/config
+
+  # Only with the profile (docker compose --profile backup run --rm backup <daily|deploy>): launched by the
+  # systemd timer and by the deploy. It is the only service with the AWS credentials, which can only upload.
+  backup:
+    image: ghcr.io/xosebabio/buddy-fantasy-backup:${IMAGE_TAG:?set IMAGE_TAG}
+    profiles: [backup]
+    logging: *logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGDATABASE: ${DB_NAME}
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:?set BACKUP_S3_BUCKET}
+      BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:?set BACKUP_AGE_RECIPIENT}
+      AWS_DEFAULT_REGION: ${BACKUP_S3_REGION:?set BACKUP_S3_REGION}
+      AWS_ACCESS_KEY_ID: ${BACKUP_AWS_ACCESS_KEY_ID:?set BACKUP_AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_AWS_SECRET_ACCESS_KEY:?set BACKUP_AWS_SECRET_ACCESS_KEY}
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:

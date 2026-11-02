@@ -43,6 +43,20 @@ describe('ProfilePage', () => {
     expect(screen.getByRole('radio', { name: 'Oscuro' })).toBeChecked();
   });
 
+  it('links to the legal texts, under the theme', async () => {
+    await renderProfile();
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Legal' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Política de privacidad' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+    expect(screen.getByRole('link', { name: 'Condiciones de servicio' })).toHaveAttribute(
+      'href',
+      '/terms',
+    );
+  });
+
   it('logs out and goes to the login', async () => {
     await renderProfile();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);

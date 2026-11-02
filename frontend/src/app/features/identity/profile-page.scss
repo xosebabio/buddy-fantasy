@@ -34,6 +34,16 @@ h1 {
   margin-top: var(--bf-space-6);
 }
 
+.legal {
+  margin-top: var(--bf-space-6);
+
+  h2 {
+    @include type.display(4);
+
+    margin-bottom: var(--bf-space-2);
+  }
+}
+
 .actions {
   margin-top: auto;
   padding-top: var(--bf-space-6);

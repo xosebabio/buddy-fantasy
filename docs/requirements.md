@@ -256,6 +256,7 @@ Las rutas del API cuelgan de `/api/leagues/{id}` salvo que empiecen por `/api` o
 | Pantalla | Quién | RF | Endpoints |
 | --- | --- | --- | --- |
 | Login | Todos | RF-01 | `/oauth2/authorization/google`, `GET /api/me` |
+| Política de privacidad (`/privacy`) y condiciones de servicio (`/terms`), con o sin sesión | Todos | RNF-10 | Ninguno: texto fijo |
 | Mis ligas, crear liga | Todos | RF-05, RF-08 | `GET /api/me/leagues`, `POST /api/leagues` |
 | Invitación | Todos | RF-06 | `GET /api/invitations/{token}`, `POST …/join` |
 | Inicio de la liga (próximo partido, plazos y avisos) | Miembro (el admin, además, la fila de admin con `GET /matches`) | RF-25, RF-17 | `matches`, `lineup`, `ratings` |
@@ -312,6 +313,7 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 - [x] Spring Security con login de Google y roles por liga
 - [ ] Dockerfile, Docker Compose (app + Postgres + Caddy) y pipeline de CI
 - [ ] VPS con dominio, HTTPS y backup diario de la base de datos
+- [ ] Política de privacidad y condiciones de servicio (RNF-10)
 - [x] Esqueleto de `frontend/`: Angular, ESLint, Prettier, Vitest, tipos del OpenAPI, tokens y tema, shell con navegación, login y CI (FE-01 a FE-35)
 
 ### Fase 1 · Núcleo jugable

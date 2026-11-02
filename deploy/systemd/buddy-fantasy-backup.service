@@ -1,0 +1,10 @@
+[Unit]
+Description=Buddy Fantasy database backup to S3
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/opt/buddy-fantasy
+ExecStart=/usr/bin/docker compose --env-file .env -f docker-compose.prod.yml --profile backup run --rm backup daily

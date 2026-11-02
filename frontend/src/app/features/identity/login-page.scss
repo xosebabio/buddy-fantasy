@@ -58,3 +58,17 @@ h1 {
 .google {
   margin-top: var(--bf-space-6);
 }
+
+// Small, under the button; the links keep the 44 px touch target of RNF-12 inside the text.
+.terms {
+  margin-top: var(--bf-space-4);
+  color: var(--bf-color-text-muted);
+  font-size: var(--bf-font-size-1);
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--bf-color-accent-text);
+  }
+}

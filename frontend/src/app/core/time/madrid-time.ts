@@ -1,9 +1,12 @@
-import { TZDate } from '@date-fns/tz';
+import { TZDate, tzOffset } from '@date-fns/tz';
 
 /** The time zone of the league: the interface shows and asks for dates in it (RNF-05). */
 const TIME_ZONE = 'Europe/Madrid';
 /** The locale of dates, numbers and amounts (RNF-15). */
 export const LOCALE = 'es-ES';
+
+const MINUTE_MS = 60_000;
+const DAY_MS = 24 * 60 * MINUTE_MS;
 
 /**
  * `dateTime` «domingo, 2 de noviembre, 11:00», `date` «domingo, 2 de noviembre», `day`
@@ -37,6 +40,11 @@ export function formatInstant(instant: string | Date, dateFormat: DateFormat): s
 
 const DATE_TIME = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/;
 
+/** The offset of Madrid from UTC at an instant, in milliseconds: an hour in winter, two in summer. */
+function madridOffset(instant: number): number {
+  return tzOffset(TIME_ZONE, new Date(instant)) * MINUTE_MS;
+}
+
 /**
  * The instant, in ISO 8601 and UTC as the API takes it, of a day and a time in Madrid as an
  * `<input type="date">` and an `<input type="time">` give them (`2026-11-02`, `11:00`). A time that
@@ -50,8 +58,19 @@ export function madridToInstant(date: string, time: string): string {
   }
   // The pattern has all five groups; the defaults are only for the compiler.
   const [, year = 0, month = 1, day = 1, hours = 0, minutes = 0] = parts.map(Number);
-  const madrid = new TZDate(year, month - 1, day, hours, minutes, TIME_ZONE);
-  return new Date(madrid.getTime()).toISOString();
+  // The wall clock read as UTC, minus each offset that Madrid has around that day: an offset is right
+  // when the instant it gives has that same offset. Two right ones mean the time happens twice, and the
+  // earlier instant is the first. None means the clock skipped it, and the offset from before applies.
+  // The host time zone plays no part, so the result is the same on any machine.
+  const wall = Date.UTC(year, month - 1, day, hours, minutes);
+  const before = madridOffset(wall - DAY_MS);
+  const after = madridOffset(wall + DAY_MS);
+  const instants = [...new Set([before, after])]
+    .map((offset) => ({ offset, instant: wall - offset }))
+    .filter(({ offset, instant }) => madridOffset(instant) === offset)
+    .map(({ instant }) => instant);
+  const instant = instants.length > 0 ? Math.min(...instants) : wall - before;
+  return new Date(instant).toISOString();
 }
 
 /** The day and the time in Madrid of an instant of the API, as the form inputs take them (`2026-11-02`, `11:00`). */

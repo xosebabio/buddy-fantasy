@@ -20,7 +20,7 @@
     box-sizing: border-box;
     width: 6px;
     height: 12px;
-    margin: 2px auto 0;
+    margin: var(--bf-space-1) auto 0;
     border: solid currentcolor;
     border-width: 0 3px 3px 0;
     transform: rotate(45deg);

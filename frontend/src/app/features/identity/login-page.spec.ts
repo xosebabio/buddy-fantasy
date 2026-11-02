@@ -55,6 +55,19 @@ describe('LoginPage', () => {
     );
   });
 
+  it('links to the terms of service and to the privacy policy under the button', async () => {
+    await renderLogin();
+
+    expect(screen.getByRole('link', { name: 'condiciones de servicio' })).toHaveAttribute(
+      'href',
+      '/terms',
+    );
+    expect(screen.getByRole('link', { name: 'política de privacidad' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+  });
+
   it('cannot log in without a network', async () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
 

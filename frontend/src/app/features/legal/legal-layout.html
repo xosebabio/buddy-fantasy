@@ -1,0 +1,15 @@
+<bf-top-bar>
+  <a class="home" routerLink="/"><bf-wordmark /></a>
+</bf-top-bar>
+
+<main class="content">
+  <ng-content />
+</main>
+
+<footer class="foot">
+  @if (current() === 'privacy') {
+    <a routerLink="/terms" i18n="@@legal.links.terms">Condiciones de servicio</a>
+  } @else {
+    <a routerLink="/privacy" i18n="@@legal.links.privacy">Política de privacidad</a>
+  }
+</footer>

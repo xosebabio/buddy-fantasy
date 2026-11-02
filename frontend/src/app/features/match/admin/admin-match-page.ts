@@ -145,7 +145,7 @@ export class AdminMatchPage {
       .ask({
         title: $localize`:@@match.admin.match.deleteTitle:¿Borrar el partido?`,
         message: $localize`:@@match.admin.match.deleteMessage:Se borra el partido de la jornada ${match.matchday}:matchday:. Las alineaciones guardadas pasan al siguiente.`,
-        confirm: $localize`:@@match.admin.match.delete:Borrar partido`,
+        confirm: $localize`:@@match.admin.match.deleteConfirm:Borrar partido`,
         tone: 'danger',
       })
       .subscribe((confirmed) => {

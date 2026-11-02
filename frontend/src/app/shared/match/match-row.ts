@@ -25,7 +25,7 @@ export type MatchRowModel = Pick<
     </span>
     <span class="body">
       <span class="name">
-        <span class="sr-only" i18n="@@shared.match.matchday-contra">
+        <span class="sr-only" i18n="@@shared.match.matchdayContra">
           Jornada {{ match().matchday }}, contra
         </span>
         {{ match().opponent }}
