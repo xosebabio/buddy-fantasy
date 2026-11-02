@@ -1,6 +1,6 @@
 # Textos legales · borrador (14 bis, tarea 3)
 
-Borrador para revisar antes de maquetar (tarea 4). No está publicado. Las notas entre corchetes son decisiones abiertas o comprobaciones pendientes: se quitan al maquetar. Cada `###` será un `h2` en la página. El texto sigue el [plan](14bis-legal-pages-plan.md) (§3). Donde añado algo que el plan no cubría, lo digo en la lista de abajo.
+Textos aprobados (tarea 3). Se maquetan en la tarea 4 y no están publicados. Las notas entre corchetes son decisiones abiertas o comprobaciones pendientes: se quitan al maquetar. Cada `###` será un `h2` en la página. El texto sigue el [plan](14bis-legal-pages-plan.md) (§3). Donde añado algo que el plan no cubría, lo digo en la lista de abajo.
 
 ## Decisiones y comprobaciones
 
@@ -27,6 +27,7 @@ Buddy Fantasy es un proyecto personal, gratuito y sin ánimo de lucro. El respon
 
 - **De tu cuenta de Google:** tu identificador de Google, tu correo, tu nombre, la dirección de tu foto de perfil, y las fechas de alta y de tu último acceso.
 - **De tu juego:** las ligas en las que estás y tu rol en cada una, tus alineaciones, tus valoraciones y tus puntos.
+- **Si eres administrador:** tu identificador en el registro de cambios de los partidos y de los jugadores, y en las cancelaciones de valoraciones que hagas, con la fecha de cada cambio.
 - **De los jugadores del equipo:** nombre, dorsal, posición, estadísticas de cada partido, valoraciones y valor. Cuando se active, también su foto. Ver «Jugadores sin cuenta».
 - **Técnicos:** la sesión que te mantiene dentro y los registros de errores del servidor. Los registros no incluyen tu correo ni tu nombre. En un caso raro, un error inesperado puede dejar tu identificador de Google. [Pendiente 4: si el VPS confirma la IP, se añade «y tu dirección IP»; si no, se escribe «ni tu dirección IP».]
 
