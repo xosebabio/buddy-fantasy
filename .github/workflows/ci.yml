@@ -4,9 +4,20 @@ on:
   push:
     branches: [develop, main]
   pull_request:
+  # Roll back (or redeploy) an image already published: only the deploy job runs (see its `if`)
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy: sha-<7> of a published commit, or latest"
+        required: true
+        default: latest
+
+permissions:
+  contents: read
 
 jobs:
   backend:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,6 +37,7 @@ jobs:
           path: backend/target/site/jacoco/
 
   frontend:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -52,6 +64,7 @@ jobs:
   # The images that go to production (RNF-06), built once and passed on as artifacts: the E2E tests exactly
   # these, and `publish` pushes these, without rebuilding. Tagged `e2e`, which docker-compose.e2e.yml expects.
   images:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -86,6 +99,7 @@ jobs:
   # E2E (FE-34) against the production images and docker-compose.prod.yml, with the e2e override: the real
   # backend with the e2e profile and the web served by Caddy, so routes, headers and CSP are checked too.
   e2e:
+    if: github.event_name != 'workflow_dispatch'
     needs: [backend, frontend, images]
     runs-on: ubuntu-latest
     env:
@@ -127,3 +141,101 @@ jobs:
             frontend/playwright-report/
             frontend/test-results/
             compose.log
+
+  # Pushes the images that passed the E2E, without rebuilding them (RNF-06). Only on main: a PR (even from a
+  # fork) never gets write access to the registry.
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [e2e]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: image-*
+          path: ${{ runner.temp }}/images
+          merge-multiple: true
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push the images
+        run: |
+          for image in "$RUNNER_TEMP"/images/*.tar; do docker load --input "$image"; done
+          sha_tag="sha-${GITHUB_SHA::7}"
+          for name in backend web backup; do
+            repo="ghcr.io/xosebabio/buddy-fantasy-$name"
+            docker tag "$repo:e2e" "$repo:$sha_tag"
+            docker tag "$repo:e2e" "$repo:latest"
+            docker push "$repo:$sha_tag"
+            docker push "$repo:latest"
+          done
+
+  # Deploys over SSH (decision 10): backup first (if it fails, nothing changes), then the new tag. After a
+  # publish on main, or by hand with an existing tag to roll back.
+  deploy:
+    if: >-
+      !cancelled() && github.ref == 'refs/heads/main' && (
+        (github.event_name == 'push' && needs.publish.result == 'success') ||
+        github.event_name == 'workflow_dispatch')
+    needs: [publish]
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    env:
+      SITE_URL: https://buddyfantasy.com
+      # Through the environment and never inline in the script, so a manual input cannot inject commands
+      REQUESTED_TAG: ${{ inputs.image_tag }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve the image tag
+        run: |
+          tag="${REQUESTED_TAG:-sha-${GITHUB_SHA::7}}"
+          [[ "$tag" =~ ^(sha-[0-9a-f]{7}|latest)$ ]] || { echo "invalid image tag: $tag" >&2; exit 1; }
+          echo "IMAGE_TAG=$tag" >> "$GITHUB_ENV"
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host deploy\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n  StrictHostKeyChecking yes\n' \
+            "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
+      - name: Copy the Compose file
+        run: scp deploy/docker-compose.prod.yml deploy:/opt/buddy-fantasy/docker-compose.prod.yml
+      - name: Back up, pull and start
+        run: |
+          ssh deploy bash -s -- "$IMAGE_TAG" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/buddy-fantasy
+          # The shell variable wins over the .env for the interpolation of the Compose file
+          export IMAGE_TAG="$1"
+          dc="docker compose --env-file .env -f docker-compose.prod.yml"
+          $dc --profile backup pull
+          $dc --profile backup run --rm backup deploy
+          # Persist the tag for the daily backup timer and manual commands
+          if grep -q '^IMAGE_TAG=' .env; then sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$IMAGE_TAG/" .env; else echo "IMAGE_TAG=$IMAGE_TAG" >> .env; fi
+          $dc up -d --wait
+          docker image prune -f
+          REMOTE
+      - name: Smoke test
+        run: |
+          # Caddy may still be getting the certificate on the first deploy
+          timeout 180 sh -c 'until curl -sf "$SITE_URL/actuator/health" | grep -q "\"UP\""; do sleep 3; done'
+          headers="$(curl -sSI "$SITE_URL/")"
+          grep -qi '^content-security-policy:' <<< "$headers" || { echo "no CSP on /" >&2; exit 1; }
+          grep -qi '^strict-transport-security:' <<< "$headers" || { echo "no HSTS on /" >&2; exit 1; }
+          for path in /api/e2e/clock /api/me; do
+            status="$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL$path")"
+            [ "$status" = 401 ] || { echo "$path answered $status, expected 401" >&2; exit 1; }
+          done

@@ -93,7 +93,7 @@ E2E_BASE_URL=http://localhost:4200 npm run e2e   # contra npm start en vez de Ca
 
 ### CI
 
-`.github/workflows/ci.yml`, en cada push a `develop` o `main` y cada PR: `backend` (`mvn -B verify`, con `OpenApiSpecTests`), `frontend` `images` (construye las imágenes del backend y la web, con la caché de GitHub Actions, y las guarda como artefacto) y, tras los tres, `e2e` (carga esas imágenes, levanta `docker-compose.prod.yml` con `docker-compose.e2e.yml` y pasa `npm run e2e`; si falla, sube el informe, las trazas y `compose.log`). Para repetir el job `frontend` antes de subir, desde `frontend/`:
+`.github/workflows/ci.yml`, en cada push a `develop` o `main` y cada PR: `backend` (`mvn -B verify`, con `OpenApiSpecTests`), `frontend` `images` (construye las imágenes del backend y la web, con la caché de GitHub Actions, y las guarda como artefacto) y, tras los tres, `e2e` (carga esas imágenes, levanta `docker-compose.prod.yml` con `docker-compose.e2e.yml` y pasa `npm run e2e`; si falla, sube el informe, las trazas y `compose.log`). Solo en push a `main`: `publish` (sube a GHCR esas mismas imágenes con `sha-<7>` y `latest`) y `deploy` (entorno `production`, SSH con `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` y `DEPLOY_KNOWN_HOSTS`; copia el Compose, hace el backup previo, `up -d --wait` y la comprobación de humo de `https://buddyfantasy.com`). Para volver atrás, lanza el workflow a mano (`workflow_dispatch` sobre `main`) con `image_tag` (`sha-<7>` o `latest`): solo corre `deploy`. Para repetir el job `frontend` antes de subir, desde `frontend/`:
 
 ```bash
 npm run api:types && npm run palette && npm run i18n:extract \
