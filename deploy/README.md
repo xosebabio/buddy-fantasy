@@ -219,7 +219,7 @@ Guarda `id` y `google_sub` para los pasos siguientes. No los copies a ningún si
 SELECT league_id FROM league_membership WHERE user_id = '<id>' AND role = 'ADMIN';
 ```
 
-Si devuelve alguna fila, **para aquí**. Un admin no puede salir de su liga (`ADMIN_CANNOT_LEAVE`), y sin él la liga se queda sin admin. Qué hacer con esa liga está pendiente de decisión: no lo resuelvas con SQL.
+Si devuelve alguna fila, **para aquí**. Un admin no puede salir de su liga (`ADMIN_CANNOT_LEAVE`), y sin él la liga se queda sin admin. Decidido: al borrar la cuenta de un admin, su liga se cierra (desaparece para todos sus miembros, con sus datos de juego). El procedimiento SQL para cerrarla todavía no está escrito: hasta que lo esté, para aquí y no lo hagas a mano.
 
 **3. Borrar.** Primero las sesiones, porque `principal_name` es el `sub` de Google. `spring_session_attributes` se borra en cascada.
 
