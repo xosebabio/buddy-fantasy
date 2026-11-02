@@ -1,0 +1,13 @@
+# Override of docker-compose.prod.yml for the E2E (CI and local): same images as production, with the e2e
+# profile and plain HTTP on http://localhost:8081. Never deploy it.
+# IMAGE_TAG=e2e docker compose --env-file deploy/.env.example -f deploy/docker-compose.prod.yml \
+#   -f deploy/docker-compose.e2e.yml up -d --wait
+services:
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e # login without Google and adjustable clock; plain HTTP, so no secure cookie
+  caddy:
+    environment:
+      SITE_ADDRESS: ":80"
+    ports: !override
+      - "8081:80"

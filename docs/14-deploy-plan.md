@@ -157,7 +157,7 @@ En el cambio de la tarea que los provoca:
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ----- |
 | 1   | Revisar este plan con el usuario y cerrar las propuestas (§2)                                                                              | Decisiones cerradas                      | ✅    |
 | 2   | Crear `develop`, hacerla rama por defecto y cambiar `ci.yml` a `develop` y `main`; _Flujo de trabajo_ de `AGENTS.md` (§5.1)                | Ramas de la decisión 7                   | ✅    |
-| 3   | Dockerfiles y `.dockerignore` de backend y web, `application-prod.yml`, `docker-compose.prod.yml`, override `e2e` y `.env.example`; E2E local contra las imágenes (§3, §4, §9) | Imágenes y Compose (RNF-06)              |       |
+| 3   | Dockerfiles y `.dockerignore` de backend y web, `application-prod.yml`, `docker-compose.prod.yml`, override `e2e` y `.env.example`; E2E local contra las imágenes (§3, §4, §9) | Imágenes y Compose (RNF-06)              | ✅    |
 | 4   | Redirección de `www` en el Caddyfile sin romper el local (decisión 15)                                                                      | Dominio canónico                         |       |
 | 5   | CI: jobs `images` y `e2e` contra las imágenes (§5.2)                                                                                        | El artefacto que se publica, probado     |       |
 | 6   | Imagen de backup, `backup.sh`, `restore.sh`, política IAM y temporizador de systemd, probados en local (§7)                               | Backups listos (RNF-07)                  |       |

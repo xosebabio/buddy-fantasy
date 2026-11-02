@@ -1,0 +1,6 @@
+# Perfil de producción (docker-compose.prod.yml lo fija en el servicio backend). Solo lo propio de producción.
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true # solo por HTTPS
