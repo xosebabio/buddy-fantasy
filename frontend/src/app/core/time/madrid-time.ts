@@ -53,3 +53,13 @@ export function madridToInstant(date: string, time: string): string {
   const madrid = new TZDate(year, month - 1, day, hours, minutes, TIME_ZONE);
   return new Date(madrid.getTime()).toISOString();
 }
+
+/** The day and the time in Madrid of an instant of the API, as the form inputs take them (`2026-11-02`, `11:00`). */
+export function instantToMadrid(instant: string): { date: string; time: string } {
+  const madrid = new TZDate(new Date(instant).getTime(), TIME_ZONE);
+  const two = (value: number): string => String(value).padStart(2, '0');
+  return {
+    date: `${String(madrid.getFullYear())}-${two(madrid.getMonth() + 1)}-${two(madrid.getDate())}`,
+    time: `${two(madrid.getHours())}:${two(madrid.getMinutes())}`,
+  };
+}

@@ -1,4 +1,4 @@
-import { formatInstant, madridToInstant } from './madrid-time';
+import { formatInstant, instantToMadrid, madridToInstant } from './madrid-time';
 
 describe('formatInstant', () => {
   it.each([
@@ -70,5 +70,22 @@ describe('madridToInstant', () => {
     ['', ''],
   ])('rejects %j %j, which no form input gives', (date, time) => {
     expect(() => madridToInstant(date, time)).toThrow();
+  });
+});
+
+describe('instantToMadrid', () => {
+  it.each([
+    ['2026-11-02T10:00:00Z', '2026-11-02', '11:00'],
+    ['2026-07-05T09:00:00Z', '2026-07-05', '11:00'],
+    ['2027-03-28T01:00:00Z', '2027-03-28', '03:00'],
+    ['2026-12-31T23:30:00Z', '2027-01-01', '00:30'],
+  ])('writes %s as the day %s and the time %s in Madrid', (instant, date, time) => {
+    expect(instantToMadrid(instant)).toEqual({ date, time });
+  });
+
+  it('is the inverse of madridToInstant', () => {
+    const { date, time } = instantToMadrid('2026-11-02T10:00:00Z');
+
+    expect(madridToInstant(date, time)).toBe('2026-11-02T10:00:00.000Z');
   });
 });

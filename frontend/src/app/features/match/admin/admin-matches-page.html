@@ -1,0 +1,45 @@
+<header>
+  <h1 i18n="@@match.admin.matches.title">Partidos</h1>
+  <bf-badge tone="accent" i18n="@@match.admin.matches.badge">Admin</bf-badge>
+</header>
+
+@if (matches.error()) {
+  <bf-load-error (retry)="matches.reload()" />
+} @else if (matches.value()) {
+  <ul bfList bleed>
+    @for (row of rows(); track row.match.id) {
+      <li>
+        <a bfListItem [routerLink]="['/leagues', leagueId(), 'admin', 'matches', row.match.id]">
+          <bf-match-row [match]="row.match">
+            <bf-badge bfMatchRowTrailing [tone]="row.phase === 'PENDING' ? 'warning' : 'neutral'">{{
+              phaseTexts[row.phase]
+            }}</bf-badge>
+          </bf-match-row>
+        </a>
+      </li>
+    }
+  </ul>
+  @if (rows().length === 0) {
+    <bf-empty-state i18n="@@match.admin.matches.empty">
+      Aún no hay partidos. Programa el primero.
+    </bf-empty-state>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}
+
+<div class="actions">
+  <a
+    bfButton
+    variant="primary"
+    block
+    [routerLink]="['/leagues', leagueId(), 'admin', 'matches', 'new']"
+    i18n="@@match.admin.matches.schedule"
+  >
+    Programar partido
+  </a>
+</div>

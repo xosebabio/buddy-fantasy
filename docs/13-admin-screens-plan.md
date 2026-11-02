@@ -294,7 +294,7 @@ En el cambio de la tarea que los provoca:
 | 6   | Rutas de admin por feature, sección _Administrar_ del índice y enlaces de admin en las pantallas de miembro (§4, decisión 18)          | Accesos de admin                          | ✅    |
 | 7   | Parámetros y tabla de puntos                                                                                                           | RF-07, RF-15                              | ✅    |
 | 8   | Plantilla de admin, alta, edición y baja                                                                                               | RF-09, RF-10                              | ✅    |
-| 9   | Calendario de admin, programar, editar, aplazar, borrar y página del partido                                                           | RF-12                                     |       |
+| 9   | Calendario de admin, programar, editar, aplazar, borrar y página del partido                                                           | RF-12                                     | ✅    |
 | 10  | Acta, cierre y correcciones                                                                                                            | RF-13 a RF-16                             |       |
 | 11  | Auditoría de un partido                                                                                                                | RF-16, RNF-04                             |       |
 | 12  | Cancelar valoraciones                                                                                                                  | RF-41                                     |       |

@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { lazyUnsavedChangesGuard } from '../../core/layout/lazy-unsaved-changes-guard';
+
 /** The pages of the calendar, under `leagues/:leagueId`. */
 export const matchRoutes: Routes = [
   {
@@ -15,4 +17,27 @@ export const matchRoutes: Routes = [
 ];
 
 /** The admin pages of the calendar, under `leagues/:leagueId/admin`. */
-export const matchAdminRoutes: Routes = [];
+export const matchAdminRoutes: Routes = [
+  {
+    path: 'matches',
+    loadComponent: () => import('./admin/admin-matches-page').then((m) => m.AdminMatchesPage),
+    title: $localize`:@@match.admin.matches.pageTitle:Partidos`,
+  },
+  {
+    path: 'matches/new',
+    loadComponent: () => import('./admin/admin-match-form-page').then((m) => m.AdminMatchFormPage),
+    canDeactivate: [lazyUnsavedChangesGuard],
+    title: $localize`:@@match.admin.form.newPageTitle:Programar partido`,
+  },
+  {
+    path: 'matches/:matchId',
+    loadComponent: () => import('./admin/admin-match-page').then((m) => m.AdminMatchPage),
+    title: $localize`:@@match.admin.match.pageTitle:Partido`,
+  },
+  {
+    path: 'matches/:matchId/edit',
+    loadComponent: () => import('./admin/admin-match-form-page').then((m) => m.AdminMatchFormPage),
+    canDeactivate: [lazyUnsavedChangesGuard],
+    title: $localize`:@@match.admin.form.pageTitle:Editar partido`,
+  },
+];

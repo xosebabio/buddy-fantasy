@@ -1,0 +1,94 @@
+@if (match.error()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (current(); as match) {
+  <header>
+    <h1 i18n="@@match.admin.match.title">Jornada {{ match.matchday }}</h1>
+    @if (phase(); as phase) {
+      <bf-badge [tone]="phase === 'PENDING' ? 'warning' : 'neutral'">{{
+        phaseTexts[phase]
+      }}</bf-badge>
+    }
+  </header>
+  <p class="meta" i18n="@@match.admin.match.opponent">
+    Contra {{ match.opponent }}, {{ venueTexts[match.venue] }}
+  </p>
+  <p class="meta">{{ match.kickoffAt | bfDate: 'dateTime' }}</p>
+
+  <ul bfList bleed class="rows">
+    <li>
+      <a bfListItem [routerLink]="['/leagues', leagueId(), 'admin', 'matches', match.id, 'edit']">
+        <ng-container i18n="@@match.admin.match.data">Datos del partido</ng-container>
+        @if (match.status === 'CLOSED') {
+          <span bfListItemMeta i18n="@@match.admin.match.dataClosed"
+            >La jornada y la hora ya no se pueden cambiar.</span
+          >
+        }
+      </a>
+    </li>
+    <li>
+      <a bfListItem [routerLink]="['/leagues', leagueId(), 'admin', 'matches', match.id, 'sheet']">
+        <ng-container i18n="@@match.admin.match.sheet">Acta</ng-container>
+        <span bfListItemMeta>
+          @if (match.result; as result) {
+            {{ result.goalsFor }}–{{ result.goalsAgainst }} ·
+          }
+          <ng-container i18n="@@match.admin.match.sheetPlayers"
+            >Jugadores: {{ players() }}</ng-container
+          >
+        </span>
+      </a>
+    </li>
+    @if (match.status === 'CLOSED') {
+      <li>
+        <a bfListItem [routerLink]="['/leagues', leagueId(), 'admin', 'ratings', match.id]">
+          <ng-container i18n="@@match.admin.match.ratings">Valoraciones</ng-container>
+          <span bfListItemMeta>
+            @if (window(); as window) {
+              @if (window.status === 'OPEN') {
+                <bf-countdown
+                  [until]="window.closesAt"
+                  (elapsed)="reload()"
+                  i18n="@@match.admin.match.ratingsOpen"
+                  >Abierta, cierra en</bf-countdown
+                >
+              } @else {
+                <ng-container i18n="@@match.admin.match.ratingsClosed">Cerradas</ng-container>
+              }
+            }
+          </span>
+        </a>
+      </li>
+    }
+    <li>
+      <a bfListItem [routerLink]="['/leagues', leagueId(), 'admin', 'matches', match.id, 'audit']">
+        <ng-container i18n="@@match.admin.match.audit">Auditoría</ng-container>
+      </a>
+    </li>
+  </ul>
+
+  @for (warning of match.warnings ?? []; track warning) {
+    <bf-notice tone="warning">{{ warningTexts[warning] }}</bf-notice>
+  }
+
+  @if (match.status === 'SCHEDULED') {
+    <div class="actions">
+      <button
+        bfButton
+        type="button"
+        variant="danger"
+        block
+        [loading]="deleting()"
+        [disabled]="!online.online()"
+        (click)="remove()"
+        i18n="@@match.admin.match.delete"
+      >
+        Borrar partido
+      </button>
+    </div>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+  </div>
+}

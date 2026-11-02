@@ -1,0 +1,94 @@
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (ready()) {
+  @if (isNew()) {
+    <h1 i18n="@@match.admin.form.newTitle">Programar partido</h1>
+  } @else {
+    <h1 i18n="@@match.admin.form.editTitle">Editar partido</h1>
+  }
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <bf-field
+      label="Jornada"
+      i18n-label="@@match.admin.form.matchday"
+      [hint]="matchdayHint()"
+      [error]="fieldErrors()['matchday'] ?? null"
+    >
+      <input
+        bfInput
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        formControlName="matchday"
+      />
+    </bf-field>
+    <bf-field
+      label="Rival"
+      i18n-label="@@match.admin.form.opponent"
+      [hint]="opponentHint()"
+      [error]="fieldErrors()['opponent'] ?? null"
+    >
+      <input
+        bfInput
+        type="text"
+        autocomplete="off"
+        formControlName="opponent"
+        [attr.maxlength]="limits.value()?.opponentMaxLength"
+      />
+    </bf-field>
+    <bf-segmented
+      label="Campo"
+      i18n-label="@@match.admin.form.venue"
+      [options]="venueOptions"
+      [value]="form.controls.venue.value"
+      (valueChange)="setVenue($event)"
+    />
+    <bf-field
+      label="Fecha"
+      i18n-label="@@match.admin.form.date"
+      [error]="fieldErrors()['date'] ?? null"
+    >
+      <input bfInput type="date" formControlName="date" />
+    </bf-field>
+    <bf-field
+      label="Hora"
+      i18n-label="@@match.admin.form.time"
+      [hint]="timeHint()"
+      [error]="fieldErrors()['time'] ?? null"
+    >
+      <input bfInput type="time" formControlName="time" />
+    </bf-field>
+
+    <div class="actions">
+      @if (postponing()) {
+        <bf-notice i18n="@@match.admin.form.postponing">
+          Si las alineaciones ya estaban bloqueadas y el nuevo bloqueo aún no ha llegado, se
+          desbloquean.
+        </bf-notice>
+      }
+      @if (notice(); as notice) {
+        <bf-notice tone="danger" role="alert">{{ notice }}</bf-notice>
+      }
+      <button
+        bfButton
+        type="submit"
+        variant="primary"
+        block
+        [loading]="saving()"
+        [disabled]="!online.online()"
+      >
+        @if (isNew()) {
+          <ng-container i18n="@@match.admin.form.schedule">Programar partido</ng-container>
+        } @else {
+          <ng-container i18n="@@match.admin.form.save">Guardar partido</ng-container>
+        }
+      </button>
+    </div>
+  </form>
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+    <bf-skeleton shape="block" />
+  </div>
+}

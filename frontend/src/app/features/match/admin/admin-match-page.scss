@@ -1,0 +1,38 @@
+@use 'ui/styles/page';
+
+:host {
+  @include page.page;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+
+h1 {
+  @include page.title;
+}
+
+.meta {
+  margin-top: var(--bf-space-1);
+  color: var(--bf-color-text-muted);
+}
+
+.rows {
+  margin-top: var(--bf-space-5);
+}
+
+bf-notice {
+  margin-top: var(--bf-space-3);
+}
+
+.actions {
+  @include page.actions;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}
