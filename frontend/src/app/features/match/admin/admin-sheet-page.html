@@ -1,0 +1,180 @@
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (ready() && current(); as match) {
+  <header>
+    <h1 i18n="@@match.admin.sheet.title">Acta de la jornada {{ match.matchday }}</h1>
+    @if (closed()) {
+      <bf-badge i18n="@@match.admin.sheet.closedBadge">Cerrado</bf-badge>
+    }
+  </header>
+
+  @if (closed()) {
+    <bf-notice i18n="@@match.admin.sheet.closedNotice">
+      Partido cerrado: guardar corrige el acta y recalcula los puntos.
+    </bf-notice>
+  }
+
+  <h2 i18n="@@match.admin.sheet.result">Resultado</h2>
+  <div class="result">
+    <bf-stepper
+      label="Goles a favor"
+      i18n-label="@@match.admin.sheet.goalsFor"
+      empty="–"
+      [min]="0"
+      [max]="limits.value()?.goalsMax ?? null"
+      [value]="draft().goalsFor"
+      (valueChange)="setMark('goalsFor', $event)"
+    />
+    <span aria-hidden="true">–</span>
+    <bf-stepper
+      label="Goles en contra"
+      i18n-label="@@match.admin.sheet.goalsAgainst"
+      empty="–"
+      [min]="0"
+      [max]="limits.value()?.goalsMax ?? null"
+      [value]="draft().goalsAgainst"
+      (valueChange)="setMark('goalsAgainst', $event)"
+    />
+  </div>
+  @if (markError(); as mark) {
+    <p class="error" role="alert">
+      @if (mark === 'goalsFor') {
+        <ng-container i18n="@@match.admin.sheet.missingFor"
+          >Falta el marcador a favor.</ng-container
+        >
+      } @else {
+        <ng-container i18n="@@match.admin.sheet.missingAgainst"
+          >Falta el marcador en contra.</ng-container
+        >
+      }
+    </p>
+  }
+  @if (resultError(); as error) {
+    <p class="error" role="alert">{{ error }}</p>
+  }
+
+  <p class="count" i18n="@@match.admin.sheet.count">
+    {{ count() }} de {{ limits.value()?.sheetPlayersMax }} jugadores
+  </p>
+  @if (full()) {
+    <p class="hint" i18n="@@match.admin.sheet.full">
+      El acta está llena: quita a alguien para añadir a otro.
+    </p>
+  }
+
+  @for (group of groups(); track group.position) {
+    <section [attr.aria-labelledby]="'group-' + group.position">
+      <h2 [id]="'group-' + group.position">{{ groupTexts[group.position] }}</h2>
+      <ul class="players">
+        @for (player of group.players; track player.id) {
+          @let performance = performanceOf(player.id);
+          <li class="player">
+            <div class="line">
+              <bf-player-row [player]="player" [showPosition]="false">
+                @if (player.retiredAt !== null) {
+                  <span bfPlayerRowMeta i18n="@@match.admin.sheet.retired">Dado de baja</span>
+                }
+              </bf-player-row>
+              <label>
+                <input
+                  bfCheckbox
+                  type="checkbox"
+                  [checked]="performance !== undefined"
+                  [disabled]="performance === undefined && (full() || player.retiredAt !== null)"
+                  (change)="setPlayed(player.id, $any($event.target).checked)"
+                />
+                <ng-container i18n="@@match.admin.sheet.played">Jugó</ng-container>
+              </label>
+            </div>
+            @if (performance !== undefined) {
+              @if (open() === player.id) {
+                <div class="stats">
+                  @for (key of statKeys; track key) {
+                    <div class="stat">
+                      <span>{{ statLabels[key] }}</span>
+                      <bf-stepper
+                        [label]="statLabels[key] + ' · ' + player.name"
+                        [min]="0"
+                        [max]="limits.value()?.statCountMax ?? null"
+                        [value]="performance[key]"
+                        (valueChange)="setStat(player.id, key, $event)"
+                      />
+                    </div>
+                  }
+                  <div class="cards">
+                    @for (card of cardKeys; track card) {
+                      <label>
+                        <input
+                          bfCheckbox
+                          type="checkbox"
+                          [checked]="performance[card]"
+                          [disabled]="cardDisabled(player.id, card)"
+                          (change)="setCard(player.id, card, $any($event.target).checked)"
+                        />
+                        {{ cardLabels[card] }}
+                      </label>
+                    }
+                  </div>
+                  <button
+                    bfButton
+                    type="button"
+                    variant="quiet"
+                    (click)="toggle(player.id)"
+                    i18n="@@match.admin.sheet.hide"
+                  >
+                    Plegar
+                  </button>
+                </div>
+              } @else {
+                <button
+                  bfButton
+                  type="button"
+                  variant="quiet"
+                  class="summary"
+                  (click)="toggle(player.id)"
+                >
+                  @if (summary(player); as text) {
+                    {{ text }}
+                  } @else {
+                    <ng-container i18n="@@match.admin.sheet.edit">Editar estadísticas</ng-container>
+                  }
+                </button>
+              }
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  } @empty {
+    <p class="hint" i18n="@@match.admin.sheet.empty">
+      Aún no hay jugadores en la plantilla. Da de alta a los que jueguen.
+    </p>
+  }
+
+  <div class="actions">
+    @if (notice(); as notice) {
+      <bf-notice tone="danger" role="alert">{{ notice }}</bf-notice>
+    }
+    <button
+      bfButton
+      type="button"
+      variant="primary"
+      block
+      [loading]="saving()"
+      [disabled]="!online.online()"
+      (click)="submit()"
+    >
+      @if (closed()) {
+        <ng-container i18n="@@match.admin.sheet.saveCorrection">Guardar corrección</ng-container>
+      } @else {
+        <ng-container i18n="@@match.admin.sheet.save">Guardar acta</ng-container>
+      }
+    </button>
+  </div>
+} @else {
+  <div class="loading" aria-busy="true">
+    <bf-skeleton shape="title" />
+    <bf-skeleton shape="block" />
+    <bf-skeleton shape="block" />
+  </div>
+}

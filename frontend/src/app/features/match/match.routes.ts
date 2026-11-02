@@ -35,6 +35,12 @@ export const matchAdminRoutes: Routes = [
     title: $localize`:@@match.admin.match.pageTitle:Partido`,
   },
   {
+    path: 'matches/:matchId/sheet',
+    loadComponent: () => import('./admin/admin-sheet-page').then((m) => m.AdminSheetPage),
+    canDeactivate: [lazyUnsavedChangesGuard],
+    title: $localize`:@@match.admin.sheet.pageTitle:Acta`,
+  },
+  {
     path: 'matches/:matchId/edit',
     loadComponent: () => import('./admin/admin-match-form-page').then((m) => m.AdminMatchFormPage),
     canDeactivate: [lazyUnsavedChangesGuard],

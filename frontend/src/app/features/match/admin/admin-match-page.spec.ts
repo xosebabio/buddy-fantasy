@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event';
 
 import type { MatchResponse } from '../../../core/api/match/match-api';
 import { CLOSED_MATCH, SCHEDULED_MATCH } from '../../../shared/roster/matches.testing';
+import { SETTINGS } from '../../../shared/roster/settings.testing';
 import { Toasts } from '../../../ui/toast/toasts';
 import { AdminMatchPage } from './admin-match-page';
 
@@ -40,6 +41,7 @@ describe('AdminMatchPage', () => {
     });
     http = TestBed.inject(HttpTestingController);
     http.expectOne(`/api/leagues/l1/matches/${matchId}`).flush(match);
+    http.expectOne('/api/leagues/l1/settings').flush(SETTINGS);
     if (match.status === 'CLOSED') {
       const ratings = await vi.waitFor(() => http.expectOne(`/api/leagues/l1/ratings/${matchId}`));
       ratings.flush(WINDOW);
@@ -157,8 +159,69 @@ describe('AdminMatchPage', () => {
     ]);
     const reloaded = await vi.waitFor(() => http.expectOne('/api/leagues/l1/matches/m12'));
     reloaded.flush(CLOSED_MATCH);
+    http.expectOne('/api/leagues/l1/settings').flush(SETTINGS);
     const ratings = await vi.waitFor(() => http.expectOne('/api/leagues/l1/ratings/m12'));
     ratings.flush(WINDOW);
+  });
+
+  it('asks before closing, says how long the rating opens for, and closes the match', async () => {
+    vi.useFakeTimers({ now: new Date('2026-11-02T11:00:00Z'), toFake: ['Date'] });
+    try {
+      await renderPage('m12', SCHEDULED_MATCH);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(screen.queryByText('Se puede cerrar desde el inicio del partido.')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar partido' }));
+    expect(
+      await screen.findByText(
+        'Se bloquean las alineaciones que no lo estén, se publica el acta y se abre la valoración durante 48 h.',
+      ),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cerrar partido' }),
+    );
+    http
+      .expectOne({ method: 'POST', url: '/api/leagues/l1/matches/m12/close' })
+      .flush({ ...CLOSED_MATCH, id: 'm12' });
+
+    expect(toasts()).toEqual(['Partido cerrado']);
+    const reloaded = await vi.waitFor(() => http.expectOne('/api/leagues/l1/matches/m12'));
+    reloaded.flush({ ...CLOSED_MATCH, id: 'm12' });
+    http.expectOne('/api/leagues/l1/settings').flush(SETTINGS);
+    const ratings = await vi.waitFor(() => http.expectOne('/api/leagues/l1/ratings/m12'));
+    ratings.flush(WINDOW);
+  });
+
+  it('tells that it cannot be closed before it starts', async () => {
+    vi.useFakeTimers({ now: new Date('2026-10-30T10:00:00Z'), toFake: ['Date'] });
+    try {
+      await renderPage('m12', SCHEDULED_MATCH);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    expect(screen.getByText('Se puede cerrar desde el inicio del partido.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar partido' })).toBeEnabled();
+  });
+
+  it('explains why the server refuses to close and reloads', async () => {
+    await renderPage('m12', SCHEDULED_MATCH);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar partido' }));
+    await screen.findByRole('alertdialog');
+    await userEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cerrar partido' }),
+    );
+    http
+      .expectOne({ method: 'POST', url: '/api/leagues/l1/matches/m12/close' })
+      .flush({ status: 409, code: 'MATCH_NOT_STARTED' }, { status: 409, statusText: 'Conflict' });
+
+    expect(toasts()).toEqual(['El partido aún no ha empezado.']);
+    const reloaded = await vi.waitFor(() => http.expectOne('/api/leagues/l1/matches/m12'));
+    reloaded.flush(SCHEDULED_MATCH);
+    http.expectOne('/api/leagues/l1/settings').flush(SETTINGS);
   });
 
   it('offers to try again when it fails to load', async () => {
@@ -170,6 +233,7 @@ describe('AdminMatchPage', () => {
     http
       .expectOne('/api/leagues/l1/matches/m12')
       .flush(null, { status: 500, statusText: 'Server Error' });
+    http.expectOne('/api/leagues/l1/settings').flush(SETTINGS);
     await result.fixture.whenStable();
 
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();

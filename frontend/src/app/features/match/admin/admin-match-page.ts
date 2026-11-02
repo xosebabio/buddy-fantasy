@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { LeagueApi } from '../../../core/api/league/league-api';
 import { MatchApi } from '../../../core/api/match/match-api';
 import { RatingApi } from '../../../core/api/rating/rating-api';
 import { ERROR_TEXTS } from '../../../core/http/error-texts';
@@ -62,7 +63,10 @@ export class AdminMatchPage {
     () => (this.current()?.status === 'CLOSED' ? this.matchId() : undefined),
     handling(409),
   );
+  /** For the hours of the rating window that closing opens; the page works without it. */
+  protected readonly settings = inject(LeagueApi).settings(this.leagueId);
   protected readonly deleting = signal(false);
+  protected readonly closing = signal(false);
 
   protected readonly venueTexts = VENUE_TEXTS;
   protected readonly phaseTexts = MATCH_PHASE_TEXTS;
@@ -89,6 +93,46 @@ export class AdminMatchPage {
   protected reload(): void {
     this.match.reload();
     this.ratings.reload();
+    this.settings.reload();
+  }
+
+  protected close(): void {
+    const leagueId = this.leagueId();
+    const match = this.current();
+    if (leagueId === undefined || match === undefined || this.closing()) {
+      return;
+    }
+    const hours = this.settings.hasValue() ? this.settings.value().ratingWindowHours : undefined;
+    this.confirm
+      .ask({
+        title: $localize`:@@match.admin.match.closeTitle:¿Cerrar el partido?`,
+        message:
+          hours === undefined
+            ? $localize`:@@match.admin.match.closeMessageShort:Se bloquean las alineaciones que no lo estén, se publica el acta y se abre la valoración.`
+            : $localize`:@@match.admin.match.closeMessage:Se bloquean las alineaciones que no lo estén, se publica el acta y se abre la valoración durante ${hours}:hours: h.`,
+        confirm: $localize`:@@match.admin.match.closeConfirm:Cerrar partido`,
+      })
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+        this.closing.set(true);
+        this.api.close(leagueId, match.id).subscribe({
+          next: () => {
+            this.closing.set(false);
+            this.toasts.show({ message: $localize`:@@match.admin.match.closed:Partido cerrado` });
+            this.reload();
+          },
+          error: (error: unknown) => {
+            this.closing.set(false);
+            const code = toProblem(error)?.code;
+            if (code === 'MATCH_NOT_STARTED' || code === 'MATCH_SHEET_INCOMPLETE') {
+              this.toasts.show({ message: ERROR_TEXTS[code] });
+              this.reload();
+            }
+          },
+        });
+      });
   }
 
   protected remove(): void {

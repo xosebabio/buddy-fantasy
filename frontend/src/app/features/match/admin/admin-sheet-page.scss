@@ -1,0 +1,96 @@
+@use 'ui/styles/page';
+
+:host {
+  @include page.page;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+}
+
+h1 {
+  @include page.title;
+}
+
+h2 {
+  margin-top: var(--bf-space-5);
+  color: var(--bf-color-text-muted);
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-3);
+  margin-top: var(--bf-space-4);
+}
+
+.error {
+  margin-top: var(--bf-space-2);
+  color: var(--bf-color-danger);
+}
+
+.count,
+.hint {
+  margin-top: var(--bf-space-2);
+  color: var(--bf-color-text-muted);
+}
+
+.players {
+  display: grid;
+  gap: var(--bf-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player {
+  display: grid;
+  gap: var(--bf-space-2);
+  padding: var(--bf-space-2) 0;
+  border-bottom: 1px solid var(--bf-color-border);
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+}
+
+.summary {
+  color: var(--bf-color-text-muted);
+}
+
+.stats {
+  display: grid;
+  gap: var(--bf-space-2);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-3);
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-4);
+}
+
+bf-notice {
+  margin-top: var(--bf-space-3);
+}
+
+.actions {
+  @include page.actions;
+}
+
+.loading {
+  display: grid;
+  gap: var(--bf-space-2);
+  margin-top: var(--bf-space-5);
+}

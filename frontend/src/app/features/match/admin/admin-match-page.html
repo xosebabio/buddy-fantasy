@@ -72,6 +72,11 @@
 
   @if (match.status === 'SCHEDULED') {
     <div class="actions">
+      @if (phase() === 'SCHEDULED') {
+        <p class="meta" i18n="@@match.admin.match.notStarted">
+          Se puede cerrar desde el inicio del partido.
+        </p>
+      }
       <button
         bfButton
         type="button"
@@ -83,6 +88,18 @@
         i18n="@@match.admin.match.delete"
       >
         Borrar partido
+      </button>
+      <button
+        bfButton
+        type="button"
+        variant="primary"
+        block
+        [loading]="closing()"
+        [disabled]="!online.online()"
+        (click)="close()"
+        i18n="@@match.admin.match.close"
+      >
+        Cerrar partido
       </button>
     </div>
   }

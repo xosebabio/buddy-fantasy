@@ -295,7 +295,7 @@ En el cambio de la tarea que los provoca:
 | 7   | Parámetros y tabla de puntos                                                                                                           | RF-07, RF-15                              | ✅    |
 | 8   | Plantilla de admin, alta, edición y baja                                                                                               | RF-09, RF-10                              | ✅    |
 | 9   | Calendario de admin, programar, editar, aplazar, borrar y página del partido                                                           | RF-12                                     | ✅    |
-| 10  | Acta, cierre y correcciones                                                                                                            | RF-13 a RF-16                             |       |
+| 10  | Acta, cierre y correcciones                                                                                                            | RF-13 a RF-16                             |✅    |
 | 11  | Auditoría de un partido                                                                                                                | RF-16, RNF-04                             |       |
 | 12  | Cancelar valoraciones                                                                                                                  | RF-41                                     |       |
 | 13  | Fila de admin en el inicio de la jornada (decisión 4)                                                                                  | Atajos del admin                          |       |
