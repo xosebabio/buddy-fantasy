@@ -80,7 +80,7 @@ E2E_BASE_URL=http://localhost:4200 npm run e2e   # contra npm start en vez de Ca
 
 ### CI
 
-`.github/workflows/ci.yml`, en cada push a `main` y cada PR: `backend` (`mvn -B verify`, con `OpenApiSpecTests`), `frontend` y, tras los dos, `e2e` (los pasos de *E2E*; si falla, sube el informe, las trazas y el log del backend). Para repetir el job `frontend` antes de subir, desde `frontend/`:
+`.github/workflows/ci.yml`, en cada push a `develop` o `main` y cada PR: `backend` (`mvn -B verify`, con `OpenApiSpecTests`), `frontend` y, tras los dos, `e2e` (los pasos de *E2E*; si falla, sube el informe, las trazas y el log del backend). Para repetir el job `frontend` antes de subir, desde `frontend/`:
 
 ```bash
 npm run api:types && npm run palette && npm run i18n:extract \
