@@ -15,6 +15,7 @@
     "format:check": "prettier --check .",
     "test": "ng test --watch=false",
     "e2e": "playwright test",
+    "readme:screenshots": "playwright test -c playwright.readme.config.ts",
     "palette": "node scripts/palette.mjs",
     "api:types": "openapi-typescript ../api/openapi.json --properties-required-by-default -o src/app/core/api/schema.d.ts",
     "i18n:extract": "node scripts/i18n-extract.mjs"

@@ -89,6 +89,8 @@ npm run e2e                              # npm run e2e -- --project=chromium-lig
 E2E_BASE_URL=http://localhost:4200 npm run e2e   # contra npm start en vez de Caddy
 ```
 
+Las capturas del README (`docs/readme/`) se regeneran a mano con el mismo entorno (backend con el perfil `e2e` y Caddy) y `npm run readme:screenshots`; usan solo los datos inventados de `frontend/e2e/readme-screenshots.ts` y no corren en CI.
+
 `E2E_BASE_URL` es el origen contra el que corren (por defecto `http://localhost:8081`). Cada test crea sus propios usuarios y ligas, así que no hace falta vaciar la BD entre ejecuciones. Si falla, la traza queda en `frontend/test-results/` (`npx playwright show-trace <ruta>/trace.zip`).
 
 ### CI
