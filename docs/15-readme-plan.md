@@ -81,7 +81,7 @@ En este orden. Entre paréntesis, de dónde sale cada sección; el texto la resu
 | --- | ------------------------------------------------------------- | ---------------------------- | ----- |
 | 1   | Revisar este plan con el usuario y cerrar las decisiones (§2) | Decisiones cerradas          | ✅    |
 | 2   | `LICENSE` MIT (decisión 5)                                    | Licencia                     | ✅    |
-| 3   | Texto del README sin capturas (§3, §5), con el diagrama       | README revisable             |       |
+| 3   | Texto del README sin capturas (§3, §5), con el diagrama       | README revisable             | ✅    |
 | 4   | Script de capturas y capturas en `docs/readme/` (§4)          | Capturas con datos ficticios |       |
 | 5   | Comprobaciones de §6, desde un clon limpio                    | README probado               |       |
 | 6   | Documentación de §7 y cerrar el plan                          | Plan cerrado                 |       |
