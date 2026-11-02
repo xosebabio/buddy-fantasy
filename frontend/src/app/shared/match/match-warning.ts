@@ -7,6 +7,6 @@ export type MatchWarning = NonNullable<MatchResponse['warnings']>[number];
  * prevent saving or closing: in a Sunday league a scorer may be missing.
  */
 export const MATCH_WARNING_TEXTS: Record<MatchWarning, string> = {
-  GOALS_MISMATCH: $localize`:@@shared.match.warning.goals-mismatch:Los goles de los jugadores no suman los del resultado.`,
-  OWN_GOALS_EXCEED_GOALS_AGAINST: $localize`:@@shared.match.warning.own-goals:Hay más goles en propia puerta que goles en contra.`,
+  GOALS_MISMATCH: $localize`:@@shared.match.warning.goalsMismatch:Los goles de los jugadores no suman los del resultado.`,
+  OWN_GOALS_EXCEED_GOALS_AGAINST: $localize`:@@shared.match.warning.ownGoals:Hay más goles en propia puerta que goles en contra.`,
 };

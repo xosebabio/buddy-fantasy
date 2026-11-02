@@ -215,7 +215,7 @@ export class AdminPlayerPage implements HasUnsavedChanges {
       .ask({
         title: $localize`:@@squad.admin.player.retireTitle:Dar de baja a ${current.name}:name:`,
         message: $localize`:@@squad.admin.player.retireMessage:Sigue en las actas, los puntos y los historiales. Sale de las alineaciones, y sustituirlo no gasta cambio. No se puede reactivar.`,
-        confirm: $localize`:@@squad.admin.player.retire:Dar de baja`,
+        confirm: $localize`:@@squad.admin.player.retireConfirm:Dar de baja`,
         tone: 'danger',
       })
       .subscribe((confirmed) => {
