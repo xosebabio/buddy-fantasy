@@ -5,6 +5,13 @@ Fantasy para una liga de peñas de domingo.
 [![CI](https://github.com/xosebabio/buddy-fantasy/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/xosebabio/buddy-fantasy/actions/workflows/ci.yml)
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 
+<p align="center">
+  <img src="docs/readme/01-matchday.png" alt="Inicio de la jornada" width="23%">
+  <img src="docs/readme/02-lineup.png" alt="Alineación en el campo" width="23%">
+  <img src="docs/readme/03-rating.png" alt="Valoración de los jugadores" width="23%">
+  <img src="docs/readme/04-standings.png" alt="Clasificación" width="23%">
+</p>
+
 ## Qué es
 
 Un administrador registra **un único equipo real** por liga, con sus partidos y el acta de cada uno (resultado y estadísticas). Los managers montan su alineación con un presupuesto y un límite de cambios, **valoran a los jugadores** tras cada partido y compiten en una clasificación. Los roles son por liga y el administrador también juega como manager.
