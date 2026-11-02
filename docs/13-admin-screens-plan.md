@@ -300,7 +300,7 @@ En el cambio de la tarea que los provoca:
 | 12  | Cancelar valoraciones                                                                                                                  | RF-41                                     | ✅    |
 | 13  | Fila de admin en el inicio de la jornada (decisión 4)                                                                                  | Atajos del admin                          | ✅    |
 | 14  | E2E del admin con el reloj de pruebas y axe, y la cadena de specs del reloj (§9)                                                       | Jornada completa automatizada (FE-34)     | ✅    |
-| 15  | Documentación de §10, `status.md`, _Estado_ de `AGENTS.md` y marcar los dos ítems de la Fase 2 en `requirements.md`                    | Ítems de la Fase 2 cerrados               |       |
+| 15  | Documentación de §10, `status.md`, _Estado_ de `AGENTS.md` y marcar los dos ítems de la Fase 2 en `requirements.md`                    | Ítems de la Fase 2 cerrados               | ✅    |
 
 Cada tarea es un commit en Conventional Commits citando sus códigos: `feat(league,squad,match): …` para los límites, `feat(frontend): … (RF-xx, FE-xx)`, `test(frontend): …`, `docs: …`. El acta va después del partido porque se llega a ella desde él. El inicio va al final porque enlaza a pantallas de las demás tareas.
 

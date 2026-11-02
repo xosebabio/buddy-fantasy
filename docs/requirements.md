@@ -258,7 +258,7 @@ Las rutas del API cuelgan de `/api/leagues/{id}` salvo que empiecen por `/api` o
 | Login | Todos | RF-01 | `/oauth2/authorization/google`, `GET /api/me` |
 | Mis ligas, crear liga | Todos | RF-05, RF-08 | `GET /api/me/leagues`, `POST /api/leagues` |
 | Invitación | Todos | RF-06 | `GET /api/invitations/{token}`, `POST …/join` |
-| Inicio de la liga (próximo partido, plazos y avisos) | Miembro | RF-25, RF-17 | `matches`, `lineup`, `ratings` |
+| Inicio de la liga (próximo partido, plazos y avisos) | Miembro (el admin, además, la fila de admin con `GET /matches`) | RF-25, RF-17 | `matches`, `lineup`, `ratings` |
 | Alineación | Miembro | RF-24–29 | `GET/PUT /lineup`, `GET /players?includeRetired=true`, `GET /settings` |
 | Alineaciones bloqueadas | Miembro | RF-27 | `GET /lineups/{matchId}` |
 | Valoraciones (listado y partido) | Miembro | RF-17–21 | `GET /ratings`, `GET/PUT /ratings/{matchId}` |
@@ -270,11 +270,11 @@ Las rutas del API cuelgan de `/api/leagues/{id}` salvo que empiecen por `/api` o
 | Liga (índice) | Miembro | RF-08 | `GET /api/leagues/{id}` |
 | Liga: miembros, salir | Miembro | RF-08 | `GET /members`, `DELETE /members/me` |
 | Perfil y cerrar sesión | Todos | RF-02, RF-04 | `GET /api/me`, `POST /api/logout` |
-| Admin · parámetros y tabla de puntos | Admin | RF-07, RF-15 | `GET/PUT /settings` |
+| Admin · parámetros y tabla de puntos | Admin | RF-07, RF-15 | `GET/PUT /settings`, `GET /settings/limits` |
 | Admin · invitación y miembros | Admin | RF-06 | `POST/DELETE /invitation`, `DELETE /members/{id}` |
-| Admin · jugadores y foto | Admin | RF-09, RF-10 | `POST/PUT/DELETE /players…`, `…/photo/upload`, `PUT/DELETE …/photo` |
-| Admin · partidos, acta, cierre y auditoría | Admin | RF-12–16 | `/matches…`, `PUT …/sheet`, `POST …/close`, `GET …/audit` |
-| Admin · cancelar valoraciones de un manager | Admin | RF-41 | `PUT /ratings/{matchId}/exclusions/{userId}` |
+| Admin · jugadores | Admin | RF-09, RF-10 | `GET /players`, `POST/PUT/DELETE /players…`, `GET /players/limits` (la foto no tiene interfaz en v1) |
+| Admin · partidos, acta, cierre y auditoría | Admin | RF-12–16 | `/matches…`, `GET /matches/limits`, `PUT …/sheet`, `POST …/close`, `GET …/audit`, `GET /players`, `GET /members` |
+| Admin · cancelar valoraciones de un manager | Admin | RF-41 | `GET /ratings/{matchId}`, `GET /members`, `PUT /ratings/{matchId}/exclusions/{userId}` |
 
 ## Stack técnico propuesto
 
@@ -328,8 +328,8 @@ Cada fase termina en una puerta: no se pasa a la siguiente hasta cumplir su crit
 - [x] Pantalla de valoración en picas o nota decimal, editable mientras siga abierta, y cancelación de las valoraciones de un manager por el admin (RF-18 a RF-21, RF-41). `rating` sirve los votos, las vistas y la cancelación por API (plan 09, tareas 4 y 4b); la pantalla, en *Pantallas de manager*
 - [x] Combinación de valoración y estadísticas al cierre, con recálculo idempotente (RF-22, RF-23). Incluye adaptar los parámetros de `league`: sustituir `ratingPointsPerUnit` por una conversión por formato (picas −2/2/6/10/14, nota 1:1) y añadir el mínimo de votos. `scoring` suma los puntos por valoración al cerrar la ventana y recalcula con `RatingsCorrected` (plan 09)
 - [x] Pantallas de manager: ligas e invitación, inicio, alineación, valoraciones, clasificaciones, historiales y plantilla (RF-01 a RF-11, RF-17 a RF-33)
-- [ ] Pantallas de admin: parámetros y tabla de puntos, miembros e invitación, jugadores y foto, partidos y acta, cancelación de valoraciones (RF-06, RF-07, RF-09, RF-10, RF-12 a RF-16, RF-41)
-- [ ] E2E de la jornada completa en móvil (FE-34)
+- [x] Pantallas de admin: parámetros y tabla de puntos, miembros e invitación, jugadores (la foto queda en el API, sin interfaz en v1), partidos y acta, cancelación de valoraciones (RF-06, RF-07, RF-09, RF-10, RF-12 a RF-16, RF-41). Plan 13
+- [x] E2E de la jornada completa en móvil (FE-34). `matchday.spec.ts` (manager) y `admin-matchday.spec.ts` (admin, desde la interfaz)
 - [ ] Prueba real: una jornada con los amigos y ajuste de los pesos
 
 ### Fase 3 · Mercado y notificaciones
