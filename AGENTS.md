@@ -12,7 +12,7 @@ Fantasy para una liga de peñas de domingo. Un administrador registra **un únic
 
 ## Estado
 
-Fase 1 completa; Fase 2 (valoraciones) con el backend (plan 09), las pantallas de manager (plan 12) y las de admin con el E2E de la jornada completa (plan 13) hechos y cerrados; solo falta la prueba real, que necesita además el VPS. Fase 0: hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` (plan 11, cerrado); faltan Dockerfile, Compose de producción y VPS. Siguiente: la Fase 0 pendiente (`docs/14-deploy-plan.md`, con las decisiones cerradas; empieza por la tarea 3) y después la Fase 3. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
+Fase 1 completa; Fase 2 (valoraciones) con el backend (plan 09), las pantallas de manager (plan 12) y las de admin con el E2E de la jornada completa (plan 13) hechos y cerrados; solo falta la prueba real, que necesita además el VPS. Fase 0: hechos el esqueleto del backend, el modelo base con el login de Google y el esqueleto de `frontend/` (plan 11, cerrado); los textos legales (plan 14 bis: `/privacy` y `/terms`, enlazadas desde el login y el perfil) hechos, a falta de publicarlos con el VPS, rellenar _Branding_ en Google y cerrar las comprobaciones de `docs/14bis-legal-texts.md`; faltan Dockerfile, Compose de producción y VPS. Siguiente: la Fase 0 pendiente (`docs/14-deploy-plan.md`, con las decisiones cerradas; empieza por la tarea 3) y después la Fase 3. No adelantes trabajo de fases posteriores salvo que se pida. Detalle en [docs/agents/status.md](docs/agents/status.md).
 
 ## Mapa: lee lo que necesites antes de tocar código
 

@@ -49,6 +49,10 @@ Todo endpoint nuevo (o que cambie) se documenta en el mismo cambio con las anota
 - Referencia los requisitos por su código (`RF-xx`, `RNF-xx`) en commits, PRs y comentarios cuando aplique.
 - Commits en formato Conventional Commits (`feat:`, `fix:`, `chore:`…).
 
+## Textos legales
+
+- La política de privacidad y las condiciones de servicio (`frontend/src/app/features/legal`, RNF-10) describen lo que la app hace hoy. Si cambia lo que se guarda, quién lo ve, cuánto dura o quién lo trata (fotos en S3, avisos por email, analítica, un encargado nuevo), el texto se actualiza en el mismo cambio, con su fecha de última actualización. Ver [14bis-legal-pages-plan.md](../14bis-legal-pages-plan.md), §11.
+
 ## Frontend
 
 Arquitectura, tipado, componentes, estilo y calidad del frontend (FE-01 a FE-35): ver [frontend.md](frontend.md).
