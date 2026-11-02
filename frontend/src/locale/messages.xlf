@@ -556,7 +556,14 @@
         <source>Entrar con Google</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/identity/login-page.html</context>
-          <context context-type="linenumber">26,29</context>
+          <context context-type="linenumber">26,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.login.terms" datatype="html">
+        <source> Al entrar aceptas las <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/terms&quot;&gt;"/>condiciones de servicio<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> y la <x id="START_LINK_1" equiv-text="&lt;a routerLink=&quot;/privacy&quot;&gt;"/>política de privacidad<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/login-page.html</context>
+          <context context-type="linenumber">29,32</context>
         </context-group>
       </trans-unit>
       <trans-unit id="identity.profile.google" datatype="html">
@@ -577,35 +584,56 @@
         <source>Automático sigue al de tu dispositivo.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
-          <context context-type="linenumber">22,26</context>
+          <context context-type="linenumber">22,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.legal.title" datatype="html">
+        <source>Legal</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
+          <context context-type="linenumber">25,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.legal.privacy" datatype="html">
+        <source> Política de privacidad </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
+          <context context-type="linenumber">29,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="identity.profile.legal.terms" datatype="html">
+        <source> Condiciones de servicio </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
+          <context context-type="linenumber">34,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="identity.profile.logout" datatype="html">
         <source>Cerrar sesión</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/identity/profile-page.html</context>
-          <context context-type="linenumber">34,37</context>
+          <context context-type="linenumber">50,53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="identity.profile.theme.system" datatype="html">
         <source>Automático</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/identity/profile-page.ts</context>
-          <context context-type="linenumber">12</context>
+          <context context-type="linenumber">14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="identity.profile.theme.light" datatype="html">
         <source>Claro</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/identity/profile-page.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="identity.profile.theme.dark" datatype="html">
         <source>Oscuro</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/identity/profile-page.ts</context>
-          <context context-type="linenumber">14</context>
+          <context context-type="linenumber">16</context>
         </context-group>
       </trans-unit>
       <trans-unit id="league.admin.members.title" datatype="html">

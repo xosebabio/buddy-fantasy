@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideLogOut } from '@lucide/angular';
 
 import { SessionStore } from '../../core/auth/session-store';
@@ -6,6 +7,7 @@ import { Online } from '../../core/http/online';
 import { Theme, type ThemePreference } from '../../core/theme/theme';
 import { Avatar } from '../../ui/avatar/avatar';
 import { Button } from '../../ui/button/button';
+import { List, ListItem } from '../../ui/list/list';
 import { Segmented, type SegmentedOption } from '../../ui/segmented/segmented';
 
 const THEMES: readonly SegmentedOption<ThemePreference>[] = [
@@ -20,7 +22,7 @@ const THEMES: readonly SegmentedOption<ThemePreference>[] = [
  */
 @Component({
   selector: 'bf-profile-page',
-  imports: [Avatar, Button, LucideLogOut, Segmented],
+  imports: [Avatar, Button, List, ListItem, LucideLogOut, RouterLink, Segmented],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
