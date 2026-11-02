@@ -64,6 +64,26 @@ services:
       - caddy-data:/data # certificates: losing them forces new Let's Encrypt issuances
       - caddy-config:/config
 
+  # Only with the profile (docker compose --profile backup run --rm backup <daily|deploy>): launched by the
+  # systemd timer and by the deploy. It is the only service with the AWS credentials, which can only upload.
+  backup:
+    image: ghcr.io/xosebabio/buddy-fantasy-backup:${IMAGE_TAG:?set IMAGE_TAG}
+    profiles: [backup]
+    logging: *logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGDATABASE: ${DB_NAME}
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:?set BACKUP_S3_BUCKET}
+      BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:?set BACKUP_AGE_RECIPIENT}
+      AWS_DEFAULT_REGION: ${BACKUP_S3_REGION:?set BACKUP_S3_REGION}
+      AWS_ACCESS_KEY_ID: ${BACKUP_AWS_ACCESS_KEY_ID:?set BACKUP_AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_AWS_SECRET_ACCESS_KEY:?set BACKUP_AWS_SECRET_ACCESS_KEY}
+
 volumes:
   postgres-data:
   caddy-data:

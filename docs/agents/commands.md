@@ -44,6 +44,19 @@ npm run e2e            # Playwright: E2E de humo con axe (ver *E2E*)
 
 `/_ui` (catálogo de componentes) solo existe con `npm start`.
 
+### Backup en local
+
+`deploy/backup/` (imagen, `backup.sh`, `restore.sh`, `iam-policy.json`) y `deploy/systemd/` (servicio y temporizador diario de las 04:00 de Madrid). Para probarlo sin AWS, contra el SeaweedFS del Compose de desarrollo:
+
+```bash
+docker build -t buddy-fantasy-backup deploy/backup
+age-keygen -o key.txt                      # la pública (age1…) es BACKUP_AGE_RECIPIENT; key.txt no se sube nunca
+# backup.sh <daily|deploy>: PG*, BACKUP_S3_BUCKET, BACKUP_AGE_RECIPIENT, credenciales de AWS y, solo en pruebas, AWS_ENDPOINT_URL
+deploy/backup/restore.sh <clave-s3> <postgresql://…>   # con BACKUP_S3_BUCKET, AGE_KEY_FILE y credenciales de lectura; desde tu máquina
+```
+
+- Si `pg_dump` o `age` fallan, `backup.sh` no sube nada (usa un fichero temporal, no un pipeline): un objeto vacío en el bucket parecería un backup válido.
+
 ### Caddy en local
 
 Sirve el build de producción como en producción (`deploy/Caddyfile`: estáticos, proxy al backend, cabeceras y CSP), con el backend arrancado en el host:

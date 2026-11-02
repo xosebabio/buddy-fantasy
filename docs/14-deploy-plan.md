@@ -160,7 +160,7 @@ En el cambio de la tarea que los provoca:
 | 3   | Dockerfiles y `.dockerignore` de backend y web, `application-prod.yml`, `docker-compose.prod.yml`, override `e2e` y `.env.example`; E2E local contra las imágenes (§3, §4, §9) | Imágenes y Compose (RNF-06)              | ✅    |
 | 4   | Redirección de `www` en el Caddyfile sin romper el local (decisión 15)                                                                      | Dominio canónico                         | ✅    |
 | 5   | CI: jobs `images` y `e2e` contra las imágenes (§5.2)                                                                                        | El artefacto que se publica, probado     | ✅    |
-| 6   | Imagen de backup, `backup.sh`, `restore.sh`, política IAM y temporizador de systemd, probados en local (§7)                               | Backups listos (RNF-07)                  |       |
+| 6   | Imagen de backup, `backup.sh`, `restore.sh`, política IAM y temporizador de systemd, probados en local (§7)                               | Backups listos (RNF-07)                  | ✅    |
 | 7   | `deploy/README.md` y pasos del usuario: Hetzner, DNS, Google, AWS y GitHub (§6, §8)                                                         | Servidor y servicios externos preparados |       |
 | 8   | CI: jobs `publish` y `deploy` con la comprobación de humo y `workflow_dispatch` para volver atrás; primer despliegue y login real (§5.2, §5.3) | `https://buddyfantasy.com` en marcha     |       |
 | 9   | Primer backup real en S3 y ensayo de la restauración (§7)                                                                                    | Restauración ensayada                    |       |

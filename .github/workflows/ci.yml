@@ -51,7 +51,6 @@ jobs:
 
   # The images that go to production (RNF-06), built once and passed on as artifacts: the E2E tests exactly
   # these, and `publish` pushes these, without rebuilding. Tagged `e2e`, which docker-compose.e2e.yml expects.
-  # The backup image joins them with its own task of plan 14.
   images:
     runs-on: ubuntu-latest
     strategy:
@@ -63,6 +62,9 @@ jobs:
           - name: web
             dockerfile: frontend/Dockerfile
             context: .
+          - name: backup
+            dockerfile: deploy/backup/Dockerfile
+            context: deploy/backup
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
