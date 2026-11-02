@@ -161,7 +161,7 @@ En el cambio de la tarea que los provoca:
 | 4   | Redirección de `www` en el Caddyfile sin romper el local (decisión 15)                                                                      | Dominio canónico                         | ✅    |
 | 5   | CI: jobs `images` y `e2e` contra las imágenes (§5.2)                                                                                        | El artefacto que se publica, probado     | ✅    |
 | 6   | Imagen de backup, `backup.sh`, `restore.sh`, política IAM y temporizador de systemd, probados en local (§7)                               | Backups listos (RNF-07)                  | ✅    |
-| 7   | `deploy/README.md` y pasos del usuario: Hetzner, DNS, Google, AWS y GitHub (§6, §8)                                                         | Servidor y servicios externos preparados |       |
+| 7   | `deploy/README.md` y pasos del usuario: Hetzner, DNS, Google, AWS y GitHub (§6, §8)                                                         | Servidor y servicios externos preparados | ✅    |
 | 8   | CI: jobs `publish` y `deploy` con la comprobación de humo y `workflow_dispatch` para volver atrás; primer despliegue y login real (§5.2, §5.3) | `https://buddyfantasy.com` en marcha     |       |
 | 9   | Primer backup real en S3 y ensayo de la restauración (§7)                                                                                    | Restauración ensayada                    |       |
 | 10  | Documentación de §10, `status.md`, _Estado_ de `AGENTS.md` y marcar los tres ítems de la Fase 0 en `requirements.md`                        | Fase 0 cerrada                           |       |
