@@ -1,0 +1,84 @@
+@if (failed()) {
+  <bf-load-error (retry)="reload()" />
+} @else if (notClosed()) {
+  <h1 i18n="@@rating.admin.ratings.titleNone">Cancelar valoraciones</h1>
+  <bf-empty-state i18n="@@rating.admin.ratings.notClosed">
+    La valoración se abre al cerrar el partido.
+  </bf-empty-state>
+} @else if (current(); as ratings) {
+  @if (rows(); as rows) {
+    <header>
+      <h1 i18n="@@rating.admin.ratings.title">Jornada {{ ratings.matchday }}</h1>
+      @if (ratings.status === 'OPEN') {
+        <bf-countdown
+          [until]="ratings.closesAt"
+          (elapsed)="reload()"
+          i18n="@@rating.admin.ratings.closesIn"
+        >
+          Cierra en
+        </bf-countdown>
+      }
+    </header>
+
+    @if (ratings.status === 'OPEN') {
+      <p class="hint" i18n="@@rating.admin.ratings.hint">
+        Cancelar las valoraciones de un manager las borra y le impide valorar este partido. No se
+        puede deshacer.
+      </p>
+    } @else {
+      <p class="hint" i18n="@@rating.admin.ratings.closedHint">
+        La ventana de valoración ha terminado. Estas son las valoraciones canceladas.
+      </p>
+    }
+
+    @if (rows.length > 0) {
+      <ul bfList bleed class="rows">
+        @for (row of rows; track row.member.userId) {
+          @let name = displayName(row.member);
+          <li bfListItem size="compact">
+            <bf-avatar bfListItemLeading [name]="name" [src]="row.member.avatarUrl" />
+            {{ name }}
+            @if (row.member.userId === currentUserId()) {
+              <span class="you" i18n="@@rating.admin.ratings.you">(tú)</span>
+            }
+            @if (row.excluded) {
+              <bf-badge bfListItemTrailing tone="warning" i18n="@@rating.admin.ratings.excluded"
+                >Cancelada</bf-badge
+              >
+            } @else {
+              <button
+                bfButton
+                bfListItemTrailing
+                type="button"
+                variant="danger"
+                [attr.aria-label]="cancelLabel(row.member)"
+                [loading]="cancelling() === row.member.userId"
+                [disabled]="!online.online() || cancelling() !== null"
+                (click)="cancel(row.member)"
+                i18n="@@rating.admin.ratings.cancel"
+              >
+                Cancelar valoraciones
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <bf-empty-state i18n="@@rating.admin.ratings.empty">
+        No se ha cancelado ninguna valoración.
+      </bf-empty-state>
+    }
+  } @else {
+    <div class="loading" aria-busy="true">
+      @for (row of [1, 2, 3]; track row) {
+        <bf-skeleton shape="block" />
+      }
+    </div>
+  }
+} @else {
+  <div class="loading" aria-busy="true">
+    @for (row of [1, 2, 3]; track row) {
+      <bf-skeleton shape="block" />
+    }
+  </div>
+}

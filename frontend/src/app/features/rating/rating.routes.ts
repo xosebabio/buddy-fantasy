@@ -18,4 +18,10 @@ export const ratingRoutes: Routes = [
 ];
 
 /** The admin pages of the ratings, under `leagues/:leagueId/admin`. */
-export const ratingAdminRoutes: Routes = [];
+export const ratingAdminRoutes: Routes = [
+  {
+    path: 'ratings/:matchId',
+    loadComponent: () => import('./admin-ratings-page').then((m) => m.AdminRatingsPage),
+    title: $localize`:@@rating.admin.ratings.pageTitle:Cancelar valoraciones`,
+  },
+];
