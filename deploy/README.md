@@ -127,6 +127,14 @@ En el cliente OAuth ya existente, en _APIs y servicios → Credenciales_:
 1. Añade el URI de redirección autorizado `https://buddyfantasy.com/login/oauth2/code/google`. Los de local se quedan.
 2. En _Pantalla de consentimiento de OAuth_, pasa el estado de _Testing_ a **_In production_**. En _Testing_ solo entran los usuarios de prueba dados de alta a mano. Con los scopes `openid`, `profile` y `email`, Google no pide verificación.
 3. Copia el ID y el secreto del cliente al `.env` del servidor.
+4. En _Google Auth Platform → Branding_, rellena los datos de la pantalla de consentimiento (RNF-10; textos en [`docs/14bis-legal-texts.md`](../docs/14bis-legal-texts.md)):
+   - **Página principal:** `https://buddyfantasy.com`
+   - **Política de privacidad:** `https://buddyfantasy.com/privacy`
+   - **Condiciones del servicio:** `https://buddyfantasy.com/terms`
+   - **Dominios autorizados:** `buddyfantasy.com`
+   - **Correo de asistencia:** `docksidegarage@gmail.com`, el mismo que el contacto de los textos.
+
+   Hazlo después del despliegue (§7), cuando las URL ya respondan. Con `openid`, `profile` y `email` no hace falta verificación. Si subes un logo, Google pide verificar la marca, y para eso exige el dominio verificado en Search Console, con estas mismas URL.
 
 ## 5. GitHub (Usuario)
 
