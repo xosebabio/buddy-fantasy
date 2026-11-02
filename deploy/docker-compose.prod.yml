@@ -52,6 +52,7 @@ services:
         condition: service_healthy
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS}
+      WWW_ADDRESS: www.${SITE_ADDRESS} # redirected to SITE_ADDRESS with a 301
       # No photos in production for now: the CSP origins stay empty.
       PHOTOS_ORIGIN: ""
       UPLOADS_ORIGIN: ""

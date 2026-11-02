@@ -9,5 +9,6 @@ services:
   caddy:
     environment:
       SITE_ADDRESS: ":80"
+      WWW_ADDRESS: http://www.invalid # no www in the E2E
     ports: !override
       - "8081:80"

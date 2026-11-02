@@ -1,10 +1,17 @@
 # Serves the Angular build and proxies the backend from the same origin (RNF-16).
 # Environment:
 #   SITE_ADDRESS      the domain in production (automatic HTTPS); :80 by default (plain HTTP, local)
+#   WWW_ADDRESS       the www host, redirected to SITE_ADDRESS; unset locally, where it matches no request
 #   BACKEND_UPSTREAM  host:port of the backend; backend:8080 by default
 #   PHOTOS_ORIGIN     origin the player photos are served from (CloudFront in production)
 #   UPLOADS_ORIGIN    origin of the bucket the browser uploads photos to (presigned PUT)
 # The build is read from /srv.
+
+# www is not canonical (RNF-16): one origin means one Google redirect URI. The default only matches the
+# reserved .invalid TLD, so the block does nothing where WWW_ADDRESS is not set.
+{$WWW_ADDRESS:http://www.invalid} {
+	redir https://{$SITE_ADDRESS:localhost}{uri} permanent
+}
 
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
