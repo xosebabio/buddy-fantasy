@@ -183,6 +183,7 @@ jobs:
         github.event_name == 'workflow_dispatch')
     needs: [publish]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: production
     concurrency:
       group: production
@@ -209,7 +210,7 @@ jobs:
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          printf 'Host deploy\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n  StrictHostKeyChecking yes\n' \
+          printf 'Host deploy\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n  StrictHostKeyChecking yes\n  BatchMode yes\n  ConnectTimeout 20\n  ServerAliveInterval 15\n  ServerAliveCountMax 4\n' \
             "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
       # TEMPORARY: remove once the host key check passes
       - name: Debug known_hosts
@@ -217,8 +218,14 @@ jobs:
           wc -l ~/.ssh/known_hosts
           awk '{print NF, $2, length($3)}' ~/.ssh/known_hosts
           sed -n 's/^ *HostName \(.*\)$/\1/p' ~/.ssh/config | awk '{print length($0)}'
+          wc -lc ~/.ssh/deploy_key
+          head -n 1 ~/.ssh/deploy_key
+          tail -n 1 ~/.ssh/deploy_key
+          grep -c $'\r' ~/.ssh/deploy_key || true
+          ssh-keygen -y -f ~/.ssh/deploy_key | cut -d' ' -f1 || true
       - name: Copy the Compose file
-        run: scp deploy/docker-compose.prod.yml deploy:/opt/buddy-fantasy/docker-compose.prod.yml
+        timeout-minutes: 2
+        run: scp -v deploy/docker-compose.prod.yml deploy:/opt/buddy-fantasy/docker-compose.prod.yml
       - name: Back up, pull and start
         run: |
           ssh deploy bash -s -- "$IMAGE_TAG" <<'REMOTE'
